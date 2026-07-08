@@ -1,0 +1,82 @@
+Column,Data Type,Missing Values,Unique Values
+Resident ID,int64,0,1841
+User ID,int64,0,1190
+Booking ID,int64,0,1824
+Channel,str,1591,9
+Name,str,0,1186
+Phone,int64,0,1190
+Email,str,7,1183
+Gender,str,10,2
+Type,str,0,3
+Status,str,0,5
+Extending,str,0,2
+Property,str,186,4
+Room Type,str,186,8
+Room,str,186,251
+Beds,str,186,4
+Bed Count,float64,186,4
+Move In Date,str,0,466
+Move Out Date,str,0,492
+Term End Date,str,0,473
+App Downloaded,str,0,2
+Agreement Signed,str,0,2
+Tax Number,float64,1841,0
+Company Name,str,1353,55
+Company Address,float64,1841,0
+Wifi Status,str,1097,2
+Wifi Username,float64,1344,479
+Payment Plan,str,430,26
+Security Deposit,float64,439,30
+Rent,float64,431,260
+Maintenance,float64,468,20
+Registration Form,str,0,1
+College Name,str,1192,24
+Admission Year,float64,1838,2
+College ID Number,str,1618,188
+College ID (Image),str,1728,1
+Course Name,str,1196,334
+Course Year,str,1192,8
+Office Location,str,1146,12
+Employee ID,str,1693,68
+Employee ID (Image),str,1794,1
+Department,str,1698,58
+Job Profile,str,1152,258
+Passport Size Photo,str,1281,1
+Aadhar,str,514,1
+PAN Card,str,1438,1
+Interests,str,567,238
+Any Suggestions,str,911,350
+Date Of Birth,str,496,891
+Home Address,str,498,952
+Hometown,str,498,472
+Pincode,float64,499,680
+Parent 1 Name,str,499,922
+Relation with Parent 1,str,499,60
+Parent 1 Number,float64,504,918
+Parent 2 Name,str,1057,554
+Relation with Parent 2,str,1064,43
+Parent 2 Number,float64,1084,538
+Guardian Name,str,572,856
+Relation,str,583,153
+Guardian Number,str,566,871
+Emergency Contact,str,672,807
+Food Preference,str,503,3
+Blood Group,str,504,8
+Allergies,str,1503,91
+Other medical details,str,1662,58
+Instagram Handle,str,838,602
+Feedback Form,str,0,1
+Sad to see you go! Why though?,str,1823,3
+Please Rate the Housekeeping ,float64,1823,5
+Please Rate the Staff services,float64,1823,5
+How much did you enjoy the Amenities?,float64,1823,5
+How was your Overall Experience?,float64,1823,4
+Will you recommend us ?,str,1823,2
+How was the community experience?,float64,1823,5
+Any suggestions that would’ve made your stay better?,str,1826,13
+How was the Food?,float64,1823,5
+Any special shout-outs to any of our staff?,str,1826,11
+Bank Account Number,float64,1822,19
+Bank IFSC Code,str,1822,19
+Bank Name,str,1822,15
+Account Holder Name,str,1822,19

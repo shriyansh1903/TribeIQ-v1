@@ -1,0 +1,22 @@
+[server]
+# Allow Streamlit's JavaScript to use eval() which is essential for the frontend
+# Without this, all UI components render as escaped raw HTML text
+enableCORS = false
+enableXsrfProtection = false
+
+# critical: ensures CSP headers include unsafe-eval and unsafe-inline
+# This is needed because Streamlit's internal JavaScript and
+# st.markdown(unsafe_allow_html=True) both require relaxed CSP
+headless = true
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 8501
+
+[theme]
+base = "dark"
+primaryColor = "#58A6FF"
+backgroundColor = "#0D1117"
+secondaryBackgroundColor = "#161B22"
+textColor = "#F0F6FC"

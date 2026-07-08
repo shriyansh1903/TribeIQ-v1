@@ -1,0 +1,165 @@
+{
+    "Tribe Moro": {
+        "Property": "Tribe Moro",
+        "Resident Count": 62,
+        "Community Size": "Small",
+        "Community Stage": "Growing",
+        "Average Age": 25.0,
+        "Median Age": 25.0,
+        "Average Tenure": 47.85,
+        "Median Tenure": 16.0,
+        "Gender Distribution": {
+            "Male": 83.87,
+            "Female": 16.13
+        },
+        "Occupation Distribution": {
+            "Working Professional": 80.65,
+            "Student": 19.35
+        },
+        "Age Distribution": {
+            "23-27": 46.77,
+            "28-35": 17.74,
+            "18-22": 17.74,
+            "Unknown": 17.74
+        },
+        "Tenure Distribution": {
+            "New": 62.9,
+            "1-3 Months": 20.97,
+            "3-6 Months": 11.29,
+            "6-12 Months": 4.84
+        },
+        "Region Distribution": {
+            "Unknown": 98.39,
+            "West": 1.61
+        },
+        "Top Interests": {
+            "Outdoor Activity": 20,
+            "Game Night": 19,
+            "Movie Night": 17,
+            "Group Fitness": 13,
+            "Social Mixer": 10,
+            "Skill Workshop": 8,
+            "Community Dinner": 7,
+            "Cultural Exchange": 7,
+            "Theme Party": 6,
+            "Networking Event": 6,
+            "Art Night": 5,
+            "Volunteer Activity": 2
+        },
+        "Dominant Occupation": "Working Professional",
+        "Dominant Age Band": "23-27",
+        "Dominant Tenure Band": "New",
+        "Dominant Region": "Unknown"
+    },
+    "Tribe Vara": {
+        "Property": "Tribe Vara",
+        "Resident Count": 143,
+        "Community Size": "Medium",
+        "Community Stage": "Growing",
+        "Average Age": 21.37,
+        "Median Age": 20.0,
+        "Average Tenure": 85.1,
+        "Median Tenure": 31.0,
+        "Gender Distribution": {
+            "Male": 61.54,
+            "Female": 38.46
+        },
+        "Occupation Distribution": {
+            "Student": 72.03,
+            "Working Professional": 27.97
+        },
+        "Age Distribution": {
+            "18-22": 69.93,
+            "23-27": 18.18,
+            "28-35": 6.99,
+            "Unknown": 4.2,
+            "35+": 0.7
+        },
+        "Tenure Distribution": {
+            "New": 48.95,
+            "1-3 Months": 21.68,
+            "6-12 Months": 18.18,
+            "3-6 Months": 11.19
+        },
+        "Region Distribution": {
+            "Unknown": 86.01,
+            "North": 9.09,
+            "South": 2.8,
+            "West": 2.1
+        },
+        "Top Interests": {
+            "Movie Night": 60,
+            "Game Night": 53,
+            "Social Mixer": 49,
+            "Outdoor Activity": 38,
+            "Group Fitness": 29,
+            "Networking Event": 28,
+            "Skill Workshop": 24,
+            "Community Dinner": 22,
+            "Theme Party": 17,
+            "Art Night": 15,
+            "Cultural Exchange": 10,
+            "Volunteer Activity": 8
+        },
+        "Dominant Occupation": "Student",
+        "Dominant Age Band": "18-22",
+        "Dominant Tenure Band": "New",
+        "Dominant Region": "Unknown"
+    },
+    "Tribe Wamba": {
+        "Property": "Tribe Wamba",
+        "Resident Count": 124,
+        "Community Size": "Medium",
+        "Community Stage": "Balanced",
+        "Average Age": 21.89,
+        "Median Age": 21.0,
+        "Average Tenure": 154.35,
+        "Median Tenure": 78.5,
+        "Gender Distribution": {
+            "Male": 57.26,
+            "Female": 42.74
+        },
+        "Occupation Distribution": {
+            "Student": 74.19,
+            "Working Professional": 25.81
+        },
+        "Age Distribution": {
+            "18-22": 74.19,
+            "23-27": 16.94,
+            "28-35": 4.84,
+            "35+": 2.42,
+            "Unknown": 1.61
+        },
+        "Tenure Distribution": {
+            "6-12 Months": 39.52,
+            "New": 29.03,
+            "1-3 Months": 21.77,
+            "3-6 Months": 9.68
+        },
+        "Region Distribution": {
+            "Unknown": 91.94,
+            "North": 4.03,
+            "East": 2.42,
+            "West": 0.81,
+            "Central": 0.81
+        },
+        "Top Interests": {
+            "Movie Night": 50,
+            "Outdoor Activity": 31,
+            "Social Mixer": 28,
+            "Game Night": 27,
+            "Skill Workshop": 17,
+            "Community Dinner": 16,
+            "Group Fitness": 15,
+            "Networking Event": 11,
+            "Art Night": 8,
+            "Theme Party": 7,
+            "Cultural Exchange": 6,
+            "Volunteer Activity": 4
+        },
+        "Dominant Occupation": "Student",
+        "Dominant Age Band": "18-22",
+        "Dominant Tenure Band": "6-12 Months",
+        "Dominant Region": "Unknown"
+    }
+}
