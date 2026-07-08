@@ -1,6 +1,6 @@
+plotly
 pandas
 requests
 python-dotenv
 openpyxl
 streamlit
-plotly
