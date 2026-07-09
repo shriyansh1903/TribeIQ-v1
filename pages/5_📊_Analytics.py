@@ -991,6 +991,21 @@ else:
         )
 
 
+    # Convert to Excel
+    from io import BytesIO
+    excel_buffer = BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+        filtered_history.to_excel(writer, index=False, sheet_name='Event History')
+    excel_data = excel_buffer.getvalue()
+
+    st.download_button(
+        label="📥 Download Event History (Excel)",
+        data=excel_data,
+        file_name="event_history.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        use_container_width=True
+    )
+
     history_table(display_history)
 
 

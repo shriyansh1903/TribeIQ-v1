@@ -184,6 +184,38 @@ def safe_int(
         return default
 
 
+def get_star_string(val: float) -> str:
+    """
+    Generate a 5-star rating representation supporting quarter, half, and full stars.
+    """
+    try:
+        val = float(val)
+    except (TypeError, ValueError):
+        val = 0.0
+    if val <= 0.0:
+        return "☆☆☆☆☆ (0.00)"
+    if val >= 5.0:
+        return "★★★★★ (5.00)"
+        
+    full = int(val)
+    frac = val - full
+    frac_sym = ""
+    if frac == 0.25:
+        frac_sym = "¼"
+    elif frac == 0.5:
+        frac_sym = "½"
+    elif frac == 0.75:
+        frac_sym = "¾"
+        
+    stars = "★" * full
+    if frac_sym:
+        stars += frac_sym
+    
+    empty = 5 - full - (1 if frac > 0 else 0)
+    stars += "☆" * empty
+    return f"{stars} ({val:.2f})"
+
+
 def safe_dict(
     value: Any,
 ) -> Dict[str, Any]:
@@ -1472,6 +1504,61 @@ else:
 # Event Outcome Form
 # ===========================================================
 
+# Property and Event selection outside the form to allow dynamic pre-population
+selection_col1, selection_col2 = st.columns(2)
+with selection_col1:
+    selected_property = st.selectbox(
+        "Property",
+        options=property_names,
+        index=default_property_index,
+        help="The specific co-living property where the event was hosted.",
+    )
+
+with selection_col2:
+    selected_event_name = st.selectbox(
+        "Event",
+        options=event_names,
+        help="The name of the event that was executed.",
+    )
+
+# Retrieve recommendation context if selected event is in active recommendations
+selected_rec = next(
+    (item for item in recommended_events if item.get("event_name") == selected_event_name),
+    None
+)
+
+# Set defaults
+def_rec_type = "manual"
+def_rec_score = 0.0
+def_pred_date = date.today()
+def_capacity = 0
+def_active = 0
+def_occupancy = 0.0
+def_turnout = 0.0
+def_attendance = 0
+def_confidence_label = "None"
+def_confidence_score = 0.0
+
+if selected_rec:
+    if selected_rec.get("recommendation_type") == "major":
+        def_rec_type = "major"
+    else:
+        def_rec_type = "minor"
+    def_rec_score = float(selected_rec.get("final_score", 0.0))
+    pred_date_str = selected_rec.get("predicted_event_date") or selected_rec.get("event_date")
+    if pred_date_str:
+        try:
+            def_pred_date = pd.to_datetime(pred_date_str).date()
+        except Exception:
+            pass
+    def_capacity = int(selected_rec.get("total_capacity", 0))
+    def_active = int(selected_rec.get("active_residents", 0))
+    def_occupancy = float(selected_rec.get("occupancy_percent", 0.0))
+    def_turnout = float(selected_rec.get("predicted_turnout_rate", 0.0))
+    def_attendance = int(selected_rec.get("predicted_attendance", 0))
+    def_confidence_label = str(selected_rec.get("confidence_label", "None"))
+    def_confidence_score = float(selected_rec.get("confidence_score", 0.0))
+
 with st.form(
     "event_outcome_form",
     clear_on_submit=False,
@@ -1483,50 +1570,31 @@ with st.form(
 
     with form_column_1:
 
-        selected_property = st.selectbox(
-            "Property",
-            options=property_names,
-            index=default_property_index,
-        )
-
-        selected_event_name = st.selectbox(
-            "Event",
-            options=event_names,
-        )
-
         event_date = st.date_input(
-            "Event Date",
+            "Event Execution Date",
             value=date.today(),
+            help="The date on which this event took place.",
+        )
+
+        feedback_score = (
+            st.selectbox(
+                "Average Feedback Rating (0-5 Stars)",
+                options=[i * 0.25 for i in range(21)],  # 0.00 to 5.00 in steps of 0.25
+                index=16,  # Default to 4.00
+                format_func=get_star_string,
+                help="Select the average satisfaction rating given by the attending residents, represented as 1 to 5 stars (supports quarter, half, and full stars).",
+            )
         )
 
     with form_column_2:
 
-        attendance_percent = (
-            st.number_input(
-                "Attendance %",
-                min_value=0.0,
-                max_value=100.0,
-                value=75.0,
-                step=1.0,
-            )
-        )
-
-        feedback_score = (
-            st.number_input(
-                "Average Feedback",
-                min_value=0.0,
-                max_value=5.0,
-                value=4.0,
-                step=0.1,
-            )
-        )
-
         actual_attendance = (
             st.number_input(
-                "Actual Attendance",
+                "Actual Attendee Count",
                 min_value=0,
-                value=0,
+                value=def_attendance,
                 step=1,
+                help="The total physical headcount of residents who checked in or attended the event.",
             )
         )
 
@@ -1538,10 +1606,11 @@ with st.form(
 
         budget_planned = (
             st.number_input(
-                "Budget Planned",
+                "Planned Budget (INR)",
                 min_value=0.0,
                 value=0.0,
                 step=100.0,
+                help="The budget initially approved/allocated for organizing this event in Indian Rupees (INR).",
             )
         )
 
@@ -1549,12 +1618,92 @@ with st.form(
 
         budget_spent = (
             st.number_input(
-                "Budget Spent",
+                "Actual Budget Spent (INR)",
                 min_value=0.0,
                 value=0.0,
                 step=100.0,
+                help="The total final cost incurred to run the event in Indian Rupees (INR).",
             )
         )
+
+    st.markdown("---")
+    with st.expander("Prediction & Recommendation Metadata (Optional)", expanded=False):
+        st.markdown("<p style='font-size: 13px; color: #8B949E;'>Use these fields to manually enter or override the forecast/recommendation metadata that will be logged in the database.</p>", unsafe_allow_html=True)
+        meta_col1, meta_col2 = st.columns(2)
+        with meta_col1:
+            rec_type_val = st.selectbox(
+                "Recommendation Type",
+                options=["manual", "major", "minor"],
+                index=["manual", "major", "minor"].index(def_rec_type),
+                help="The classification of this event recommendation."
+            )
+            rec_score_val = st.number_input(
+                "Recommendation Score",
+                min_value=0.0,
+                max_value=1.0,
+                value=def_rec_score,
+                step=0.01,
+                help="The final score computed by the recommendation engine."
+            )
+            pred_date_val = st.date_input(
+                "Predicted Event Date",
+                value=def_pred_date,
+                help="The date recommended/predicted for this event."
+            )
+            capacity_val = st.number_input(
+                "Total Capacity",
+                min_value=0,
+                value=def_capacity,
+                step=1,
+                help="The total physical bed capacity of the property."
+            )
+            active_val = st.number_input(
+                "Predicted Active Residents",
+                min_value=0,
+                value=def_active,
+                step=1,
+                help="The number of residents expected to be active on the event date."
+            )
+        with meta_col2:
+            occupancy_val = st.number_input(
+                "Predicted Occupancy %",
+                min_value=0.0,
+                max_value=100.0,
+                value=def_occupancy,
+                step=0.1,
+                help="The occupancy rate predicted for the property on that date."
+            )
+            turnout_val = st.number_input(
+                "Predicted Turnout Rate (%)",
+                min_value=0.0,
+                max_value=100.0,
+                value=def_turnout,
+                step=0.1,
+                help="The expected turnout rate predicted for this event."
+            )
+            attendance_val = st.number_input(
+                "Predicted Attendance",
+                min_value=0,
+                value=def_attendance,
+                step=1,
+                help="The turnout attendee count predicted for this event."
+            )
+            conf_label_val = st.selectbox(
+                "Attendance Confidence",
+                options=["None", "Low", "Medium", "High"],
+                index=["None", "Low", "Medium", "High"].index(def_confidence_label),
+                help="The confidence level label of the prediction."
+            )
+            conf_score_val = st.number_input(
+                "Attendance Confidence Score",
+                min_value=0.0,
+                max_value=100.0,
+                value=def_confidence_score,
+                step=0.1,
+                help="The numerical confidence score of the attendance prediction."
+            )
+
+    st.markdown("---")
 
     notes = st.text_area(
         "Notes",
@@ -1562,6 +1711,7 @@ with st.form(
             "Add observations, resident reactions "
             "or operational notes..."
         ),
+        help="Any qualitative observations, reactions, or logistics notes about the event outcome.",
     )
 
     submitted = st.form_submit_button(
@@ -1588,127 +1738,66 @@ if submitted:
         )
     )
 
-    # -------------------------------------------------------
-    # Recommendation Metadata
-    # -------------------------------------------------------
-
     if isinstance(
         selected_recommendation,
         dict,
     ):
-
-        event_id = safe_text(
-            selected_recommendation.get(
-                "event_id"
-            )
-        )
-
-        category = safe_text(
-            selected_recommendation.get(
-                "category"
-            )
-        )
-
-        recommendation_type = safe_text(
-            selected_recommendation.get(
-                "recommendation_type"
-            )
-        )
-
-        recommendation_score = safe_float(
-            selected_recommendation.get(
-                "final_score"
-            )
-        )
-
+        event_id = safe_text(selected_recommendation.get("event_id"))
+        category = safe_text(selected_recommendation.get("category"))
+        recommendation_score = safe_float(selected_recommendation.get("final_score"))
     else:
-
         event_id = ""
         category = ""
-        recommendation_type = ""
         recommendation_score = 0.0
-
-    # -------------------------------------------------------
-    # Catalogue Metadata Fallback
-    # -------------------------------------------------------
 
     catalogue_details = (
         get_catalogue_event_details(
-            event_name=(
-                selected_event_name
-            ),
-            events_dataframe=(
-                events_dataframe
-            ),
-            event_name_column=(
-                event_name_column
-            ),
+            event_name=selected_event_name,
+            events_dataframe=events_dataframe,
+            event_name_column=event_name_column,
         )
     )
 
     if not event_id:
-
-        event_id = safe_text(
-            catalogue_details.get(
-                "event_id"
-            )
-        )
+        event_id = safe_text(catalogue_details.get("event_id"))
 
     if not category:
-
-        category = safe_text(
-            catalogue_details.get(
-                "category"
-            )
-        )
+        category = safe_text(catalogue_details.get("category"))
 
     if not event_id:
-
         event_id = (
             selected_event_name
             .strip()
             .lower()
-            .replace(
-                " ",
-                "-",
-            )
+            .replace(" ", "-")
         )
 
     # -------------------------------------------------------
-    # Prediction Context
-    # -------------------------------------------------------
-
-    prediction_context = (
-        extract_prediction_context(
-            selected_recommendation
-        )
+    # Calculate Turnout Rate Automatically
+    from occupancy_forecaster import load_resident_export, get_active_residents
+    
+    residents_timeline = load_resident_export()
+    event_timestamp = pd.Timestamp(event_date).normalize()
+    active_res = get_active_residents(
+        dataframe=residents_timeline,
+        property_name=selected_property,
+        event_date=event_timestamp
     )
+    active_count = len(active_res)
+    
+    if active_count > 0:
+        attendance_percent = (float(actual_attendance) / float(active_count)) * 100.0
+        attendance_percent = min(attendance_percent, 100.0)
+    else:
+        attendance_percent = 0.0
 
-    predicted_attendance = safe_int(
-        prediction_context.get(
-            "predicted_attendance"
-        )
-    )
-
-    has_prediction = bool(
-        prediction_context.get(
-            "has_prediction"
-        )
-    )
-
+    # Calculate prediction error based on user-entered predicted attendance
+    has_prediction = bool(attendance_val > 0)
     prediction_error = (
         calculate_prediction_error(
-            actual_attendance=(
-                int(
-                    actual_attendance
-                )
-            ),
-            predicted_attendance=(
-                predicted_attendance
-            ),
-            has_prediction=(
-                has_prediction
-            ),
+            actual_attendance=int(actual_attendance),
+            predicted_attendance=int(attendance_val),
+            has_prediction=has_prediction,
         )
     )
 
@@ -1736,6 +1825,13 @@ if submitted:
     # -------------------------------------------------------
     # Production History Record
     # -------------------------------------------------------
+
+    import re
+    url_pattern = re.compile(
+        r'(https?://[^\s<>"]+|www\.[^\s<>"]+|drive\.google\.com/[^\s<>"]+)'
+    )
+    link_match = url_pattern.search(notes)
+    image_data_link = link_match.group(0) if link_match else ""
 
     history_record = {
         "Date":
@@ -1786,40 +1882,38 @@ if submitted:
             ),
 
         "Recommendation Type":
-            recommendation_type,
+            rec_type_val,
 
         "Recommendation Score":
             round(
-                recommendation_score,
+                rec_score_val,
                 4,
             ),
 
         "Predicted Event Date":
-            prediction_context.get(
-                "predicted_event_date"
-            ),
+            pred_date_val.isoformat()
+            if has_prediction
+            else "",
 
         "Predicted Weekday":
-            prediction_context.get(
-                "predicted_weekday"
-            ),
+            pred_date_val.strftime("%A")
+            if has_prediction
+            else "",
 
         "Total Capacity":
-            prediction_context.get(
-                "total_capacity"
+            int(
+                capacity_val
             ),
 
         "Predicted Active Residents":
-            prediction_context.get(
-                "predicted_active_residents"
+            int(
+                active_val
             ),
 
         "Predicted Occupancy %":
             round(
                 safe_float(
-                    prediction_context.get(
-                        "predicted_occupancy_percent"
-                    )
+                    occupancy_val
                 ),
                 2,
             ),
@@ -1827,32 +1921,28 @@ if submitted:
         "Predicted Turnout Rate":
             round(
                 safe_float(
-                    prediction_context.get(
-                        "predicted_turnout_rate"
-                    )
+                    turnout_val
                 ),
                 2,
             ),
 
         "Predicted Attendance":
-            predicted_attendance
+            int(
+                attendance_val
+            )
             if has_prediction
             else "",
 
         "Attendance Confidence Score":
             round(
                 safe_float(
-                    prediction_context.get(
-                        "attendance_confidence_score"
-                    )
+                    conf_score_val
                 ),
                 2,
             ),
 
         "Attendance Confidence":
-            prediction_context.get(
-                "attendance_confidence"
-            ),
+            conf_label_val,
 
         "Attendance Prediction Error":
             prediction_error.get(
@@ -1873,6 +1963,9 @@ if submitted:
             safe_text(
                 notes
             ),
+
+        "Image Data":
+            image_data_link,
     }
 
     # -------------------------------------------------------
