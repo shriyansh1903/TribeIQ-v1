@@ -1640,7 +1640,6 @@ with st.form(
             rec_score_val = st.number_input(
                 "Recommendation Score",
                 min_value=0.0,
-                max_value=1.0,
                 value=def_rec_score,
                 step=0.01,
                 help="The final score computed by the recommendation engine."
@@ -1668,7 +1667,6 @@ with st.form(
             occupancy_val = st.number_input(
                 "Predicted Occupancy %",
                 min_value=0.0,
-                max_value=100.0,
                 value=def_occupancy,
                 step=0.1,
                 help="The occupancy rate predicted for the property on that date."
@@ -1676,7 +1674,6 @@ with st.form(
             turnout_val = st.number_input(
                 "Predicted Turnout Rate (%)",
                 min_value=0.0,
-                max_value=100.0,
                 value=def_turnout,
                 step=0.1,
                 help="The expected turnout rate predicted for this event."
@@ -1697,7 +1694,6 @@ with st.form(
             conf_score_val = st.number_input(
                 "Attendance Confidence Score",
                 min_value=0.0,
-                max_value=100.0,
                 value=def_confidence_score,
                 step=0.1,
                 help="The numerical confidence score of the attendance prediction."
