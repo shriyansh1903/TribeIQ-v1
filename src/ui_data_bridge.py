@@ -737,3 +737,70 @@ def clear_all_history() -> bool:
 
     except Exception:
         return False
+
+
+def parse_recommendation_row(event: Dict[str, Any], rec_type: str, property_name: str) -> Dict[str, Any]:
+    from datetime import date
+    import pandas as pd
+    
+    pred_date_str = event.get("predicted_event_date") or event.get("event_date") or date.today().isoformat()
+    if isinstance(pred_date_str, date):
+        pred_date_str = pred_date_str.isoformat()
+    
+    return {
+        "Property": property_name,
+        "Event Name": event.get("event_name", ""),
+        "Recommendation Type": rec_type,
+        "Recommendation Score": float(event.get("final_score", 0.0)),
+        "Predicted Event Date": pred_date_str,
+        "Total Capacity": int(event.get("total_capacity", 0)),
+        "Predicted Active Residents": int(event.get("active_residents", 0)),
+        "Predicted Occupancy %": float(event.get("occupancy_percent", 0.0)),
+        "Predicted Turnout Rate": float(event.get("predicted_turnout_rate", 0.0)),
+        "Predicted Attendance": int(event.get("predicted_attendance", 0)),
+        "Attendance Confidence": str(event.get("confidence_label", "None")),
+        "Attendance Confidence Score": float(event.get("confidence_score", 0.0)),
+        "Event ID": event.get("event_id", ""),
+        "Category": event.get("category", "")
+    }
+
+
+def save_predictions_to_csv(result: Dict[str, Any]) -> None:
+    if not isinstance(result, dict):
+        return
+        
+    property_name = result.get("property_name", "")
+    if not property_name:
+        return
+        
+    major_event = result.get("major_event")
+    minor_events = result.get("minor_events") or []
+    
+    rows = []
+    if isinstance(major_event, dict):
+        rows.append(parse_recommendation_row(major_event, "major", property_name))
+        
+    for minor_event in minor_events:
+        if isinstance(minor_event, dict):
+            rows.append(parse_recommendation_row(minor_event, "minor", property_name))
+            
+    if not rows:
+        return
+        
+    import pandas as pd
+    from pathlib import Path
+    
+    predictions_df = pd.DataFrame(rows)
+    output_path = Path("data/predictions_history.csv")
+    
+    if output_path.exists():
+        try:
+            existing_df = pd.read_csv(output_path)
+            combined_df = pd.concat([existing_df, predictions_df], ignore_index=True)
+            combined_df.drop_duplicates(subset=["Property", "Predicted Event Date", "Event Name"], keep="last", inplace=True)
+            predictions_df = combined_df
+        except Exception:
+            pass
+            
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    predictions_df.to_csv(output_path, index=False)

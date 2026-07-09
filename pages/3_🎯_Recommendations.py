@@ -62,6 +62,7 @@ from ui_data_bridge import (
     save_error_to_session,
     save_result_to_session,
     validate_application_data,
+    save_predictions_to_csv,
 )
 
 from recommendation_date_bridge import (
@@ -900,6 +901,7 @@ if generate_clicked:
                 session_state=st.session_state,
                 result=generated_result,
             )
+            save_predictions_to_csv(generated_result)
 
     except Exception as error:
 
@@ -1128,6 +1130,7 @@ if date_mode == "Choose a specific date":
                 st.session_state[
                     DATED_RESULT_KEY
                 ] = generated_dated_result
+                save_predictions_to_csv(generated_dated_result)
 
                 st.session_state[
                     DATED_RESULT_SOURCE_KEY
@@ -1263,6 +1266,7 @@ else:
                 st.session_state[
                     DATED_RESULT_KEY
                 ] = generated_dated_result
+                save_predictions_to_csv(generated_dated_result)
 
                 st.session_state[
                     DATED_RESULT_SOURCE_KEY
