@@ -1504,62 +1504,28 @@ else:
 # Event Outcome Form
 # ===========================================================
 
-# ===========================================================
-# Event Outcome Form
-# ===========================================================
+# Property and Event selection outside the form to allow dynamic pre-population
+selection_col1, selection_col2 = st.columns(2)
+with selection_col1:
+    selected_property = st.selectbox(
+        "Property",
+        options=property_names,
+        index=default_property_index,
+        help="The specific co-living property where the event was hosted.",
+    )
 
-def load_predictions_history() -> pd.DataFrame:
-    from pathlib import Path
-    import pandas as pd
-    path = Path("data/predictions_history.csv")
-    if path.exists():
-        try:
-            return pd.read_csv(path)
-        except Exception:
-            pass
-    return pd.DataFrame()
-
-# Property selection
-selected_property = st.selectbox(
-    "Property",
-    options=property_names,
-    index=default_property_index,
-    help="The specific co-living property where the event was hosted.",
-)
-
-# Load saved predictions from CSV
-predictions_df = load_predictions_history()
-filtered_preds = pd.DataFrame()
-if not predictions_df.empty:
-    filtered_preds = predictions_df[predictions_df["Property"] == selected_property]
-
-# Format prediction choices
-pred_options = ["None - Custom Event"]
-pred_map = {}
-if not filtered_preds.empty:
-    for idx, row in filtered_preds.iterrows():
-        label = f"{row['Predicted Event Date']} | {row['Event Name']} ({row['Recommendation Type'].title()})"
-        pred_options.append(label)
-        pred_map[label] = row
-
-selected_prediction_label = st.selectbox(
-    "Select Saved Prediction",
-    options=pred_options,
-    help="Choose a previously generated prediction/recommendation to log the outcome for. This will auto-fill all forecasted metrics.",
-)
-
-selected_rec = None
-if selected_prediction_label != "None - Custom Event":
-    selected_rec = pred_map[selected_prediction_label]
-    selected_event_name = selected_rec["Event Name"]
-    st.success(f"Loaded prediction metrics for **{selected_event_name}** on **{selected_rec['Predicted Event Date']}**")
-else:
-    # If no saved prediction is selected, let them choose from all event catalog names manually
+with selection_col2:
     selected_event_name = st.selectbox(
         "Event",
         options=event_names,
         help="The name of the event that was executed.",
     )
+
+# Retrieve recommendation context if selected event is in active recommendations
+selected_rec = next(
+    (item for item in recommended_events if item.get("event_name") == selected_event_name),
+    None
+)
 
 # Set defaults
 def_rec_type = "manual"
@@ -1573,46 +1539,25 @@ def_attendance = 0
 def_confidence_label = "None"
 def_confidence_score = 0.0
 
-# Retrieve fallback transient context if manual selection matches a transient recommended event
-if not selected_rec:
-    matching_rec = next(
-        (item for item in recommended_events if item.get("event_name") == selected_event_name),
-        None
-    )
-    if matching_rec:
-        selected_rec = matching_rec
-
-if selected_rec is not None:
-    def get_val(key, default_val):
-        if hasattr(selected_rec, "get"):
-            return selected_rec.get(key, default_val)
-        elif key in selected_rec:
-            return selected_rec[key]
-        return default_val
-
-    if get_val("recommendation_type", "manual") == "major":
+if selected_rec:
+    if selected_rec.get("recommendation_type") == "major":
         def_rec_type = "major"
-    elif get_val("recommendation_type", "manual") == "minor":
-        def_rec_type = "minor"
     else:
-        def_rec_type = get_val("Recommendation Type", "manual")
-
-    def_rec_score = float(get_val("final_score", get_val("Recommendation Score", 0.0)))
-    
-    pred_date_str = get_val("predicted_event_date", get_val("event_date", get_val("Predicted Event Date", None)))
+        def_rec_type = "minor"
+    def_rec_score = float(selected_rec.get("final_score", 0.0))
+    pred_date_str = selected_rec.get("predicted_event_date") or selected_rec.get("event_date")
     if pred_date_str:
         try:
             def_pred_date = pd.to_datetime(pred_date_str).date()
         except Exception:
             pass
-            
-    def_capacity = int(get_val("total_capacity", get_val("Total Capacity", 0)))
-    def_active = int(get_val("active_residents", get_val("Predicted Active Residents", 0)))
-    def_occupancy = float(get_val("occupancy_percent", get_val("Predicted Occupancy %", 0.0)))
-    def_turnout = float(get_val("predicted_turnout_rate", get_val("Predicted Turnout Rate", 0.0)))
-    def_attendance = int(get_val("predicted_attendance", get_val("Predicted Attendance", 0)))
-    def_confidence_label = str(get_val("confidence_label", get_val("Attendance Confidence", "None")))
-    def_confidence_score = float(get_val("confidence_score", get_val("Attendance Confidence Score", 0.0)))
+    def_capacity = int(selected_rec.get("total_capacity", 0))
+    def_active = int(selected_rec.get("active_residents", 0))
+    def_occupancy = float(selected_rec.get("occupancy_percent", 0.0))
+    def_turnout = float(selected_rec.get("predicted_turnout_rate", 0.0))
+    def_attendance = int(selected_rec.get("predicted_attendance", 0))
+    def_confidence_label = str(selected_rec.get("confidence_label", "None"))
+    def_confidence_score = float(selected_rec.get("confidence_score", 0.0))
 
 with st.form(
     "event_outcome_form",
