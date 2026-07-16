@@ -88,6 +88,16 @@ class LLMCandidateResult:
         default_factory=list
     )
 
+    estimated_budget_range: str = "INR 3,000 - 8,000"
+
+    suggested_vendor_categories: str = "None"
+
+    suggested_materials: str = "None"
+
+    ticket_recommendation: str = "Free"
+
+    explanation: str = ""
+
     def validate(
         self,
         maximum_adjustment: float = 5.0
@@ -122,6 +132,12 @@ class LLMCandidateResult:
         self.risk_flags = safe_text_list(
             self.risk_flags
         )
+
+        self.estimated_budget_range = str(self.estimated_budget_range).strip()
+        self.suggested_vendor_categories = str(self.suggested_vendor_categories).strip()
+        self.suggested_materials = str(self.suggested_materials).strip()
+        self.ticket_recommendation = str(self.ticket_recommendation).strip()
+        self.explanation = str(self.explanation).strip()
 
     def to_dict(self) -> Dict[str, Any]:
 
@@ -286,6 +302,26 @@ def parse_llm_response(
                     risk_flags=item.get(
                         "risk_flags",
                         []
+                    ),
+                    estimated_budget_range=item.get(
+                        "estimated_budget_range",
+                        "INR 3,000 - 8,000"
+                    ),
+                    suggested_vendor_categories=item.get(
+                        "suggested_vendor_categories",
+                        "None"
+                    ),
+                    suggested_materials=item.get(
+                        "suggested_materials",
+                        "None"
+                    ),
+                    ticket_recommendation=item.get(
+                        "ticket_recommendation",
+                        "Free"
+                    ),
+                    explanation=item.get(
+                        "explanation",
+                        ""
                     )
                 )
             )

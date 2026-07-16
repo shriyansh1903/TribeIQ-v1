@@ -375,6 +375,12 @@ def apply_llm_response(
         )
 
         output["llm_model"] = response.model
+        
+        output["estimated_budget_range"] = llm_result.estimated_budget_range if llm_result else "INR 3,000 - 8,000"
+        output["suggested_vendor_categories"] = llm_result.suggested_vendor_categories if llm_result else "None"
+        output["suggested_materials"] = llm_result.suggested_materials if llm_result else "None"
+        output["ticket_recommendation"] = llm_result.ticket_recommendation if llm_result else "Free"
+        output["explanation"] = llm_result.explanation if llm_result else ""
 
         output["final_score"] = round(
             adjusted_score,

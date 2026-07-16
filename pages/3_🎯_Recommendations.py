@@ -290,6 +290,17 @@ def render_event_intelligence_card(
         event.get("learning_adjustment")
     )
 
+    est_budget = safe_html(event.get("estimated_budget_range", "INR 3,000 - 8,000"))
+    suggested_vendors = safe_html(event.get("suggested_vendor_categories", "None"))
+    suggested_mats = safe_html(event.get("suggested_materials", "None"))
+    ticket_rec = safe_html(event.get("ticket_recommendation", "Free"))
+    
+    ai_explanation = safe_html(event.get("explanation", ""))
+    if not ai_explanation and event.get("llm_reasoning"):
+        ai_explanation = safe_html(" ".join(event.get("llm_reasoning")))
+    if not ai_explanation:
+        ai_explanation = "This event fits property demographics and matches historically active community preferences."
+
     # -------------------------------------------------------
     # Standard Recommendation Card
     # -------------------------------------------------------
@@ -366,6 +377,69 @@ def render_event_intelligence_card(
                 </div>
 
                 {adjustment_html}
+
+                <div style="
+                    margin-top:1.15rem;
+                    padding:0.95rem 1rem;
+                    border-radius:0.8rem;
+                    background:rgba(128,128,128,0.08);
+                ">
+                    <div class="score-label">
+                        AI EXPLANATION
+                    </div>
+                    <div style="
+                        margin-top:0.35rem;
+                        line-height:1.5;
+                        font-size:0.95rem;
+                    ">
+                        {ai_explanation}
+                    </div>
+                </div>
+
+                <div style="
+                    display:grid;
+                    grid-template-columns:repeat(2,minmax(0,1fr));
+                    gap:0.9rem;
+                    margin-top:1.25rem;
+                    padding-top:1rem;
+                    border-top:1px solid rgba(128,128,128,0.18);
+                ">
+                    <div>
+                        <div class="score-label">
+                            ESTIMATED BUDGET
+                        </div>
+                        <div style="font-weight:700; font-size:0.95rem;">
+                            {est_budget}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="score-label">
+                            TICKET RECOMMENDATION
+                        </div>
+                        <div style="font-weight:700; font-size:0.95rem;">
+                            {ticket_rec}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="score-label">
+                            SUGGESTED VENDORS
+                        </div>
+                        <div style="font-weight:700; font-size:0.85rem; opacity:0.85;">
+                            {suggested_vendors}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="score-label">
+                            SUGGESTED MATERIALS
+                        </div>
+                        <div style="font-weight:700; font-size:0.85rem; opacity:0.85;">
+                            {suggested_mats}
+                        </div>
+                    </div>
+                </div>
             </div>
             """
         )
@@ -570,12 +644,77 @@ def render_event_intelligence_card(
                 background:rgba(128,128,128,0.08);
             ">
                 <div class="score-label">
+                    AI EXPLANATION
+                </div>
+
+                <div style="
+                    margin-top:0.35rem;
+                    line-height:1.5;
+                    font-size:0.95rem;
+                ">
+                    {ai_explanation}
+                </div>
+            </div>
+
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(2,minmax(0,1fr));
+                gap:0.9rem;
+                margin-top:1.25rem;
+                padding-top:1rem;
+                border-top:1px solid rgba(128,128,128,0.18);
+            ">
+                <div>
+                    <div class="score-label">
+                        ESTIMATED BUDGET
+                    </div>
+                    <div style="font-weight:700; font-size:0.95rem;">
+                        {est_budget}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="score-label">
+                        TICKET RECOMMENDATION
+                    </div>
+                    <div style="font-weight:700; font-size:0.95rem;">
+                        {ticket_rec}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="score-label">
+                        SUGGESTED VENDORS
+                    </div>
+                    <div style="font-weight:700; font-size:0.85rem; opacity:0.85;">
+                        {suggested_vendors}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="score-label">
+                        SUGGESTED MATERIALS
+                    </div>
+                    <div style="font-weight:700; font-size:0.85rem; opacity:0.85;">
+                        {suggested_mats}
+                    </div>
+                </div>
+            </div>
+
+            <div style="
+                margin-top:1.15rem;
+                padding:0.95rem 1rem;
+                border-radius:0.8rem;
+                background:rgba(128,128,128,0.08);
+            ">
+                <div class="score-label">
                     WHY THIS DATE?
                 </div>
 
                 <div style="
                     margin-top:0.35rem;
                     line-height:1.5;
+                    font-size:0.95rem;
                 ">
                     {date_reason}
                 </div>

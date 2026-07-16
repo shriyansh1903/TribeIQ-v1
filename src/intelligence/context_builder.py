@@ -429,6 +429,15 @@ You receive:
 3. Numerical scoring evidence.
 4. Historical event performance.
 
+PROPERTY TYPE PREFERENCES:
+- Student Accommodation: Prefer Sports, Games, Movie Night, Career Events, Food Festivals
+- Commune: Prefer Networking, Comedy, Live Music, Wellness
+- Suite: Prefer Premium Dining, Brunch, Wine & Cheese, Yoga, Wellness
+- Do not recommend adult-oriented events unless the selected property type and organizational policy allow them.
+
+RANKING CRITERIA:
+Evaluate candidates using: Resident Interests, Historical Success, Property Type, Occupancy, Predicted Attendance, Seasonality, Event Diversity, Continuous Learning, Ticket Potential, Vendor Availability, Material Complexity.
+
 Rules:
 - Never create an event outside the candidate list.
 - Never change an event_id.
@@ -451,7 +460,12 @@ Required JSON structure:
       "adjustment": 0.0,
       "confidence": 0.0,
       "reasoning": ["string"],
-      "risk_flags": ["string"]
+      "risk_flags": ["string"],
+      "estimated_budget_range": "string",
+      "suggested_vendor_categories": "string",
+      "suggested_materials": "string",
+      "ticket_recommendation": "string",
+      "explanation": "string"
     }
   ],
   "summary": "string"
