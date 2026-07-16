@@ -22,6 +22,7 @@ from integrations.master_data_db import (
     update_capacities_config, EVENTS_CSV
 )
 from ui.styles import load_css
+from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 st.set_page_config(
     page_title="TribeIQ - Master Data Management",
@@ -40,10 +41,15 @@ df_vc = get_vendor_categories_df()
 df_mc = get_material_categories_df()
 
 total_records = len(df_prop) + len(df_evt) + len(df_cat) + len(df_pt) + len(df_vc) + len(df_mc)
+
+status_col_prop = safe_status_column(df_prop) or "Status"
+status_col_vc = safe_status_column(df_vc) or "Status"
+status_col_mc = safe_status_column(df_mc) or "Status"
+
 active_records = (
-    len(df_prop[df_prop["Status"] == "Active"]) +
-    len(df_vc[df_vc["Status"] == "Active"]) +
-    len(df_mc[df_mc["Status"] == "Active"]) +
+    (len(df_prop[df_prop[status_col_prop] == "Active"]) if status_col_prop in df_prop.columns else len(df_prop)) +
+    (len(df_vc[df_vc[status_col_vc] == "Active"]) if status_col_vc in df_vc.columns else len(df_vc)) +
+    (len(df_mc[df_mc[status_col_mc] == "Active"]) if status_col_mc in df_mc.columns else len(df_mc)) +
     len(df_cat) + len(df_pt) + len(df_evt)
 )
 

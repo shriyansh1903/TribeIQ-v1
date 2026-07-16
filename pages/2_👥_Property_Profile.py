@@ -20,6 +20,7 @@ if str(SRC_DIR) not in sys.path:
 from ui_data_bridge import get_session_property, load_application_data
 from intelligence.occupancy_forecaster import get_active_residents, get_current_occupancy, load_resident_export
 from ui.styles import load_css
+from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 # Load CSS Theme
 load_css()
@@ -138,86 +139,108 @@ st.write(f"## 🏢 {selected_property} Profile")
 st.markdown(f"**Classification:** {profile.get('Property Type', 'Commune')}  •  **City:** {profile.get('City', 'Pune')}  •  **Status:** 🟢 Connected & Operational")
 
 # ===========================================================
-# SECTION 2: Community Snapshot
+# SECTION 2: Community Snapshot (Error Boundary)
 # ===========================================================
 st.write("---")
 st.write("### 👥 Community Snapshot")
-s_col1, s_col2, s_col3, s_col4 = st.columns(4)
-with s_col1:
-    st.metric("Active Residents", f"{current_residents:,}")
-with s_col2:
-    st.metric("Occupancy Rate", f"{occupancy_percent:.1f}%")
-with s_col3:
-    st.metric("Average Resident Age", f"{average_age:.1f}" if average_age > 0 else "N/A")
-with s_col4:
-    st.metric("Average Stay Length", f"{average_tenure:.0f} days" if average_tenure > 0 else "N/A")
+try:
+    s_col1, s_col2, s_col3, s_col4 = st.columns(4)
+    with s_col1:
+        st.metric("Active Residents", f"{current_residents:,}")
+    with s_col2:
+        st.metric("Occupancy Rate", f"{occupancy_percent:.1f}%")
+    with s_col3:
+        st.metric("Average Resident Age", f"{average_age:.1f}" if average_age > 0 else "N/A")
+    with s_col4:
+        st.metric("Average Stay Length", f"{average_tenure:.0f} days" if average_tenure > 0 else "N/A")
+except Exception as e:
+    st.warning("⚠ Unable to load this widget.")
+    with st.expander("Optional details"):
+        st.write(str(e))
 
 # ===========================================================
-# SECTION 3: Community Intelligence
+# SECTION 3: Community Intelligence (Error Boundary)
 # ===========================================================
 st.write("---")
 st.write("### 🧠 Community Intelligence")
 
-dominant_occupation = safe_text(profile_value(profile, ("Dominant Occupation", "Top Occupation"), "Unknown"))
-community_stage = safe_text(profile_value(profile, ("Community Stage", "Lifecycle Stage"), "Unknown"))
+try:
+    dominant_occupation = safe_text(profile_value(profile, ("Dominant Occupation", "Top Occupation"), "Unknown"))
+    community_stage = safe_text(profile_value(profile, ("Community Stage", "Lifecycle Stage"), "Unknown"))
 
-i_col1, i_col2, i_col3 = st.columns(3)
-with i_col1:
-    st.write("**Dominant Occupation:**")
-    st.info(dominant_occupation)
-with i_col2:
-    st.write("**Community Lifecycle Stage:**")
-    st.info(community_stage)
-with i_col3:
-    st.write("**Gender Distribution:**")
-    st.info("Balanced" if "gender_distribution" not in profile else str(profile["gender_distribution"]))
+    i_col1, i_col2, i_col3 = st.columns(3)
+    with i_col1:
+        st.write("**Dominant Occupation:**")
+        st.info(dominant_occupation)
+    with i_col2:
+        st.write("**Community Lifecycle Stage:**")
+        st.info(community_stage)
+    with i_col3:
+        st.write("**Gender Distribution:**")
+        st.info("Balanced" if "gender_distribution" not in profile else str(profile["gender_distribution"]))
+except Exception as e:
+    st.warning("⚠ Unable to load this widget.")
+    with st.expander("Optional details"):
+        st.write(str(e))
 
 # ===========================================================
-# SECTION 4: Occupancy Intelligence
+# SECTION 4: Occupancy Intelligence (Error Boundary)
 # ===========================================================
 st.write("---")
 st.write("### 📈 Occupancy Intelligence")
-o_col1, o_col2 = st.columns([1, 2])
-with o_col1:
-    st.metric("Beds Occupied", f"{current_residents:,} of {total_capacity:,}")
-    st.metric("Available Inventory", f"{available_beds:,} vacant beds")
-with o_col2:
-    # Small occupancy display chart
-    st.bar_chart(pd.DataFrame({
-        "Beds": ["Occupied", "Vacant"],
-        "Count": [current_residents, available_beds]
-    }).set_index("Beds"))
+try:
+    o_col1, o_col2 = st.columns([1, 2])
+    with o_col1:
+        st.metric("Beds Occupied", f"{current_residents:,} of {total_capacity:,}")
+        st.metric("Available Inventory", f"{available_beds:,} vacant beds")
+    with o_col2:
+        st.bar_chart(pd.DataFrame({
+            "Beds": ["Occupied", "Vacant"],
+            "Count": [current_residents, available_beds]
+        }).set_index("Beds"))
+except Exception as e:
+    st.warning("⚠ Unable to load this widget.")
+    with st.expander("Optional details"):
+        st.write(str(e))
 
 # ===========================================================
-# SECTION 5: Community Engagement & Interests
+# SECTION 5: Community Engagement & Interests (Error Boundary)
 # ===========================================================
 st.write("---")
 st.write("### 🏆 Top Resident Interests")
 
-top_interests = profile_value(profile, ("Top Interests", "Interests"), {})
-interest_dataframe = build_unique_interest_dataframe(top_interests)
+try:
+    top_interests = profile_value(profile, ("Top Interests", "Interests"), {})
+    interest_dataframe = build_unique_interest_dataframe(top_interests)
 
-if not interest_dataframe.empty:
-    chart_df = interest_dataframe.head(10).set_index("Interest")
-    st.bar_chart(chart_df[["Resident Signal"]])
-else:
-    st.info("No resident interests data available.")
+    if not interest_dataframe.empty:
+        chart_df = interest_dataframe.head(10).set_index("Interest")
+        st.bar_chart(chart_df[["Resident Signal"]])
+    else:
+        st.info("No resident interests data available.")
+except Exception as e:
+    st.warning("⚠ Unable to load this widget.")
+    with st.expander("Optional details"):
+        st.write(str(e))
 
 # ===========================================================
-# SECTION 6: AI Property Summary (Section 7)
+# SECTION 6: AI Property Summary
 # ===========================================================
 st.write("---")
 st.write("### 🤖 AI Property Summary")
-summary_text = (
-    f"This property ({selected_property}) is classified as a {profile.get('Property Type', 'Commune')}. "
-    f"It currently houses {current_residents} active residents with an average age of {average_age:.1f} years. "
-    f"The cohort primarily consists of {dominant_occupation}s at the '{community_stage}' stage. "
-    f"Resident signals show strong affinity for local interest activities, indicating high readiness for structured community events."
-)
-st.info(summary_text)
+try:
+    summary_text = (
+        f"This property ({selected_property}) is classified as a {profile.get('Property Type', 'Commune')}. "
+        f"It currently houses {current_residents} active residents with an average age of {average_age:.1f} years. "
+        f"The cohort primarily consists of {dominant_occupation}s at the '{community_stage}' stage. "
+        f"Resident signals show strong affinity for local interest activities, indicating high readiness for structured community events."
+    )
+    st.info(summary_text)
+except Exception as e:
+    st.warning("⚠ Unable to load this widget.")
 
 # ===========================================================
-# SECTION 7: Recommended Focus Areas (Section 8)
+# SECTION 7: Recommended Focus Areas
 # ===========================================================
 st.write("---")
 st.write("### 💡 Strategic Insight Cards")
@@ -228,12 +251,17 @@ with ins_col2:
     st.warning("##### ⚠️ Engagement Opportunities\n* Introduce workshops targeting dominant professions.\n* Optimize weekend program spacing.")
 
 # ===========================================================
-# SECTION 8: Active Resident Database
+# SECTION 8: Active Resident Database (Error Boundary)
 # ===========================================================
 st.write("---")
 st.write("### 📜 Active Resident Records")
 
-if not active_property_residents.empty:
-    st.dataframe(active_property_residents, use_container_width=True, hide_index=True)
-else:
-    st.info("No active residents currently recorded for this property today.")
+try:
+    if not active_property_residents.empty:
+        st.dataframe(active_property_residents, use_container_width=True, hide_index=True)
+    else:
+        st.info("No active residents currently recorded for this property today.")
+except Exception as e:
+    st.warning("⚠ Unable to load this widget.")
+    with st.expander("Optional details"):
+        st.write(str(e))

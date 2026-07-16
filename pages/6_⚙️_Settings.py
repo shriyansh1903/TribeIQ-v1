@@ -16,6 +16,7 @@ if str(SRC_DIR) not in sys.path:
 
 from ui.styles import load_css
 from integrations.sync import WardenSyncEngine
+from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 st.set_page_config(
     page_title="TribeIQ - Administration",
@@ -42,44 +43,47 @@ st.markdown("## ⚙️ Administration Center")
 st.markdown("*Centralized system configuration, monitoring, and integration control.*")
 st.write("")
 
-h_col1, h_col2, h_col3, h_col4 = st.columns(4)
-with h_col1:
-    sys_status = "🟢 Operational" if status.get("health") != "Unhealthy" else "🔴 Degraded"
-    st.metric("System Status", sys_status)
-with h_col2:
-    st.metric("Current Version", APP_VERSION)
-with h_col3:
-    last_sync = status.get("last_successful_sync", "Never")
-    if last_sync != "Never" and "T" in str(last_sync):
-        last_sync = str(last_sync).split("T")[0]
-    st.metric("Last Sync", str(last_sync))
-with h_col4:
-    env_str = "Sandbox/Mock" if is_mock else "Production"
-    st.metric("Current Environment", env_str)
+try:
+    h_col1, h_col2, h_col3, h_col4 = st.columns(4)
+    with h_col1:
+        sys_status = "🟢 Operational" if status.get("health") != "Unhealthy" else "🔴 Degraded"
+        st.metric("System Status", sys_status)
+    with h_col2:
+        st.metric("Current Version", APP_VERSION)
+    with h_col3:
+        last_sync = status.get("last_successful_sync", "Never")
+        if last_sync != "Never" and "T" in str(last_sync):
+            last_sync = str(last_sync).split("T")[0]
+        st.metric("Last Sync", str(last_sync))
+    with h_col4:
+        env_str = "Sandbox/Mock" if is_mock else "Production"
+        st.metric("Current Environment", env_str)
 
-act_col1, act_col2, act_col3 = st.columns(3)
-with act_col1:
-    if st.button("🔄 Refresh Status", use_container_width=True):
-        st.rerun()
-with act_col2:
-    if st.button("🔌 Test Warden Connection", use_container_width=True):
-        with st.spinner("Testing connection..."):
-            test_res = engine.test_connection()
-            if test_res.get("success"):
-                st.success(f"✓ Connection Successful! Response time: {test_res['response_time_ms']} ms")
-            else:
-                st.error(f"Connection Failed: {test_res.get('error')}")
-with act_col3:
-    if st.button("⚡ Run Full Sync", type="primary", use_container_width=True):
-        progress_placeholder = st.empty()
-        def progress_callback(msg: str):
-            progress_placeholder.info(f"Sync Progress: {msg}")
-        with st.spinner("Synchronizing with Warden..."):
-            res = engine.sync_everything(progress_callback=progress_callback)
-            if res.get("success"):
-                st.success("Full synchronization completed successfully.")
-            else:
-                st.error(f"Sync failed: {res.get('error')}")
+    act_col1, act_col2, act_col3 = st.columns(3)
+    with act_col1:
+        if st.button("🔄 Refresh Status", use_container_width=True):
+            st.rerun()
+    with act_col2:
+        if st.button("🔌 Test Warden Connection", use_container_width=True):
+            with st.spinner("Testing connection..."):
+                test_res = engine.test_connection()
+                if test_res.get("success"):
+                    st.success(f"✓ Connection Successful! Response time: {test_res['response_time_ms']} ms")
+                else:
+                    st.error(f"Connection Failed: {test_res.get('error')}")
+    with act_col3:
+        if st.button("⚡ Run Full Sync", type="primary", use_container_width=True):
+            progress_placeholder = st.empty()
+            def progress_callback(msg: str):
+                progress_placeholder.info(f"Sync Progress: {msg}")
+            with st.spinner("Synchronizing with Warden..."):
+                res = engine.sync_everything(progress_callback=progress_callback)
+                if res.get("success"):
+                    st.success("Full synchronization completed successfully.")
+                else:
+                    st.error(f"Sync failed: {res.get('error')}")
+except Exception as e:
+    st.warning("⚠ Unable to load system controls.")
 
 st.write("---")
 

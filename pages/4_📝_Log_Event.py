@@ -82,6 +82,7 @@ from ui_data_bridge import (
     get_session_result,
     load_application_data,
 )
+from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 from ui.components import (
     page_header,
@@ -785,26 +786,7 @@ def render_recommendation_context(
         context_status
     )
 
-    render_html(
-        f"""
-        <div class="event-context-card">
-            <div class="event-context-label">
-                LIVE RECOMMENDATION CONTEXT
-            </div>
-
-            <div class="event-context-name">
-                {context_status}
-            </div>
-
-            <div class="event-context-meta">
-                Select one of the recommended events below.
-                The saved real outcome will feed the
-                continuous-learning and attendance-prediction
-                systems.
-            </div>
-        </div>
-        """
-    )
+    st.info(f"**LIVE RECOMMENDATION CONTEXT**\n\n### {context_status}\n\nSelect one of the recommended events below. The saved real outcome will feed the continuous-learning and attendance-prediction systems.")
 
     if major_events:
 
@@ -899,101 +881,26 @@ def render_recommendation_context_card(
     )
 
     if has_date_data:
-
         date_value = (
             formatted_event_date
             if formatted_event_date
             else "Date not assigned"
         )
-
-        render_html(
-            f"""
-            <div class="event-context-card">
-                <div class="event-context-label">
-                    {recommendation_type}
-                </div>
-
-                <div class="event-context-name">
-                    {event_name}
-                </div>
-
-                <div class="event-context-meta">
-                    {category}
-                </div>
-
-                <div style="
-                    display:grid;
-                    grid-template-columns:
-                        repeat(4,minmax(0,1fr));
-                    gap:0.8rem;
-                    margin-top:1rem;
-                ">
-                    <div>
-                        <div class="event-context-label">
-                            SCORE
-                        </div>
-                        <div class="event-context-name">
-                            {final_score:.1f}
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="event-context-label">
-                            DATE
-                        </div>
-                        <div class="event-context-meta">
-                            {date_value}
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="event-context-label">
-                            OCCUPANCY
-                        </div>
-                        <div class="event-context-name">
-                            {occupancy_percent:.1f}%
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="event-context-label">
-                            EXPECTED
-                        </div>
-                        <div class="event-context-name">
-                            {predicted_attendance:,}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="event-context-meta"
-                    style="margin-top:0.8rem;">
-                    Predicted active residents:
-                    {active_residents:,}
-                </div>
-            </div>
-            """
-        )
-
+        with st.container(border=True):
+            st.markdown(f"**{recommendation_type}**")
+            st.markdown(f"#### {event_name}")
+            st.caption(category)
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Score", f"{final_score:.1f}")
+            c2.metric("Date", date_value)
+            c3.metric("Occupancy", f"{occupancy_percent:.1f}%")
+            c4.metric("Expected", f"{predicted_attendance:,}")
+            st.caption(f"Predicted active residents: {active_residents:,}")
     else:
-
-        render_html(
-            f"""
-            <div class="event-context-card">
-                <div class="event-context-label">
-                    {recommendation_type}
-                </div>
-
-                <div class="event-context-name">
-                    {event_name}
-                </div>
-
-                <div class="event-context-meta">
-                    {category} · Recommendation score:
-                    {final_score:.1f}
-                </div>
-            </div>
-            """
-        )
+        with st.container(border=True):
+            st.markdown(f"**{recommendation_type}**")
+            st.markdown(f"#### {event_name}")
+            st.caption(f"{category} · Recommendation score: {final_score:.1f}")
 
 
 # ===========================================================
@@ -1504,7 +1411,8 @@ else:
 # Event Outcome Form
 # ===========================================================
 
-with st.container():
+try:
+    container = st.container()
 
     st.markdown("### 📋 1. Event Details")
     detail_col1, detail_col2 = st.columns(2)
@@ -1632,8 +1540,17 @@ with st.container():
         try:
             from integrations.vendor_db import load_vendors
             vendors_df = load_vendors()
-            active_vendors = vendors_df[vendors_df["Active / Inactive Status"] == "Active"]
-            vendor_options = [f"{row['Vendor Name']} [{row['Vendor ID']}]" for _, row in active_vendors.iterrows()]
+            
+            # Schema-safe columns
+            status_col = safe_status_column(vendors_df) or "Active / Inactive Status"
+            name_col = safe_get_column(vendors_df, ["Vendor Name", "Name"]) or "Vendor Name"
+            id_col = safe_get_column(vendors_df, ["Vendor ID", "ID"]) or "Vendor ID"
+            base_col = safe_get_column(vendors_df, ["Base Amount", "Cost"]) or "Base Amount"
+            gst_pct_col = safe_get_column(vendors_df, ["GST Percentage", "GST %"]) or "GST Percentage"
+            cat_col = safe_get_column(vendors_df, ["Vendor Category", "Category"]) or "Vendor Category"
+            
+            active_vendors = vendors_df[vendors_df[status_col].astype(str).str.strip().str.lower() == "active"] if status_col in vendors_df.columns else vendors_df
+            vendor_options = [f"{row[name_col]} [{row[id_col]}]" for _, row in active_vendors.iterrows()] if name_col in active_vendors.columns and id_col in active_vendors.columns else []
         except Exception:
             vendor_options = []
             
@@ -1649,13 +1566,13 @@ with st.container():
                 c_cost, c_gst = st.columns(2)
                 with c_cost:
                     v_id = lbl.split("[")[-1].rstrip("]") if "[" in lbl else "other"
-                    db_row = vendors_df[vendors_df["Vendor ID"] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty else None
-                    db_base = float(db_row["Base Amount"]) if db_row is not None else 0.0
-                    db_gst_pct = int(db_row["GST Percentage"]) if db_row is not None else 18
+                    db_row = vendors_df[vendors_df[id_col] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty and id_col in vendors_df.columns else None
+                    db_base = float(db_row[base_col]) if db_row is not None and base_col in db_row else 0.0
+                    db_gst_pct = int(db_row[gst_pct_col]) if db_row is not None and gst_pct_col in db_row else 18
                     
                     base_cost = st.number_input(f"Base Cost for {lbl.split(' [')[0]} (INR)", min_value=0.0, value=db_base, key=f"base_cost_{v_id}")
                 with c_gst:
-                    gst_pct = st.selectbox(f"GST % for {lbl.split(' [')[0]}", options=[12, 18], index=[12, 18].index(db_gst_pct), key=f"gst_pct_{v_id}")
+                    gst_pct = st.selectbox(f"GST % for {lbl.split(' [')[0]}", options=[12, 18], index=([12, 18].index(db_gst_pct) if db_gst_pct in [12, 18] else 1), key=f"gst_pct_{v_id}")
                 
                 gst_amt = round((base_cost * gst_pct) / 100.0, 2)
                 final_cost = round(base_cost + gst_amt, 2)
@@ -1663,7 +1580,7 @@ with st.container():
                 vendors_data_list.append({
                     "vendor_id": v_id,
                     "name": lbl.split(" [")[0],
-                    "category": db_row["Vendor Category"] if db_row is not None else "Miscellaneous",
+                    "category": db_row[cat_col] if db_row is not None and cat_col in db_row else "Miscellaneous",
                     "base_cost": base_cost,
                     "gst_percent": gst_pct,
                     "gst_amount": gst_amt,
@@ -1788,6 +1705,11 @@ with st.container():
         type="primary",
         use_container_width=True,
     )
+except Exception as e:
+    submitted = False
+    st.warning("⚠ Unable to load this widget.")
+    with st.expander("Optional details"):
+        st.write(str(e))
 
 
 # ===========================================================

@@ -10,6 +10,7 @@ from integrations.stall_db import load_stalls
 from integrations.material_db import load_materials
 from integrations.calendar_db import load_calendar_events
 from intelligence.occupancy_forecaster import load_resident_export, forecast_property_occupancy
+from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 def render_executive_dashboard(history_df):
     st.markdown("## 👔 Executive Decision-Making Suite")
@@ -102,17 +103,17 @@ def render_executive_dashboard(history_df):
             insights.append(f"• **Highest Participation**: '{top_cat}' programs generated the highest average turnout rate.")
             
     if not df_stalls.empty:
-        total_st_rev = df_stalls["Rental Amount"].sum()
+        ra_col = safe_get_column(df_stalls, ["Rental Amount", "Amount"])
+        total_st_rev = df_stalls[ra_col].sum() if ra_col else 0.0
         insights.append(f"• **Stall Revenue Contribution**: Logged ₹{total_st_rev:,.0f} in additional vendor space rentals.")
         
     if not df_vendors.empty:
-        # Schema-safe vendor column detection
-        name_col = next((c for c in ["Vendor Name", "Name", "Vendor"] if c in df_vendors.columns), None)
-        events_col = next((c for c in ["Total Events", "Events"] if c in df_vendors.columns), None)
+        name_col = safe_get_column(df_vendors, ["Vendor Name", "Name", "Vendor"])
+        events_col = safe_get_column(df_vendors, ["Total Events", "Events"])
         
         top_vend = "N/A"
-        if name_col:
-            if events_col:
+        if name_col and name_col in df_vendors.columns:
+            if events_col and events_col in df_vendors.columns:
                 top_vend = df_vendors.sort_values(by=events_col, ascending=False).iloc[0][name_col]
             else:
                 top_vend = df_vendors.iloc[0][name_col]
@@ -188,35 +189,53 @@ def render_executive_dashboard(history_df):
         col_v1, col_v2 = st.columns(2)
         with col_v1:
             st.write("#### Stall Space Revenues")
-            if not df_stalls.empty:
-                st_rev_df = df_stalls.groupby("Event Name")["Rental Amount"].sum().reset_index()
-                st.bar_chart(st_rev_df.set_index("Event Name"))
-            else:
-                st.info("No stall spaces rented.")
+            try:
+                if not df_stalls.empty:
+                    ra_col = safe_get_column(df_stalls, ["Rental Amount", "Amount"])
+                    st_rev_df = df_stalls.groupby("Event Name")[ra_col].sum().reset_index() if ra_col else pd.DataFrame()
+                    if not st_rev_df.empty:
+                        st.bar_chart(st_rev_df.set_index("Event Name"))
+                    else:
+                        st.info("No stall spaces rented.")
+                else:
+                    st.info("No stall spaces rented.")
+            except Exception as e:
+                st.warning("⚠ Unable to load this widget.")
         with col_v2:
             st.write("#### Active Vendor Database")
-            if not df_vendors.empty:
-                name_col = next((c for c in ["Vendor Name", "Name", "Vendor"] if c in df_vendors.columns), None)
-                events_col = next((c for c in ["Total Events", "Events"] if c in df_vendors.columns), None)
-                cost_col = next((c for c in ["Average Cost", "Avg Cost"] if c in df_vendors.columns), None)
-                
-                cols_to_use = [c for c in [name_col, events_col, cost_col] if c is not None]
-                if cols_to_use:
-                    v_exp_df = df_vendors.head(10)[cols_to_use]
-                    st.dataframe(v_exp_df, use_container_width=True, hide_index=True)
+            try:
+                if not df_vendors.empty:
+                    name_col = safe_get_column(df_vendors, ["Vendor Name", "Name", "Vendor"])
+                    events_col = safe_get_column(df_vendors, ["Total Events", "Events"])
+                    cost_col = safe_get_column(df_vendors, ["Average Cost", "Avg Cost"])
+                    
+                    cols_to_use = [c for c in [name_col, events_col, cost_col] if c is not None and c in df_vendors.columns]
+                    if cols_to_use:
+                        v_exp_df = df_vendors.head(10)[cols_to_use]
+                        st.dataframe(v_exp_df, use_container_width=True, hide_index=True)
+                    else:
+                        st.info("No active vendors.")
                 else:
                     st.info("No active vendors.")
-            else:
-                st.info("No active vendors.")
+            except Exception as e:
+                st.warning("⚠ Unable to load this widget.")
                 
     # Tab 3: Materials & Finance
     with viz_tab3:
         st.write("#### Planned vs Actual Budgets")
-        if not filtered_history.empty:
-            bud_df = filtered_history.groupby("Event Name")[["Budget Planned", "Budget Spent"]].sum()
-            st.bar_chart(bud_df)
-        else:
-            st.info("No budgets logged.")
+        try:
+            if not filtered_history.empty:
+                bp_col = safe_get_column(filtered_history, ["Budget Planned", "Planned Budget", "Budget"])
+                bs_col = safe_get_column(filtered_history, ["Budget Spent", "Spent Budget", "Actual Budget", "Spent"])
+                if bp_col and bs_col:
+                    bud_df = filtered_history.groupby("Event Name")[[bp_col, bs_col]].sum()
+                    st.bar_chart(bud_df)
+                else:
+                    st.info("No budgets logged.")
+            else:
+                st.info("No budgets logged.")
+        except Exception as e:
+            st.warning("⚠ Unable to load this widget.")
             
     # Tab 4: AI Performance Metrics
     with viz_tab4:

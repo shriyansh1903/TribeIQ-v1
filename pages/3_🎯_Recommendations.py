@@ -30,6 +30,7 @@ from recommendation_date_bridge import (
     enrich_recommendation_result_with_best_dates,
 )
 from ui.styles import load_css
+from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 # Load CSS Theme
 load_css()
@@ -88,7 +89,7 @@ with col_h1:
 with col_h2:
     st.metric("Total Residents", f"{profile.get('Resident Count', 100)}")
 with col_h3:
-    st.metric("Community Stage", profile.get("Community Stage", "Mature"))
+    st.metric("Community Stage", profile.get("Community Stage", "Growing"))
 
 # Actions row
 col_act1, col_act2, col_act3 = st.columns(3)
@@ -200,95 +201,110 @@ rec_result = get_session_result(st.session_state)
 
 if rec_result and isinstance(rec_result, dict):
     # ===========================================================
-    # SECTION 2: Recommendation Summary
+    # SECTION 2: Recommendation Summary (Error Boundary)
     # ===========================================================
     st.write("---")
     st.write("### 👔 Executive Summary")
     
-    major_event = rec_result.get("major_event", {})
-    minor_events = rec_result.get("minor_events", [])
-    
-    avg_score = rec_result.get("average_score", 85.0)
-    expected_turnout = major_event.get("predicted_turnout_rate", 78.5) if isinstance(major_event, dict) else 78.5
-    
-    s_col1, s_col2, s_col3 = st.columns(3)
-    with s_col1:
-        st.metric("Major Event Recommendation", major_event.get("event_name", "N/A") if isinstance(major_event, dict) else "N/A")
-    with s_col2:
-        st.metric("Minor Events Selected", len(minor_events))
-    with s_col3:
-        st.metric("Avg Recommendation Score", f"{avg_score:.1f}")
+    try:
+        major_event = rec_result.get("major_event", {})
+        minor_events = rec_result.get("minor_events", [])
+        
+        avg_score = rec_result.get("average_score", 85.0)
+        expected_turnout = major_event.get("predicted_turnout_rate", 78.5) if isinstance(major_event, dict) else 78.5
+        
+        s_col1, s_col2, s_col3 = st.columns(3)
+        with s_col1:
+            st.metric("Major Event Recommendation", major_event.get("event_name", "N/A") if isinstance(major_event, dict) else "N/A")
+        with s_col2:
+            st.metric("Minor Events Selected", len(minor_events))
+        with s_col3:
+            st.metric("Avg Recommendation Score", f"{avg_score:.1f}")
+    except Exception as e:
+        st.warning("⚠ Unable to load this widget.")
 
     # ===========================================================
-    # SECTION 3: Major Event Card
+    # SECTION 3: Major Event Card (Error Boundary)
     # ===========================================================
     st.write("---")
     st.write("### ⭐ Top Major Event Match")
     
-    if isinstance(major_event, dict):
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            st.success(f"#### {major_event.get('event_name', 'N/A')}")
-            st.caption(f"Category: {major_event.get('category', 'N/A')}  •  Type: Major Event")
-            st.metric("Recommendation Match Score", f"{major_event.get('final_score', 92.0):.1f}")
-        with col_m2:
-            st.write("**Operational Intelligence:**")
-            st.markdown(f"* **Best Fit Date:** {major_event.get('formatted_event_date', 'Saturday, 18th July')}")
-            st.markdown(f"* **Predicted Turnout:** {expected_turnout:.1f}%")
-            st.markdown(f"* **Suggested Budget:** INR 4,000 - 8,000")
-            st.markdown(f"* **Vendors Needed:** Band, Sound, Lighting")
+    try:
+        if isinstance(major_event, dict) and major_event:
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                st.success(f"#### {major_event.get('event_name', 'N/A')}")
+                st.caption(f"Category: {major_event.get('category', 'N/A')}  •  Type: Major Event")
+                st.metric("Recommendation Match Score", f"{major_event.get('final_score', 92.0):.1f}")
+            with col_m2:
+                st.write("**Operational Intelligence:**")
+                st.markdown(f"* **Best Fit Date:** {major_event.get('formatted_event_date', 'Saturday, 18th July')}")
+                st.markdown(f"* **Predicted Turnout:** {expected_turnout:.1f}%")
+                st.markdown(f"* **Suggested Budget:** INR 4,000 - 8,000")
+                st.markdown(f"* **Vendors Needed:** Band, Sound, Lighting")
+    except Exception as e:
+        st.warning("⚠ Unable to load this widget.")
 
     # ===========================================================
-    # SECTION 4: Minor Event Cards
+    # SECTION 4: Minor Event Cards (Error Boundary)
     # ===========================================================
     st.write("---")
     st.write("### 🎭 Supporting Alternative Matches (Minor Events)")
     
-    if minor_events:
-        cols_minor = st.columns(len(minor_events))
-        for idx, m_ev in enumerate(minor_events):
-            if not isinstance(m_ev, dict):
-                continue
-            with cols_minor[idx]:
-                st.info(f"##### {m_ev.get('event_name', 'N/A')}")
-                st.caption(f"Category: {m_ev.get('category', 'N/A')}")
-                st.metric("Match Score", f"{m_ev.get('final_score', 80.0):.1f}")
-                st.markdown(f"**Best Date:** {m_ev.get('formatted_event_date', 'Weekday')}")
-                st.markdown(f"**Turnout:** {m_ev.get('predicted_turnout_rate', 70.0):.1f}%")
+    try:
+        if minor_events:
+            cols_minor = st.columns(len(minor_events))
+            for idx, m_ev in enumerate(minor_events):
+                if not isinstance(m_ev, dict):
+                    continue
+                with cols_minor[idx]:
+                    st.info(f"##### {m_ev.get('event_name', 'N/A')}")
+                    st.caption(f"Category: {m_ev.get('category', 'N/A')}")
+                    st.metric("Match Score", f"{m_ev.get('final_score', 80.0):.1f}")
+                    st.markdown(f"**Best Date:** {m_ev.get('formatted_event_date', 'Weekday')}")
+                    st.markdown(f"**Turnout:** {m_ev.get('predicted_turnout_rate', 70.0):.1f}%")
+    except Exception as e:
+        st.warning("⚠ Unable to load this widget.")
 
     # ===========================================================
-    # SECTION 5: Spacing Spans Timeline Preview
+    # SECTION 5: Spacing Spans Timeline Preview (Error Boundary)
     # ===========================================================
     st.write("---")
     st.write("### 📅 Monthly Schedule Spacing & Spans Preview")
     
-    timeline_rows = []
-    if isinstance(major_event, dict) and major_event:
-        timeline_rows.append({"Event": major_event.get("event_name"), "Type": "Major", "Date": major_event.get("formatted_event_date", "Day 10")})
-    for m_ev in minor_events:
-        if isinstance(m_ev, dict):
-            timeline_rows.append({"Event": m_ev.get("event_name"), "Type": "Minor", "Date": m_ev.get("formatted_event_date", "Day 15")})
-            
-    if timeline_rows:
-        st.dataframe(pd.DataFrame(timeline_rows), use_container_width=True, hide_index=True)
-    else:
-        st.info("No schedule timeline rows parsed.")
+    try:
+        timeline_rows = []
+        if isinstance(major_event, dict) and major_event:
+            timeline_rows.append({"Event": major_event.get("event_name"), "Type": "Major", "Date": major_event.get("formatted_event_date", "Day 10")})
+        for m_ev in minor_events:
+            if isinstance(m_ev, dict):
+                timeline_rows.append({"Event": m_ev.get("event_name"), "Type": "Minor", "Date": m_ev.get("formatted_event_date", "Day 15")})
+                
+        if timeline_rows:
+            st.dataframe(pd.DataFrame(timeline_rows), use_container_width=True, hide_index=True)
+        else:
+            st.info("No schedule timeline rows parsed.")
+    except Exception as e:
+        st.warning("⚠ Unable to load this widget.")
 
     # ===========================================================
-    # SECTION 6: Attendance Intelligence
+    # SECTION 6: Attendance Intelligence (Error Boundary)
     # ===========================================================
     st.write("---")
     st.write("### 📊 Turnout Intelligence")
     
-    chart_data = []
-    if isinstance(major_event, dict) and major_event:
-        chart_data.append({"Event Name": major_event.get("event_name"), "Turnout Score %": float(major_event.get("predicted_turnout_rate", 75.0))})
-    for m_ev in minor_events:
-        if isinstance(m_ev, dict):
-            chart_data.append({"Event Name": m_ev.get("event_name"), "Turnout Score %": float(m_ev.get("predicted_turnout_rate", 70.0))})
-            
-    if chart_data:
-        st.bar_chart(pd.DataFrame(chart_data).set_index("Event Name"))
+    try:
+        chart_data = []
+        if isinstance(major_event, dict) and major_event:
+            chart_data.append({"Event Name": major_event.get("event_name"), "Turnout Score %": float(major_event.get("predicted_turnout_rate", 75.0))})
+        for m_ev in minor_events:
+            if isinstance(m_ev, dict):
+                chart_data.append({"Event Name": m_ev.get("event_name"), "Turnout Score %": float(m_ev.get("predicted_turnout_rate", 70.0))})
+                
+        if chart_data:
+            st.bar_chart(pd.DataFrame(chart_data).set_index("Event Name"))
+    except Exception as e:
+        st.warning("⚠ Unable to load this widget.")
 
     # ===========================================================
     # SECTION 7: Strategic Focus Area Insights
@@ -303,22 +319,33 @@ if rec_result and isinstance(rec_result, dict):
         st.warning("##### ⚠️ Risks & Considerations\n* Procurement lead times require immediate vendor reservation.\n* Verify weather constraints for outdoor segments.")
 
     # ===========================================================
-    # SECTION 8: All Evaluated Candidate Rankings
+    # SECTION 8: All Evaluated Candidate Rankings (Error Boundary)
     # ===========================================================
     st.write("---")
     st.write("### 📋 All Evaluated Event Candidates")
     
-    candidates = rec_result.get("ranked_candidates", rec_result.get("candidates", []))
-    if candidates:
-        df_cand = pd.DataFrame(candidates)
-        cols_to_show = [c for c in ["event_name", "category", "base_score", "final_score", "rank"] if c in df_cand.columns]
-        sort_col = "final_score" if "final_score" in df_cand.columns else (cols_to_show[0] if cols_to_show else None)
-        if sort_col:
-            st.dataframe(df_cand[cols_to_show].sort_values(by=sort_col, ascending=False).head(10), use_container_width=True, hide_index=True)
+    try:
+        candidates = rec_result.get("ranked_candidates", rec_result.get("candidates", []))
+        if candidates:
+            df_cand = pd.DataFrame(candidates)
+            cols_to_show = [c for c in ["event_name", "category", "base_score", "final_score", "rank"] if safe_column_exists(df_cand, c)]
+            
+            # Map standard col names
+            display_cols = []
+            for col in cols_to_show:
+                display_cols.append(safe_get_column(df_cand, [col]))
+                
+            sort_col = safe_get_column(df_cand, ["final_score", "score"])
+            if sort_col and sort_col in df_cand.columns:
+                st.dataframe(df_cand[display_cols].sort_values(by=sort_col, ascending=False).head(10), use_container_width=True, hide_index=True)
+            else:
+                st.dataframe(df_cand[display_cols].head(10), use_container_width=True, hide_index=True)
         else:
-            st.dataframe(df_cand[cols_to_show].head(10), use_container_width=True, hide_index=True)
-    else:
-        st.info("No candidates list returned.")
+            st.info("No candidates list returned.")
+    except Exception as e:
+        st.warning("⚠ Unable to load this widget.")
+        with st.expander("Optional details"):
+            st.write(str(e))
 
 else:
     st.info("No recommendations generated for this session yet. Select a property and click 'Generate AI Recommendations' above to run the pipeline.")
