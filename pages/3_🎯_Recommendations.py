@@ -97,7 +97,25 @@ with col_act1:
         with st.spinner("Analyzing demographics and history..."):
             res = generate_property_recommendations(selected_property, application_data)
             if res:
-                enriched = enrich_recommendation_result_with_best_dates(res, selected_property, application_data)
+                today = datetime.date.today()
+                if today.month == 12:
+                    planning_year = today.year + 1
+                    planning_month = 1
+                else:
+                    planning_year = today.year
+                    planning_month = today.month + 1
+                
+                history_df = application_data.get("history", pd.DataFrame())
+                start_date_val = datetime.date(planning_year, planning_month, 1)
+                
+                enriched = enrich_recommendation_result_with_best_dates(
+                    recommendation_result=res,
+                    property_name=selected_property,
+                    year=planning_year,
+                    month=planning_month,
+                    history=history_df,
+                    start_date=start_date_val
+                )
                 save_result_to_session(st.session_state, enriched)
                 st.success("Recommendations generated successfully!")
                 st.rerun()
