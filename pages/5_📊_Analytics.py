@@ -295,6 +295,18 @@ page_header(
 
 
 # ===========================================================
+# Workspace View Mode Selection
+# ===========================================================
+view_mode = st.radio("Workspace Mode", ["👔 Executive Dashboard", "🎯 Operational Analytics"], horizontal=True)
+
+if view_mode == "👔 Executive Dashboard":
+    hist_df = load_history_data()
+    from integrations.executive_analytics import render_executive_dashboard
+    render_executive_dashboard(hist_df)
+    st.stop()
+
+
+# ===========================================================
 # Load Data
 # ===========================================================
 
