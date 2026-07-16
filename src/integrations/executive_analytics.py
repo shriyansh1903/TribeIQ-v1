@@ -106,7 +106,16 @@ def render_executive_dashboard(history_df):
         insights.append(f"• **Stall Revenue Contribution**: Logged ₹{total_st_rev:,.0f} in additional vendor space rentals.")
         
     if not df_vendors.empty:
-        top_vend = df_vendors.sort_values(by="Total Events", ascending=False).iloc[0]["Vendor Name"] if "Total Events" in df_vendors.columns and not df_vendors.empty else "N/A"
+        # Schema-safe vendor column detection
+        name_col = next((c for c in ["Vendor Name", "Name", "Vendor"] if c in df_vendors.columns), None)
+        events_col = next((c for c in ["Total Events", "Events"] if c in df_vendors.columns), None)
+        
+        top_vend = "N/A"
+        if name_col:
+            if events_col:
+                top_vend = df_vendors.sort_values(by=events_col, ascending=False).iloc[0][name_col]
+            else:
+                top_vend = df_vendors.iloc[0][name_col]
         insights.append(f"• **Vendor Engagement**: Local supplier '{top_vend}' was contracted most frequently for event execution.")
         
     if not insights:
@@ -187,8 +196,16 @@ def render_executive_dashboard(history_df):
         with col_v2:
             st.write("#### Active Vendor Database")
             if not df_vendors.empty:
-                v_exp_df = df_vendors.head(10)[["Vendor Name", "Total Events", "Average Cost"]]
-                st.dataframe(v_exp_df, use_container_width=True, hide_index=True)
+                name_col = next((c for c in ["Vendor Name", "Name", "Vendor"] if c in df_vendors.columns), None)
+                events_col = next((c for c in ["Total Events", "Events"] if c in df_vendors.columns), None)
+                cost_col = next((c for c in ["Average Cost", "Avg Cost"] if c in df_vendors.columns), None)
+                
+                cols_to_use = [c for c in [name_col, events_col, cost_col] if c is not None]
+                if cols_to_use:
+                    v_exp_df = df_vendors.head(10)[cols_to_use]
+                    st.dataframe(v_exp_df, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No active vendors.")
             else:
                 st.info("No active vendors.")
                 

@@ -48,10 +48,10 @@ with col_h3:
 with col_h4:
     st.metric("Total Settled Procurement", f"₹{total_spend:,.0f}")
 
-# Action buttons
 col_qa1, col_qa2 = st.columns(2)
 with col_qa1:
-    st.markdown("**Actions:** [📥 Export Vendor Catalog CSV](Vendor_Management)")
+    csv_v = vendors_df.to_csv(index=False).encode("utf-8") if not vendors_df.empty else b""
+    st.download_button("📥 Export Vendor Catalog CSV", data=csv_v, file_name="vendors_catalog.csv", mime="text/csv", use_container_width=True)
 with col_qa2:
     # Trigger refresh
     if st.button("🔄 Reload Registry Data", use_container_width=True):

@@ -234,25 +234,7 @@ with st.expander("🚨 Emergency Database Import (Fallback)", expanded=False):
             except Exception as e:
                 st.error(f"Emergency import failed: {e}")
 
-st.write("---")
-
-# ===========================================================
-# SECTION 6: Security
-# ===========================================================
-st.markdown("### 🔒 Security")
-
-sec_col1, sec_col2 = st.columns(2)
-with sec_col1:
-    with st.container(border=True):
-        st.markdown("**API Credentials**")
-        st.text_input("Warden API Key", value="************************", type="password", disabled=True)
-        st.text_input("NVIDIA API Key", value="************************", type="password", disabled=True)
-with sec_col2:
-    with st.container(border=True):
-        st.markdown("**Environment & Authentication**")
-        st.write("**Environment Security:** `Protected`")
-        st.write("**Authentication Level:** `Enterprise SSO Enabled`")
-        st.write("**Secrets Vault:** `Connected & Synced`")
+st.write("")
 
 st.write("---")
 

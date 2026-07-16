@@ -1504,10 +1504,7 @@ else:
 # Event Outcome Form
 # ===========================================================
 
-with st.form(
-    "event_outcome_form",
-    clear_on_submit=False,
-):
+with st.container():
 
     st.markdown("### 📋 1. Event Details")
     detail_col1, detail_col2 = st.columns(2)
@@ -1786,7 +1783,7 @@ with st.form(
         help="Key takeaways or recommendations for improvement in future community events."
     )
 
-    submitted = st.form_submit_button(
+    submitted = st.button(
         "Save Event Outcome",
         type="primary",
         use_container_width=True,

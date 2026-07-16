@@ -194,7 +194,11 @@ if user_query:
             # Simulated typing delay (unchanged)
             time.sleep(0.8)
 
-            st.write(response)
+            def stream_response(text):
+                for word in text.split(" "):
+                    yield word + " "
+                    time.sleep(0.015)
+            st.write_stream(stream_response(response))
 
             # Smart action tokens (unchanged)
             if "[ACTION: recommendations]" in response:

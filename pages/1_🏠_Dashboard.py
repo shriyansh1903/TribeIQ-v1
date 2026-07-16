@@ -86,13 +86,13 @@ st.write(f"TribeIQ is monitoring **{total_props} Properties** with **{active_res
 # Quick Actions row
 col_qa1, col_qa2, col_qa3, col_qa4 = st.columns(4)
 with col_qa1:
-    st.markdown("[🎯 Generate Recommendations](Smart_Recommendations)")
+    st.page_link("pages/3_🎯_Recommendations.py", label="Generate Recommendations", icon="🎯", use_container_width=True)
 with col_qa2:
-    st.markdown("[📅 Open Planning Calendar](Community_Calendar)")
+    st.page_link("pages/8_📅_Community_Calendar.py", label="Open Planning Calendar", icon="📅", use_container_width=True)
 with col_qa3:
-    st.markdown("[📝 Log Actual Event](Log_Event)")
+    st.page_link("pages/4_📝_Log_Event.py", label="Log Actual Event", icon="📝", use_container_width=True)
 with col_qa4:
-    st.markdown("[⚙️ Warden Settings & Sync](Settings)")
+    st.page_link("pages/6_⚙️_Settings.py", label="Warden Settings & Sync", icon="⚙️", use_container_width=True)
 
 # ===========================================================
 # SECTION 2: Executive KPI Cards
@@ -130,7 +130,18 @@ today_str = today.strftime("%Y-%m-%d")
 todays_ev_count = len(df_calendar[df_calendar["Date"] == today_str]) if not df_calendar.empty else 0
 upcoming_ev_count = len(df_calendar[df_calendar["Date"] > today_str]) if not df_calendar.empty else 0
 pending_proc = len(df_materials[df_materials["Procurement Status"].isin(["Not Ordered", "Ordered"])]) if not df_materials.empty else 0
-active_vendors_count = len(df_vendors[df_vendors["Status"] == "Active"]) if not df_vendors.empty else 0
+# Schema-safe vendor status column detection
+active_vendors_count = 0
+if not df_vendors.empty:
+    status_col = None
+    for col in ["Status", "status", "Vendor Status", "Active / Inactive Status"]:
+        if col in df_vendors.columns:
+            status_col = col
+            break
+    if status_col:
+        active_vendors_count = len(df_vendors[df_vendors[status_col].astype(str).str.strip().str.lower() == "active"])
+    else:
+        active_vendors_count = len(df_vendors)
 stalls_count = len(df_stalls[df_stalls["Status"].isin(["Reserved", "Confirmed"])]) if not df_stalls.empty else 0
 
 o_col1, o_col2, o_col3, o_col4, o_col5 = st.columns(5)
@@ -230,7 +241,7 @@ if not df_calendar.empty:
 else:
     st.info("No scheduled events in calendar. Launch recommendations to plan next month.")
 
-st.markdown("[📅 Open Community Calendar page to adjust dates](Community_Calendar)")
+st.page_link("pages/8_📅_Community_Calendar.py", label="Open Community Calendar page to adjust dates", icon="📅", use_container_width=True)
 
 # ===========================================================
 # SECTION 8: Recent Activity Timeline
