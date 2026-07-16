@@ -2062,11 +2062,9 @@ if submitted:
     )
 
     if history_saved:
-        try:
-            from integrations.vendor_db import update_vendor_statistics
-            update_vendor_statistics()
-            
-            if has_stalls:
+        # 1. Stalls addition
+        if has_stalls:
+            try:
                 from integrations.stall_db import add_stalls_for_event
                 add_stalls_for_event(
                     event_id=unique_event_id,
@@ -2075,8 +2073,12 @@ if submitted:
                     property_name=selected_property,
                     stalls_list=stalls_data_list
                 )
+            except Exception as e_stall:
+                st.warning(f"Downstream warning (Stalls update): {e_stall}")
                 
-            if requires_materials:
+        # 2. Materials addition
+        if requires_materials:
+            try:
                 from integrations.material_db import add_materials_for_event
                 add_materials_for_event(
                     event_id=unique_event_id,
@@ -2085,8 +2087,53 @@ if submitted:
                     property_name=selected_property,
                     materials_list=materials_data_list
                 )
-        except Exception:
-            pass
+            except Exception as e_mat:
+                st.warning(f"Downstream warning (Materials update): {e_mat}")
+
+        # 3. Calendar Status update
+        try:
+            from integrations.calendar_db import load_calendar_events, save_calendar_event
+            df_cal = load_calendar_events()
+            if not df_cal.empty:
+                date_str = event_date.strftime("%Y-%m-%d")
+                matches = df_cal[
+                    (df_cal["Property"].astype(str).str.strip().str.lower() == selected_property.strip().lower()) &
+                    (df_cal["Event Name"].astype(str).str.strip().str.lower() == selected_event_name.strip().lower()) &
+                    ((df_cal["Date"] == date_str) | (df_cal["Recommended Date"] == date_str))
+                ]
+                if not matches.empty:
+                    evt_dict = matches.iloc[0].to_dict()
+                    evt_dict["Status"] = "Completed"
+                    evt_dict["Approved Date"] = date_str
+                    evt_dict["Completion Timestamp"] = logged_timestamp
+                    evt_dict["Completed By"] = "Community Manager"
+                    save_calendar_event(evt_dict)
+        except Exception as e_cal:
+            st.warning(f"Downstream warning (Calendar update): {e_cal}")
+
+        # 4. Learning Pipeline & Profiler Run
+        try:
+            import cleaner
+            import feature_engineering
+            import profile_generator
+
+            cleaner.run()
+            feature_engineering.run()
+            profile_generator.run()
+        except Exception as e_learn:
+            st.warning(f"Downstream warning (Learning pipeline): {e_learn}")
+
+        # 5. Rebuild stats summaries
+        try:
+            from integrations.vendor_db import update_vendor_statistics
+            from integrations.stall_db import update_stall_summary
+            from integrations.material_db import update_material_summary
+            
+            update_vendor_statistics()
+            update_stall_summary()
+            update_material_summary()
+        except Exception as e_stats:
+            st.warning(f"Downstream warning (Ledgers update): {e_stats}")
 
     # -------------------------------------------------------
     # Save Continuous-Learning Signal
