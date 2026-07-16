@@ -15,6 +15,9 @@ DEFAULT_STALL_CATEGORIES = [
     "Sponsor Booth", "Information Booth", "Miscellaneous"
 ]
 
+import streamlit as st
+
+@st.cache_data
 def load_stalls() -> pd.DataFrame:
     """
     Loads stalls from data/stalls.csv. Returns empty dataframe with columns if missing.
@@ -35,6 +38,7 @@ def load_stalls() -> pd.DataFrame:
     return df
 
 def save_stalls(df: pd.DataFrame) -> None:
+    st.cache_data.clear()
     STALLS_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(STALLS_CSV, index=False)
     update_stall_summary()

@@ -273,6 +273,9 @@ def load_event_data() -> Tuple[
 # Production Data Loading
 # ===========================================================
 
+import streamlit as st
+
+@st.cache_data
 def load_application_data() -> Dict[str, Any]:
 
     residents = prepare_residents()

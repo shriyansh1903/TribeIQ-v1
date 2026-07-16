@@ -72,6 +72,9 @@ def init_master_data_files():
             {"Category": "Electrical", "Status": "Active"}
         ]).to_csv(MATERIAL_CATEGORIES_CSV, index=False)
 
+import streamlit as st
+
+@st.cache_data
 def get_properties_df():
     init_master_data_files()
     return pd.read_csv(PROPERTIES_CSV).fillna("")
@@ -80,34 +83,43 @@ def save_properties_df(df):
     df.to_csv(PROPERTIES_CSV, index=False)
     # Dynamically update the in-memory capacities of other engines
     update_capacities_config()
+    st.cache_data.clear()
 
+@st.cache_data
 def get_event_categories_df():
     init_master_data_files()
     return pd.read_csv(EVENT_CATEGORIES_CSV).fillna("")
 
 def save_event_categories_df(df):
     df.to_csv(EVENT_CATEGORIES_CSV, index=False)
+    st.cache_data.clear()
 
+@st.cache_data
 def get_property_types_df():
     init_master_data_files()
     return pd.read_csv(PROPERTY_TYPES_CSV).fillna("")
 
 def save_property_types_df(df):
     df.to_csv(PROPERTY_TYPES_CSV, index=False)
+    st.cache_data.clear()
 
+@st.cache_data
 def get_vendor_categories_df():
     init_master_data_files()
     return pd.read_csv(VENDOR_CATEGORIES_CSV).fillna("")
 
 def save_vendor_categories_df(df):
     df.to_csv(VENDOR_CATEGORIES_CSV, index=False)
+    st.cache_data.clear()
 
+@st.cache_data
 def get_material_categories_df():
     init_master_data_files()
     return pd.read_csv(MATERIAL_CATEGORIES_CSV).fillna("")
 
 def save_material_categories_df(df):
     df.to_csv(MATERIAL_CATEGORIES_CSV, index=False)
+    st.cache_data.clear()
 
 def update_capacities_config():
     # Update PROPERTY_CAPACITY dynamically in forecasters

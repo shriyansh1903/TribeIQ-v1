@@ -33,6 +33,8 @@ def init_calendar_db():
         except Exception:
             pass
 
+import streamlit as st
+
 def init_rec_history_db():
     if not REC_HISTORY_CSV.exists():
         REC_HISTORY_CSV.parent.mkdir(parents=True, exist_ok=True)
@@ -43,6 +45,7 @@ def init_rec_history_db():
         ])
         df.to_csv(REC_HISTORY_CSV, index=False)
 
+@st.cache_data
 def load_calendar_events():
     init_calendar_db()
     try:
@@ -54,6 +57,7 @@ def load_calendar_events():
 
 def save_calendar_event(event_dict):
     init_calendar_db()
+    st.cache_data.clear()
     df = load_calendar_events()
     
     if "Event ID" not in event_dict or not event_dict["Event ID"]:
@@ -99,6 +103,7 @@ def save_calendar_event(event_dict):
     return event_dict["Event ID"]
 
 def delete_calendar_event(event_id):
+    st.cache_data.clear()
     df = load_calendar_events()
     if not df.empty and event_id in df["Event ID"].values:
         df = df[df["Event ID"] != event_id]
@@ -160,6 +165,7 @@ def sync_approved_event_to_history(event_dict):
     h_df.to_csv(history_csv, index=False)
 
 def save_recommendation_history(rec_dict):
+    st.cache_data.clear()
     init_rec_history_db()
     try:
         df = pd.read_csv(REC_HISTORY_CSV)

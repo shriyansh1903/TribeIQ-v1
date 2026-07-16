@@ -22,6 +22,9 @@ PROCUREMENT_STATUS_BADGES = {
     "Returned": "🟣 Returned"
 }
 
+import streamlit as st
+
+@st.cache_data
 def load_materials() -> pd.DataFrame:
     """
     Loads materials from data/materials.csv. Returns empty dataframe with columns if missing.
@@ -43,6 +46,7 @@ def load_materials() -> pd.DataFrame:
     return df
 
 def save_materials(df: pd.DataFrame) -> None:
+    st.cache_data.clear()
     MATERIALS_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(MATERIALS_CSV, index=False)
     update_material_summary()

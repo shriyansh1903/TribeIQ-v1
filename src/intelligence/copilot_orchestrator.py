@@ -11,8 +11,11 @@ from integrations.calendar_db import load_calendar_events
 from integrations.master_data_db import get_properties_df
 from intelligence.llm_client import create_client
 
+import streamlit as st
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
+@st.cache_data
 def build_system_state_context() -> Dict[str, Any]:
     # 1. Properties
     df_prop = get_properties_df()
@@ -38,10 +41,22 @@ def build_system_state_context() -> Dict[str, Any]:
             pass
             
     # 3. Vendors
-    df_vend = load_vendors()
     vendor_summary = []
-    if not df_vend.empty:
-        vendor_summary = df_vend.head(5)[["Vendor Name", "Category", "Average Rating", "Total Spend"]].to_dict(orient="records")
+    summary_csv = PROJECT_ROOT / "outputs" / "vendor_summary.csv"
+    if summary_csv.exists():
+        try:
+            df_vend = pd.read_csv(summary_csv)
+            if not df_vend.empty:
+                from utils.schema_utils import safe_get_column
+                col_name = safe_get_column(df_vend, ["Vendor Name", "Name"]) or "Vendor Name"
+                col_cat = safe_get_column(df_vend, ["Category", "Vendor Category"]) or "Category"
+                col_rating = safe_get_column(df_vend, ["Average Rating", "Rating"]) or "Average Rating"
+                col_spend = safe_get_column(df_vend, ["Total Spend", "Spend"]) or "Total Spend"
+                
+                cols_to_use = [c for c in [col_name, col_cat, col_rating, col_spend] if c in df_vend.columns]
+                vendor_summary = df_vend.head(5)[cols_to_use].to_dict(orient="records")
+        except Exception:
+            pass
         
     # 4. Stalls
     df_stalls = load_stalls()

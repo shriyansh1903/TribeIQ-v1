@@ -1,0 +1,4 @@
+Vendor ID,Vendor Name,Vendor Category,Contact Person,Phone Number,Email Address,GST Number,Address,Description,Active / Inactive Status,Base Amount,GST Percentage,GST Amount,Final Cost
+VND001,Pune Sound Systems,Sound,Rajesh Kumar,+919876543210,rajesh@punesound.in,27AAAAA1111A1Z1,"Kothrud, Pune",Professional audio equipment and speakers.,Active,10000.0,18,1800.0,11800.0
+VND002,Deccan Lights & LED,Lighting,Amit Joshi,+919922881100,amit@deccanlights.com,27BBBBB2222B2Z2,"Shivajinagar, Pune",Ambient lighting and outdoor LEDs.,Active,8000.0,18,1440.0,9440.0
+VND003,Good Food Catering,Food & Beverage,Sneha Patil,+919555112233,contact@goodfoodpune.com,27CCCCC3333C3Z3,"Viman Nagar, Pune","High-quality catering, snacks and meals.",Active,15000.0,12,1800.0,16800.0

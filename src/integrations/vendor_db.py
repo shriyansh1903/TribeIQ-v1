@@ -32,6 +32,9 @@ def get_vendor_categories() -> List[str]:
             pass
     return categories
 
+import streamlit as st
+
+@st.cache_data
 def load_vendors() -> pd.DataFrame:
     """
     Loads vendors from data/vendors.csv. Creates default sample vendors if missing.
@@ -100,6 +103,7 @@ def load_vendors() -> pd.DataFrame:
     return df
 
 def save_vendors(df: pd.DataFrame) -> None:
+    st.cache_data.clear()
     VENDORS_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(VENDORS_CSV, index=False)
     update_vendor_statistics()
