@@ -427,6 +427,52 @@ metric_row([
 
 
 # ===========================================================
+# Materials & Procurement Metrics Calculations
+# ===========================================================
+try:
+    from integrations.material_db import load_materials
+    import pandas as pd
+    mats_df = load_materials()
+    
+    total_mats_spend = 0.0
+    mats_ordered = 0
+    mats_pending = 0
+    mats_delivered = 0
+    
+    if not mats_df.empty:
+        total_mats_spend = mats_df["Total Cost"].sum()
+        mats_ordered = len(mats_df[mats_df["Procurement Status"] == "Ordered"])
+        mats_pending = len(mats_df[mats_df["Procurement Status"].isin(["Not Ordered", "Ordered"])])
+        mats_delivered = len(mats_df[mats_df["Procurement Status"] == "Delivered"])
+except Exception:
+    total_mats_spend = 0.0
+    mats_ordered = 0
+    mats_pending = 0
+    mats_delivered = 0
+
+st.write("")
+st.write("#### 📦 Materials & Procurement Summary")
+metric_row([
+    {
+        "title": "Total Procurement Spend",
+        "value": f"INR {total_mats_spend:,.0f}"
+    },
+    {
+        "title": "Materials Ordered",
+        "value": f"{mats_ordered}"
+    },
+    {
+        "title": "Materials Pending",
+        "value": f"{mats_pending}"
+    },
+    {
+        "title": "Materials Delivered",
+        "value": f"{mats_delivered}"
+    }
+])
+
+
+# ===========================================================
 # Property Occupancy Overview
 # ===========================================================
 

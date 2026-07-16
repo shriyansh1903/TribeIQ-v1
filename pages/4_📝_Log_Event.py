@@ -1727,6 +1727,53 @@ with st.form(
         tot_stall_rev = sum([s["rental_amount"] for s in stalls_data_list])
         st.write(f"**Total Stall Revenue (auto-calculated):** INR {tot_stall_rev}")
 
+    st.subheader("5.7 Materials & Procurement")
+    requires_materials = st.checkbox("This event requires materials", help="Check this box if this event requires decorations, staging, branding, or equipment.")
+    materials_data_list = []
+    
+    if requires_materials:
+        try:
+            from integrations.vendor_db import load_vendors
+            vendors_df = load_vendors()
+            active_vendors = vendors_df[vendors_df["Active / Inactive Status"] == "Active"]
+            vendor_options = ["None"] + [f"{row['Vendor Name']} [{row['Vendor ID']}]" for _, row in active_vendors.iterrows()]
+        except Exception:
+            vendor_options = ["None"]
+            
+        num_materials = st.number_input("Number of Materials", min_value=1, value=1, step=1)
+        for i in range(int(num_materials)):
+            st.markdown(f"**Material #{i+1} Details**")
+            col_m1, col_m2, col_m3 = st.columns(3)
+            with col_m1:
+                mat_name = st.text_input(f"Material Name #{i+1}", key=f"mat_name_{i}")
+                from integrations.material_db import DEFAULT_MATERIAL_CATEGORIES
+                mat_cat = st.selectbox(f"Material Category #{i+1}", options=DEFAULT_MATERIAL_CATEGORIES, key=f"mat_cat_{i}")
+            with col_m2:
+                qty = st.number_input(f"Quantity Required #{i+1}", min_value=1, value=1, step=1, key=f"mat_qty_{i}")
+                unit = st.text_input(f"Unit (e.g. Pcs, Box, kg) #{i+1}", value="Pcs", key=f"mat_unit_{i}")
+                mat_vendor = st.selectbox(f"Vendor (Optional) #{i+1}", options=vendor_options, key=f"mat_vendor_{i}")
+                v_id = mat_vendor.split("[")[-1].rstrip("]") if "[" in mat_vendor else "None"
+            with col_m3:
+                unit_cost = st.number_input(f"Unit Cost (INR) #{i+1}", min_value=0.0, value=0.0, step=10.0, key=f"mat_unit_cost_{i}")
+                from integrations.material_db import PROCUREMENT_STATUS_BADGES
+                mat_status = st.selectbox(f"Procurement Status #{i+1}", options=list(PROCUREMENT_STATUS_BADGES.keys()), index=0, key=f"mat_status_{i}")
+            
+            mat_notes = st.text_input(f"Notes for Material #{i+1}", key=f"mat_notes_{i}")
+            
+            materials_data_list.append({
+                "name": mat_name,
+                "category": mat_cat,
+                "quantity": qty,
+                "unit": unit,
+                "vendor_id": v_id,
+                "unit_cost": unit_cost,
+                "status": mat_status,
+                "notes": mat_notes
+            })
+            
+        tot_proc_cost = sum([m["quantity"] * m["unit_cost"] for m in materials_data_list])
+        st.write(f"**Total Procurement Cost (auto-calculated):** INR {tot_proc_cost}")
+
     st.subheader("6. Notes")
     notes = st.text_area(
         "Notes",
@@ -2058,6 +2105,12 @@ if submitted:
         "Stalls Data":
             json.dumps(stalls_data_list),
 
+        "Requires Materials":
+            requires_materials,
+
+        "Materials Data":
+            json.dumps(materials_data_list),
+
         "Learnings":
             safe_text(
                 learnings
@@ -2102,6 +2155,16 @@ if submitted:
                     event_date=event_date.isoformat(),
                     property_name=selected_property,
                     stalls_list=stalls_data_list
+                )
+                
+            if requires_materials:
+                from integrations.material_db import add_materials_for_event
+                add_materials_for_event(
+                    event_id=unique_event_id,
+                    event_name=selected_event_name,
+                    event_date=event_date.isoformat(),
+                    property_name=selected_property,
+                    materials_list=materials_data_list
                 )
         except Exception:
             pass

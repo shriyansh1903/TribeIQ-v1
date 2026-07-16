@@ -1376,6 +1376,75 @@ else:
                 tot_stall_rev = sum([s["rental_amount"] for s in edit_stalls_data_list])
                 st.write(f"**Total Stall Revenue (auto-calculated):** INR {tot_stall_rev}")
 
+            st.subheader("5.7 Materials & Procurement")
+            edit_requires_materials = st.checkbox("This event requires materials", value=bool(selected_row.get("Requires Materials", False)) if pd.notna(selected_row.get("Requires Materials")) else False)
+            edit_materials_data_list = []
+            
+            if edit_requires_materials:
+                try:
+                    from integrations.vendor_db import load_vendors
+                    vendors_df = load_vendors()
+                    active_vendors = vendors_df[vendors_df["Active / Inactive Status"] == "Active"]
+                    vendor_options = ["None"] + [f"{row['Vendor Name']} [{row['Vendor ID']}]" for _, row in active_vendors.iterrows()]
+                except Exception:
+                    vendor_options = ["None"]
+                    
+                prev_mats_str = selected_row.get("Materials Data", "[]")
+                prev_mats = []
+                if pd.notna(prev_mats_str) and str(prev_mats_str).strip():
+                    try:
+                        prev_mats = json.loads(prev_mats_str)
+                    except Exception:
+                        pass
+                
+                edit_num_mats = st.number_input("Number of Materials", min_value=1, value=max(len(prev_mats), 1), step=1)
+                for i in range(int(edit_num_mats)):
+                    st.markdown(f"**Material #{i+1} Details**")
+                    col_m1, col_m2, col_m3 = st.columns(3)
+                    with col_m1:
+                        prev_mat = prev_mats[i] if i < len(prev_mats) else {}
+                        mat_name = st.text_input(f"Material Name #{i+1}", value=prev_mat.get("name", ""), key=f"edit_mat_name_{i}")
+                        from integrations.material_db import DEFAULT_MATERIAL_CATEGORIES
+                        prev_cat = prev_mat.get("category", "Furniture")
+                        cat_idx = DEFAULT_MATERIAL_CATEGORIES.index(prev_cat) if prev_cat in DEFAULT_MATERIAL_CATEGORIES else 0
+                        mat_cat = st.selectbox(f"Material Category #{i+1}", options=DEFAULT_MATERIAL_CATEGORIES, index=cat_idx, key=f"edit_mat_cat_{i}")
+                    with col_m2:
+                        qty = st.number_input(f"Quantity Required #{i+1}", min_value=1, value=int(prev_mat.get("quantity", 1)), step=1, key=f"edit_mat_qty_{i}")
+                        unit = st.text_input(f"Unit #{i+1}", value=prev_mat.get("unit", "Pcs"), key=f"edit_mat_unit_{i}")
+                        
+                        prev_vendor_id = prev_mat.get("vendor_id", "None")
+                        default_v_idx = 0
+                        for idx, opt in enumerate(vendor_options):
+                            opt_id = opt.split("[")[-1].rstrip("]") if "[" in opt else "None"
+                            if opt_id == prev_vendor_id:
+                                default_v_idx = idx
+                                break
+                        mat_vendor = st.selectbox(f"Vendor (Optional) #{i+1}", options=vendor_options, index=default_v_idx, key=f"edit_mat_vendor_{i}")
+                        v_id = mat_vendor.split("[")[-1].rstrip("]") if "[" in mat_vendor else "None"
+                    with col_m3:
+                        unit_cost = st.number_input(f"Unit Cost (INR) #{i+1}", min_value=0.0, value=float(prev_mat.get("unit_cost", 0.0)), step=10.0, key=f"edit_mat_unit_cost_{i}")
+                        
+                        from integrations.material_db import PROCUREMENT_STATUS_BADGES
+                        prev_status = prev_mat.get("status", "Not Ordered")
+                        status_opts = list(PROCUREMENT_STATUS_BADGES.keys())
+                        status_idx = status_opts.index(prev_status) if prev_status in status_opts else 0
+                        mat_status = st.selectbox(f"Procurement Status #{i+1}", options=status_opts, index=status_idx, key=f"edit_mat_status_{i}")
+                        
+                    mat_notes = st.text_input(f"Notes #{i+1}", value=prev_mat.get("notes", ""), key=f"edit_mat_notes_{i}")
+                    
+                    edit_materials_data_list.append({
+                        "name": mat_name,
+                        "category": mat_cat,
+                        "quantity": qty,
+                        "unit": unit,
+                        "vendor_id": v_id,
+                        "unit_cost": unit_cost,
+                        "status": mat_status,
+                        "notes": mat_notes
+                    })
+                tot_proc_cost = sum([m["quantity"] * m["unit_cost"] for m in edit_materials_data_list])
+                st.write(f"**Total Procurement Cost (auto-calculated):** INR {tot_proc_cost}")
+
             st.subheader("6. Notes & Learnings")
             edit_notes = st.text_area("Notes", value=str(selected_row.get("Notes", "")) if pd.notna(selected_row.get("Notes")) else "")
             edit_learnings = st.text_area("Learnings", value=str(selected_row.get("Learnings", "")) if pd.notna(selected_row.get("Learnings")) else "")
@@ -1442,6 +1511,8 @@ else:
                     "Vendors Used": json.dumps(edit_vendors_data_list),
                     "Has Stalls": edit_has_stalls,
                     "Stalls Data": json.dumps(edit_stalls_data_list),
+                    "Requires Materials": edit_requires_materials,
+                    "Materials Data": json.dumps(edit_materials_data_list),
                     "Notes": safe_text(edit_notes),
                     "Learnings": safe_text(edit_learnings),
                     "Last Modified Timestamp": last_modified_timestamp,
@@ -1464,6 +1535,15 @@ else:
                         event_date=edit_date.isoformat(),
                         property_name=edit_property,
                         stalls_list=edit_stalls_data_list if edit_has_stalls else []
+                    )
+                    
+                    from integrations.material_db import add_materials_for_event
+                    add_materials_for_event(
+                        event_id=selected_event_id,
+                        event_name=edit_event_name,
+                        event_date=edit_date.isoformat(),
+                        property_name=edit_property,
+                        materials_list=edit_materials_data_list if edit_requires_materials else []
                     )
                     
                     st.toast(f"Successfully updated event: {edit_event_name}!")
@@ -1494,6 +1574,14 @@ else:
                             event_date=selected_row.get("Date"),
                             property_name=selected_row.get("Property"),
                             stalls_list=[]
+                        )
+                        from integrations.material_db import add_materials_for_event
+                        add_materials_for_event(
+                            event_id=selected_event_id,
+                            event_name=selected_row.get("Event Name"),
+                            event_date=selected_row.get("Date"),
+                            property_name=selected_row.get("Property"),
+                            materials_list=[]
                         )
                         st.toast("Event successfully deleted.")
                         st.cache_data.clear()
