@@ -1788,6 +1788,9 @@ if submitted:
     link_match = url_pattern.search(notes)
     image_data_link = link_match.group(0) if link_match else ""
 
+    import uuid
+    unique_event_id = f"{event_id}-{uuid.uuid4().hex[:8]}" if event_id else uuid.uuid4().hex[:12]
+
     history_record = {
         "Date":
             event_date.isoformat(),
@@ -1796,7 +1799,7 @@ if submitted:
             selected_property,
 
         "Event ID":
-            event_id,
+            unique_event_id,
 
         "Event Name":
             selected_event_name,
@@ -1975,6 +1978,12 @@ if submitted:
 
         "Logged Time":
             logged_time,
+
+        "Created Timestamp":
+            logged_timestamp,
+
+        "Last Modified Timestamp":
+            logged_timestamp,
     }
 
     # -------------------------------------------------------

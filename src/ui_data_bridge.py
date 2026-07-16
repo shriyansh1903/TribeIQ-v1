@@ -804,3 +804,32 @@ def save_predictions_to_csv(result: Dict[str, Any]) -> None:
             
     output_path.parent.mkdir(parents=True, exist_ok=True)
     predictions_df.to_csv(output_path, index=False)
+
+
+def update_logged_event(event_id_val: str, updated_fields: Dict[str, Any]) -> bool:
+    history_path = DATA_DIR / "event_history.csv"
+    if not history_path.exists():
+        return False
+        
+    try:
+        df = pd.read_csv(history_path)
+        if df.empty:
+            return False
+            
+        if "Event ID" in df.columns:
+            mask = df["Event ID"].astype(str).str.strip() == str(event_id_val).strip()
+        else:
+            return False
+            
+        if not mask.any():
+            return False
+            
+        for col, val in updated_fields.items():
+            if col not in df.columns:
+                df[col] = None
+            df.loc[mask, col] = val
+            
+        df.to_csv(history_path, index=False)
+        return True
+    except Exception:
+        return False

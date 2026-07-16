@@ -965,37 +965,120 @@ if filtered_history.empty:
     )
 
 else:
+    # -------------------------------------------------------
+    # Advanced Search & Filter Controls
+    # -------------------------------------------------------
+    from datetime import date, datetime
+    import datetime as dt_module
 
-    display_history = (
-        filtered_history.copy()
+    # Prepare data for filtering
+    history_df = filtered_history.copy()
+    if date_column is not None and date_column in history_df.columns:
+        history_df["Parsed_Date"] = pd.to_datetime(history_df[date_column], errors="coerce")
+    else:
+        history_df["Parsed_Date"] = pd.Timestamp.now()
+
+    # Search Bar
+    search_query = st.text_input(
+        "🔍 Search Event History...",
+        value="",
+        help="Search events by Property, Event Name, Category, Vendor Name, Notes, or Learnings."
     )
 
+    # Filters Expander
+    filters_expander = st.expander("🛠️ Filters & Sorting Options", expanded=False)
+    with filters_expander:
+        f_col1, f_col2, f_col3 = st.columns(3)
+        
+        with f_col1:
+            prop_options = ["All"] + sorted(list(history_df["Property"].dropna().unique())) if "Property" in history_df.columns else ["All"]
+            filter_prop = st.selectbox("Property Filter", options=prop_options)
+            
+            cat_options = ["All"] + sorted(list(history_df["Category"].dropna().unique())) if "Category" in history_df.columns else ["All"]
+            filter_cat = st.selectbox("Category Filter", options=cat_options)
 
-    if date_column is not None:
+        with f_col2:
+            vendor_col = "Vendor Name" if "Vendor Name" in history_df.columns else "Vendor"
+            vendor_options = ["All"]
+            if vendor_col in history_df.columns:
+                unique_vendors = sorted(list(history_df[vendor_col].dropna().astype(str).unique()))
+                if "None" in unique_vendors:
+                    unique_vendors.remove("None")
+                vendor_options.extend(unique_vendors)
+            filter_vendor = st.selectbox("Vendor Filter", options=vendor_options)
+            
+            filter_ticketed = st.selectbox("Ticketed Filter", options=["All", "Ticketed", "Non-ticketed"])
 
-        parsed_dates = pd.to_datetime(
-            display_history[
-                date_column
-            ],
-            errors="coerce"
-        )
+        with f_col3:
+            min_date = history_df["Parsed_Date"].min() if not history_df.empty and pd.notna(history_df["Parsed_Date"].min()) else date.today()
+            max_date = history_df["Parsed_Date"].max() if not history_df.empty and pd.notna(history_df["Parsed_Date"].max()) else date.today()
+            
+            date_range = st.date_input(
+                "Date Range Filter",
+                value=(min_date.date() if hasattr(min_date, "date") else min_date, max_date.date() if hasattr(max_date, "date") else max_date)
+            )
+            
+            sort_fields = {
+                "Date": "Parsed_Date",
+                "Attendance": "Actual Attendance" if "Actual Attendance" in history_df.columns else "Actual Attendee Count",
+                "Success Score": "Success Score",
+                "Revenue": "Revenue Collected" if "Revenue Collected" in history_df.columns else "Revenue",
+                "Property": "Property"
+            }
+            available_sort_fields = {k: v for k, v in sort_fields.items() if v in history_df.columns or v == "Parsed_Date" or v == "Property"}
+            sort_by_label = st.selectbox("Sort By", options=list(available_sort_fields.keys()))
+            sort_order = st.selectbox("Sort Order", options=["Descending", "Ascending"])
 
-        display_history[
-            date_column
-        ] = parsed_dates.dt.strftime(
-            "%Y-%m-%d"
-        ).fillna(
-            display_history[
-                date_column
-            ].astype(str)
-        )
+    # Apply Search Query
+    if search_query:
+        search_cols = ["Event Name", "Property", "Category", "Vendor Name", "Vendor", "Notes", "Learnings"]
+        search_mask = pd.Series(False, index=history_df.index)
+        for col in search_cols:
+            if col in history_df.columns:
+                search_mask |= history_df[col].astype(str).str.contains(search_query, case=False, na=False)
+        history_df = history_df[search_mask]
 
+    # Apply Filter Options
+    if filter_prop != "All" and "Property" in history_df.columns:
+        history_df = history_df[history_df["Property"] == filter_prop]
+        
+    if filter_cat != "All" and "Category" in history_df.columns:
+        history_df = history_df[history_df["Category"] == filter_cat]
+        
+    vendor_field = "Vendor Name" if "Vendor Name" in history_df.columns else "Vendor"
+    if filter_vendor != "All" and vendor_field in history_df.columns:
+        history_df = history_df[history_df[vendor_field].astype(str) == filter_vendor]
+        
+    if "Ticketed Event" in history_df.columns:
+        if filter_ticketed == "Ticketed":
+            history_df = history_df[history_df["Ticketed Event"] == True]
+        elif filter_ticketed == "Non-ticketed":
+            history_df = history_df[(history_df["Ticketed Event"] == False) | (history_df["Ticketed Event"].isna())]
+
+    if isinstance(date_range, tuple) and len(date_range) == 2:
+        start_d, end_d = date_range
+        history_df = history_df[
+            (history_df["Parsed_Date"].dt.date >= start_d) &
+            (history_df["Parsed_Date"].dt.date <= end_d)
+        ]
+
+    # Apply Sorting Selection
+    sort_col = available_sort_fields.get(sort_by_label, "Parsed_Date")
+    if sort_col in history_df.columns:
+        history_df = history_df.sort_values(by=sort_col, ascending=(sort_order == "Ascending"))
+
+    # Cleanup display columns
+    display_history = history_df.drop(columns=["Parsed_Date"], errors="ignore")
+
+    if date_column is not None and date_column in display_history.columns:
+        parsed_dates = pd.to_datetime(display_history[date_column], errors="coerce")
+        display_history[date_column] = parsed_dates.dt.strftime("%Y-%m-%d").fillna(display_history[date_column].astype(str))
 
     # Convert to Excel
     from io import BytesIO
     excel_buffer = BytesIO()
     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-        filtered_history.to_excel(writer, index=False, sheet_name='Event History')
+        display_history.to_excel(writer, index=False, sheet_name='Event History')
     excel_data = excel_buffer.getvalue()
 
     st.download_button(
@@ -1008,45 +1091,261 @@ else:
 
     history_table(display_history)
 
+    # -------------------------------------------------------
+    # Event Management Controls (Edit / Delete)
+    # -------------------------------------------------------
+    st.markdown("---")
+    st.subheader("🛠️ Manage Selected Event")
+
+    if display_history.empty:
+        st.info("No matching historical events found to manage.")
+    else:
+        # Create event selection list
+        event_options = []
+        event_row_map = {}
+        for idx, row in display_history.iterrows():
+            event_id = row.get("Event ID", f"row-{idx}")
+            label = f"{row.get('Date', 'N/A')} | {row.get('Property', 'N/A')} | {row.get('Event Name', 'N/A')} [{event_id}]"
+            event_options.append(label)
+            event_row_map[label] = (row, event_id)
+
+        selected_label = st.selectbox("Select Event to Edit/Delete", options=event_options)
+        selected_row, selected_event_id = event_row_map[selected_label]
+
+        action_col1, action_col2 = st.columns(2)
+        with action_col1:
+            show_edit = st.checkbox("📝 Edit Selected Event Details", value=False)
+        with action_col2:
+            show_delete = st.checkbox("❌ Delete Selected Event Details", value=False)
+
+        # Star selector display helper
+        def get_star_string(val: float) -> str:
+            full_stars = int(val)
+            remainder = val - full_stars
+            star_str = "★" * full_stars
+            if remainder >= 0.75:
+                star_str += "¾"
+            elif remainder >= 0.5:
+                star_str += "½"
+            elif remainder >= 0.25:
+                star_str += "¼"
+            empty_stars = 5 - len(star_str)
+            if remainder > 0 and remainder < 1.0:
+                empty_stars = 5 - full_stars - 1
+            star_str += "☆" * max(0, empty_stars)
+            return f"{val:.2f} ({star_str})"
+
+        # -------------------------------------------------------
+        # Edit Form
+        # -------------------------------------------------------
+        if show_edit:
+            st.markdown("#### Edit Event Outcome Details")
+            
+            # Prepare properties list and event names list
+            all_property_names = sorted(list(profiles.keys())) if profiles else ["Tribe Moro", "Tribe Student Housing", "Tribe Luxury Co-Living"]
+            prop_idx = all_property_names.index(selected_row["Property"]) if "Property" in selected_row and selected_row["Property"] in all_property_names else 0
+
+            # Gather catalogue event list
+            cat_event_name_column = find_event_name_column(events_dataframe)
+            all_event_names = []
+            if cat_event_name_column is not None and not events_dataframe.empty:
+                all_event_names = sorted(events_dataframe[cat_event_name_column].dropna().unique().tolist())
+            if "Event Name" in selected_row and selected_row["Event Name"] not in all_event_names:
+                all_event_names.append(selected_row["Event Name"])
+            all_event_names = sorted(all_event_names)
+            event_idx = all_event_names.index(selected_row["Event Name"]) if "Event Name" in selected_row and selected_row["Event Name"] in all_event_names else 0
+
+            with st.form("edit_logged_event_form"):
+                st.subheader("1. Event Details")
+                edit_col1, edit_col2 = st.columns(2)
+                with edit_col1:
+                    edit_property = st.selectbox("Property", options=all_property_names, index=prop_idx)
+                    edit_date = st.date_input(
+                        "Event Date",
+                        value=pd.to_datetime(selected_row["Date"]).date() if pd.notna(selected_row.get("Date")) else date.today()
+                    )
+                with edit_col2:
+                    edit_event_name = st.selectbox("Event Name", options=all_event_names, index=event_idx)
+                    
+                    def parse_time(time_val, default_t):
+                        if pd.isna(time_val) or not time_val:
+                            return default_t
+                        try:
+                            return datetime.strptime(str(time_val).strip(), "%H:%M:%S").time()
+                        except Exception:
+                            try:
+                                return datetime.strptime(str(time_val).strip(), "%H:%M").time()
+                            except Exception:
+                                return default_t
+                                
+                    edit_start_time = st.time_input("Event Start Time", value=parse_time(selected_row.get("Event Start Time"), dt_module.time(18, 0)))
+                    edit_end_time = st.time_input("Event End Time", value=parse_time(selected_row.get("Event End Time"), dt_module.time(20, 0)))
+
+                st.subheader("2. Attendance")
+                edit_att_col1, edit_att_col2 = st.columns(2)
+                with edit_att_col1:
+                    edit_actual_attendance = st.number_input(
+                        "Actual Attendance",
+                        min_value=0,
+                        value=int(selected_row.get("Actual Attendance", 0)) if pd.notna(selected_row.get("Actual Attendance")) else 0,
+                        step=1
+                    )
+                with edit_att_col2:
+                    current_feedback = float(selected_row.get("Average Feedback", 4.0)) if pd.notna(selected_row.get("Average Feedback")) else 4.0
+                    feedback_options = [i * 0.25 for i in range(21)]
+                    closest_idx = min(range(len(feedback_options)), key=lambda i: abs(feedback_options[i] - current_feedback))
+                    edit_feedback_score = st.selectbox("Feedback Rating", options=feedback_options, index=closest_idx, format_func=get_star_string)
+
+                st.subheader("3. Budget")
+                edit_bud_col1, edit_bud_col2 = st.columns(2)
+                with edit_bud_col1:
+                    edit_estimated_budget = st.number_input(
+                        "Estimated Budget (INR)",
+                        min_value=0.0,
+                        value=float(selected_row.get("Estimated Budget", selected_row.get("Budget Planned", 0.0))) if pd.notna(selected_row.get("Estimated Budget")) or pd.notna(selected_row.get("Budget Planned")) else 0.0,
+                        step=100.0
+                    )
+                with edit_bud_col2:
+                    edit_actual_budget = st.number_input(
+                        "Actual Budget (INR)",
+                        min_value=0.0,
+                        value=float(selected_row.get("Actual Budget", selected_row.get("Budget Spent", 0.0))) if pd.notna(selected_row.get("Actual Budget")) or pd.notna(selected_row.get("Budget Spent")) else 0.0,
+                        step=100.0
+                    )
+
+                st.subheader("4. Ticketing")
+                edit_is_ticketed = st.checkbox("Ticketed Event", value=bool(selected_row.get("Ticketed Event", False)) if pd.notna(selected_row.get("Ticketed Event")) else False)
+                edit_ticket_price = float(selected_row.get("Ticket Price", 0.0)) if pd.notna(selected_row.get("Ticket Price")) else 0.0
+                edit_tickets_available = int(selected_row.get("Tickets Available", 0)) if pd.notna(selected_row.get("Tickets Available")) else 0
+                edit_tickets_sold = int(selected_row.get("Tickets Sold", 0)) if pd.notna(selected_row.get("Tickets Sold")) else 0
+                
+                edit_t_col1, edit_t_col2 = st.columns(2)
+                with edit_t_col1:
+                    edit_ticket_price = st.number_input("Ticket Price (INR)", min_value=0.0, value=edit_ticket_price, step=10.0)
+                    edit_tickets_available = st.number_input("Tickets Available", min_value=0, value=edit_tickets_available, step=1)
+                with edit_t_col2:
+                    edit_tickets_sold = st.number_input("Tickets Sold", min_value=0, value=edit_tickets_sold, step=1)
+                    edit_revenue_collected = edit_ticket_price * edit_tickets_sold
+                    st.number_input("Revenue Collected (auto-calculated)", min_value=0.0, value=float(edit_revenue_collected), disabled=True)
+
+                st.subheader("5. Vendor")
+                edit_vendor_used = st.checkbox("Vendor Used", value=bool(selected_row.get("Vendor Used", False)) if pd.notna(selected_row.get("Vendor Used")) else False)
+                vendor_names = ["None", "Food & Beverage Vendor", "Decorations Vendor", "Sound & AV Vendor", "Workshop Facilitator", "Security & Logistics", "Other"]
+                current_vendor = str(selected_row.get("Vendor Name", "None"))
+                vendor_idx = vendor_names.index(current_vendor) if current_vendor in vendor_names else 0
+                edit_vendor_name = st.selectbox("Vendor Name", options=vendor_names, index=vendor_idx)
+
+                st.subheader("6. Notes & Learnings")
+                edit_notes = st.text_area("Notes", value=str(selected_row.get("Notes", "")) if pd.notna(selected_row.get("Notes")) else "")
+                edit_learnings = st.text_area("Learnings", value=str(selected_row.get("Learnings", "")) if pd.notna(selected_row.get("Learnings")) else "")
+
+                save_submitted = st.form_submit_button("💾 Save Changes", type="primary", use_container_width=True)
+
+                if save_submitted:
+                    # Calculate Turnout Rate Automatically
+                    from occupancy_forecaster import load_resident_export, get_active_residents
+                    residents_timeline = load_resident_export()
+                    event_timestamp = pd.Timestamp(edit_date).normalize()
+                    active_res = get_active_residents(
+                        dataframe=residents_timeline,
+                        property_name=edit_property,
+                        event_date=event_timestamp
+                    )
+                    active_count = len(active_res)
+                    if active_count > 0:
+                        new_turnout_pct = (float(edit_actual_attendance) / float(active_count)) * 100.0
+                        new_turnout_pct = min(new_turnout_pct, 100.0)
+                    else:
+                        new_turnout_pct = 0.0
+
+                    new_success_score = calculate_success_score(
+                        attendance_percent=new_turnout_pct,
+                        feedback_score=edit_feedback_score,
+                        budget_planned=edit_estimated_budget,
+                        budget_spent=edit_actual_budget,
+                    )
+                    
+                    pred_attendance = safe_int(selected_row.get("Predicted Attendance"))
+                    has_prediction = pd.notna(selected_row.get("Predicted Attendance")) and str(selected_row.get("Predicted Attendance")).strip() != ""
+                    
+                    new_pred_error = calculate_prediction_error(
+                        actual_attendance=int(edit_actual_attendance),
+                        predicted_attendance=pred_attendance,
+                        has_prediction=has_prediction
+                    )
+
+                    import pytz
+                    ist_tz = pytz.timezone("Asia/Kolkata")
+                    now_ist = datetime.now(ist_tz)
+                    last_modified_timestamp = now_ist.isoformat()
+
+                    updated_data = {
+                        "Date": edit_date.isoformat(),
+                        "Property": edit_property,
+                        "Event Name": edit_event_name,
+                        "Attendance %": round(new_turnout_pct, 2),
+                        "Actual Attendance": int(edit_actual_attendance),
+                        "Average Feedback": round(edit_feedback_score, 2),
+                        "Success Score": new_success_score,
+                        "Budget Planned": round(edit_estimated_budget, 2),
+                        "Budget Spent": round(edit_actual_budget, 2),
+                        "Estimated Budget": edit_estimated_budget,
+                        "Actual Budget": edit_actual_budget,
+                        "Ticketed Event": edit_is_ticketed,
+                        "Ticket Price": edit_ticket_price,
+                        "Tickets Available": edit_tickets_available,
+                        "Tickets Sold": edit_tickets_sold,
+                        "Revenue Collected": edit_revenue_collected,
+                        "Vendor Used": edit_vendor_used,
+                        "Vendor Name": edit_vendor_name if edit_vendor_used else "None",
+                        "Notes": safe_text(edit_notes),
+                        "Learnings": safe_text(edit_learnings),
+                        "Last Modified Timestamp": last_modified_timestamp,
+                        "Attendance Prediction Error": new_pred_error.get("error_count"),
+                        "Absolute Attendance Error": new_pred_error.get("absolute_error"),
+                        "Attendance Error %": new_pred_error.get("error_percent"),
+                    }
+
+                    from ui_data_bridge import update_logged_event
+                    success = update_logged_event(selected_event_id, updated_data)
+                    if success:
+                        st.toast(f"Successfully updated event: {edit_event_name}!")
+                        st.cache_data.clear()
+                        st.rerun()
+                    else:
+                        st.error("Failed to update event details.")
+
+        # -------------------------------------------------------
+        # Delete Confirmation
+        # -------------------------------------------------------
+        if show_delete:
+            st.warning(f"⚠️ Are you sure you want to permanently delete **{selected_row.get('Event Name')}** on **{selected_row.get('Date')}**?")
+            confirm_del = st.checkbox("I confirm that I want to delete this event log permanently.")
+            if confirm_del:
+                if st.button("Confirm and Delete", type="primary", use_container_width=True):
+                    from ui_data_bridge import delete_logged_event
+                    success = delete_logged_event(
+                        date_val=selected_row.get("Date"),
+                        property_val=selected_row.get("Property"),
+                        event_val=selected_row.get("Event Name")
+                    )
+                    if success:
+                        st.toast("Event successfully deleted.")
+                        st.cache_data.clear()
+                        st.rerun()
+                    else:
+                        st.error("Failed to delete event record.")
 
 # ===========================================================
-# History Management (Danger Zone)
+# History Management (Danger Zone - Global Operations)
 # ===========================================================
 st.divider()
-st.subheader("⚠️ History Management")
+st.subheader("⚠️ Global History Operations")
 
 manage_col1, manage_col2 = st.columns(2)
 
 with manage_col1:
-    st.markdown("### Delete a Specific Logged Event")
-    if filtered_history.empty:
-        st.info("No events available to delete.")
-    else:
-        events_list = []
-        events_keys = []
-        prop_col = history_property_column if history_property_column is not None else "Property"
-        for _, row in filtered_history.iterrows():
-            d_val = str(row.get(date_column, "")).strip() if date_column is not None else ""
-            p_val = str(row.get(prop_col, "")).strip()
-            e_val = str(row.get(event_name_column, "")).strip() if event_name_column is not None else ""
-            if d_val and p_val and e_val:
-                events_list.append(f"{d_val} | {p_val} | {e_val}")
-                events_keys.append((d_val, p_val, e_val))
-        
-        if events_list:
-            selected_event_idx = st.selectbox("Select Event to Delete", range(len(events_list)), format_func=lambda x: events_list[x])
-            if st.button("Delete Selected Event", type="primary", use_container_width=True):
-                target_date, target_prop, target_event = events_keys[selected_event_idx]
-                from ui_data_bridge import delete_logged_event
-                success = delete_logged_event(target_date, target_prop, target_event)
-                if success:
-                    st.toast(f"Deleted event: {target_event} ({target_date})")
-                    st.cache_data.clear()
-                    st.rerun()
-                else:
-                    st.error("Failed to delete event.")
-        else:
-            st.info("No valid history records found to delete.")
+    st.info("To edit or delete individual events, use the search/filter tool and the 'Manage Selected Event' section above.")
 
 with manage_col2:
     st.markdown("### Clear All History")
