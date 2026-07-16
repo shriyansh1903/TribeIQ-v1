@@ -47,7 +47,7 @@ st.markdown("""
         border: 1px solid #30363D;
     }
     .calendar-day-box {
-        min-height: 120px;
+        min-height: 140px;
         background-color: #0D1117;
         border: 1px solid #30363D;
         border-radius: 0.375rem;
@@ -56,7 +56,7 @@ st.markdown("""
         flex-direction: column;
         justify-content: flex-start;
         align-items: stretch;
-        gap: 0.25rem;
+        gap: 0.35rem;
         transition: border-color 0.2s;
     }
     .calendar-day-box:hover {
@@ -74,34 +74,30 @@ st.markdown("""
         margin-bottom: 0.25rem;
     }
     .calendar-card {
-        padding: 0.25rem 0.5rem;
+        padding: 0.35rem;
         border-radius: 0.25rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
+        font-size: 0.72rem;
+        line-height: 1.15;
+        border: 1px solid #30363D;
+        background-color: #161B22;
     }
     .badge-major {
-        background-color: #388BFD1A;
-        color: #58A6FF;
-        border: 1px solid #388BFD33;
+        border-left: 3px solid #58A6FF;
     }
     .badge-minor {
-        background-color: #30363D;
-        color: #C9D1D9;
-        border: 1px solid #30363D;
+        border-left: 3px solid #8B949E;
     }
     .status-badge {
         display: inline-block;
-        padding: 0.125rem 0.375rem;
-        border-radius: 0.25rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        margin-top: 0.25rem;
+        padding: 0.05rem 0.25rem;
+        border-radius: 0.15rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
     }
     .status-draft { background-color: #30363D; color: #8B949E; }
-    .status-proposed { background-color: #FEF3C7; color: #D97706; }
+    .status-ai-recommended { background-color: #388BFD1A; color: #58A6FF; }
+    .status-awaiting-approval { background-color: #FEF3C7; color: #D97706; }
     .status-approved { background-color: #D1FAE5; color: #059669; }
     .status-completed { background-color: #DBEAFE; color: #2563EB; }
     .status-cancelled { background-color: #FEE2E2; color: #DC2626; }
@@ -235,7 +231,19 @@ try:
                     for idx, row in day_events.iterrows():
                         badge_class = "badge-major" if et_col in row and row[et_col] == "Major" else "badge-minor"
                         ev_lbl = row[name_col] if name_col in row else "Unnamed Event"
-                        cards_html += f"<div class='calendar-card {badge_class}'>{ev_lbl}</div>"
+                        ev_status = row[status_col] if status_col in row else "AI Recommended"
+                        ev_prop = row[cal_prop_col] if cal_prop_col in row else ""
+                        
+                        turnout_val = row.get("Predicted Attendance")
+                        ev_turnout = f"{float(turnout_val):.0f}%" if turnout_val and str(turnout_val) != "" else "N/A"
+                        
+                        cards_html += f"""
+                        <div class='calendar-card {badge_class}'>
+                            <strong>{ev_lbl}</strong><br/>
+                            <span class='status-badge status-{ev_status.lower().replace(" ", "-")}'>{ev_status}</span><br/>
+                            <small>{ev_prop} | Pred: {ev_turnout}</small>
+                        </div>
+                        """
                         
                     st.markdown(f"""
                     <div class='{box_class}'>
@@ -276,26 +284,54 @@ try:
         with col_d1:
             st.write(f"#### {evt_row[name_col]}")
             st.caption(f"Property: {evt_row.get(cal_prop_col, 'N/A')}  •  Category: {evt_row.get('Category', 'N/A')}")
-            st.metric("Expected Turnout", f"{evt_row.get('Predicted Attendance', 75.0):.0f}%")
+            
+            # Formatted dates
+            rec_date_val = evt_row.get("Recommended Date") or evt_row.get("Date")
+            app_date_val = evt_row.get("Approved Date") or "Awaiting Approval"
+            
+            st.write(f"📅 **Recommended Date:** {rec_date_val}")
+            st.write(f"📅 **Approved Date:** {app_date_val}")
+            
+            # Predict Turnout / Metrics
+            pred_att = evt_row.get("Predicted Attendance")
+            pred_att_str = f"{float(pred_att):.0f}%" if pred_att and str(pred_att) != "" else "N/A"
+            st.metric("Predicted Turnout", pred_att_str)
+            st.metric("Occupancy Forecast", f"{evt_row.get('Expected Occupancy', 75.0):.1f}%")
             
         with col_d2:
             st.write("**Workflow Actions:**")
-            curr_status = evt_row[status_col] if status_col in evt_row else "Draft"
-            new_status = st.selectbox("Status Tag", ["Draft", "Proposed", "Approved", "Completed", "Cancelled"], index=["Draft", "Proposed", "Approved", "Completed", "Cancelled"].index(curr_status) if curr_status in ["Draft", "Proposed", "Approved", "Completed", "Cancelled"] else 0)
+            curr_status = evt_row[status_col] if status_col in evt_row else "AI Recommended"
+            
+            statuses = ["AI Recommended", "Awaiting Approval", "Approved", "Completed", "Cancelled"]
+            new_status = st.selectbox("Status Tag", statuses, index=statuses.index(curr_status) if curr_status in statuses else 0)
+            
+            # Allow Rescheduling Date
+            current_date_val = datetime.datetime.strptime(evt_row["Date"], "%Y-%m-%d").date() if isinstance(evt_row["Date"], str) and evt_row["Date"] else datetime.date.today()
+            new_date = st.date_input("Reschedule Event Date", value=current_date_val)
+            
             if st.button("💾 Save Event Changes"):
-                save_calendar_event(
-                    evt_row[date_col],
-                    evt_row[cal_prop_col],
-                    evt_row[name_col],
-                    evt_row[et_col] if et_col in evt_row else "Minor",
-                    evt_row.get("Category", "Social"),
-                    new_status
-                )
+                # Compute approved date
+                app_date_to_save = evt_row.get("Approved Date")
+                if new_status == "Approved" and not app_date_to_save:
+                    app_date_to_save = datetime.date.today().strftime("%Y-%m-%d")
+                
+                save_calendar_event({
+                    "Event ID": evt_row["Event ID"],
+                    "Date": new_date.strftime("%Y-%m-%d"),
+                    "Property": evt_row[cal_prop_col],
+                    "Event Name": evt_row[name_col],
+                    "Event Type": evt_row[et_col] if et_col in evt_row else "Minor",
+                    "Category": evt_row.get("Category", "Social"),
+                    "Status": new_status,
+                    "Budget Estimate": float(evt_row.get("Budget Estimate", 3000.0)) if evt_row.get("Budget Estimate") else 3000.0,
+                    "Recommended Date": rec_date_val,
+                    "Approved Date": app_date_to_save
+                })
                 st.success("Changes saved successfully!")
                 st.rerun()
                 
             if st.button("🗑️ Delete Scheduled Event"):
-                delete_calendar_event(evt_row[date_col], evt_row[cal_prop_col], evt_row[name_col])
+                delete_calendar_event(evt_row["Event ID"])
                 st.warning("Event removed from plan.")
                 st.rerun()
     else:
