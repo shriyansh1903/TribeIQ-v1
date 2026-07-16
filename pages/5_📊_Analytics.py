@@ -1299,6 +1299,83 @@ else:
                             })
                         edit_vendor_name = ", ".join([v["name"] for v in edit_vendors_data_list])
 
+            st.subheader("5.5 Stall Management")
+            edit_has_stalls = st.checkbox("This event includes stalls", value=bool(selected_row.get("Has Stalls", False)) if pd.notna(selected_row.get("Has Stalls")) else False)
+            edit_stalls_data_list = []
+            
+            if edit_has_stalls:
+                try:
+                    from integrations.vendor_db import load_vendors
+                    vendors_df = load_vendors()
+                    active_vendors = vendors_df[vendors_df["Active / Inactive Status"] == "Active"]
+                    vendor_options = [f"{row['Vendor Name']} [{row['Vendor ID']}]" for _, row in active_vendors.iterrows()]
+                except Exception:
+                    vendor_options = []
+                    
+                prev_stalls_str = selected_row.get("Stalls Data", "[]")
+                prev_stalls = []
+                if pd.notna(prev_stalls_str) and str(prev_stalls_str).strip():
+                    try:
+                        prev_stalls = json.loads(prev_stalls_str)
+                    except Exception:
+                        pass
+                
+                edit_num_stalls = st.number_input("Number of Stalls", min_value=1, value=max(len(prev_stalls), 1), step=1)
+                for i in range(int(edit_num_stalls)):
+                    st.markdown(f"**Stall #{i+1} Details**")
+                    col_s1, col_s2, col_s3 = st.columns(3)
+                    with col_s1:
+                        prev_stall = prev_stalls[i] if i < len(prev_stalls) else {}
+                        prev_vendor_id = prev_stall.get("vendor_id", "")
+                        
+                        default_v_idx = 0
+                        for idx, opt in enumerate(vendor_options):
+                            opt_id = opt.split("[")[-1].rstrip("]") if "[" in opt else ""
+                            if opt_id == prev_vendor_id:
+                                default_v_idx = idx
+                                break
+                                
+                        stall_vendor = st.selectbox(f"Vendor for Stall #{i+1}", options=vendor_options, index=default_v_idx, key=f"edit_stall_vendor_{i}")
+                        v_id = stall_vendor.split("[")[-1].rstrip("]") if "[" in stall_vendor else "other"
+                        
+                        v_row = vendors_df[vendors_df["Vendor ID"] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty else None
+                        v_name = v_row["Vendor Name"] if v_row is not None else "Other"
+                        v_cat = v_row["Vendor Category"] if v_row is not None else "Miscellaneous"
+                        
+                        stall_name = st.text_input(f"Stall #{i+1} Name", value=prev_stall.get("stall_name", f"{v_name} Stall"), key=f"edit_stall_name_{i}")
+                    with col_s2:
+                        from integrations.stall_db import DEFAULT_STALL_CATEGORIES
+                        try:
+                            cat_idx = DEFAULT_STALL_CATEGORIES.index(prev_stall.get("stall_category", v_cat))
+                        except Exception:
+                            cat_idx = 0
+                        stall_cat = st.selectbox(f"Stall #{i+1} Category", options=DEFAULT_STALL_CATEGORIES, index=cat_idx, key=f"edit_stall_cat_{i}")
+                        
+                        prev_size = prev_stall.get("stall_size", "Medium")
+                        size_idx = ["Small", "Medium", "Large"].index(prev_size) if prev_size in ["Small", "Medium", "Large"] else 1
+                        stall_size = st.selectbox(f"Stall #{i+1} Size", options=["Small", "Medium", "Large"], index=size_idx, key=f"edit_stall_size_{i}")
+                    with col_s3:
+                        rental_amt = st.number_input(f"Rental Amount for Stall #{i+1} (INR)", min_value=0.0, value=float(prev_stall.get("rental_amount", 0.0)), step=100.0, key=f"edit_stall_rental_{i}")
+                        
+                        prev_status = prev_stall.get("status", "Confirmed")
+                        status_opts = ["Reserved", "Confirmed", "Cancelled", "Completed"]
+                        status_idx = status_opts.index(prev_status) if prev_status in status_opts else 1
+                        stall_status = st.selectbox(f"Stall #{i+1} Status", options=status_opts, index=status_idx, key=f"edit_stall_status_{i}")
+                    
+                    stall_notes = st.text_input(f"Notes for Stall #{i+1}", value=prev_stall.get("notes", ""), key=f"edit_stall_notes_{i}")
+                    
+                    edit_stalls_data_list.append({
+                        "vendor_id": v_id,
+                        "stall_name": stall_name,
+                        "stall_category": stall_cat,
+                        "rental_amount": rental_amt,
+                        "stall_size": stall_size,
+                        "status": stall_status,
+                        "notes": stall_notes
+                    })
+                tot_stall_rev = sum([s["rental_amount"] for s in edit_stalls_data_list])
+                st.write(f"**Total Stall Revenue (auto-calculated):** INR {tot_stall_rev}")
+
             st.subheader("6. Notes & Learnings")
             edit_notes = st.text_area("Notes", value=str(selected_row.get("Notes", "")) if pd.notna(selected_row.get("Notes")) else "")
             edit_learnings = st.text_area("Learnings", value=str(selected_row.get("Learnings", "")) if pd.notna(selected_row.get("Learnings")) else "")
@@ -1363,6 +1440,8 @@ else:
                     "Vendor Used": edit_vendor_used,
                     "Vendor Name": edit_vendor_name if edit_vendor_used else "None",
                     "Vendors Used": json.dumps(edit_vendors_data_list),
+                    "Has Stalls": edit_has_stalls,
+                    "Stalls Data": json.dumps(edit_stalls_data_list),
                     "Notes": safe_text(edit_notes),
                     "Learnings": safe_text(edit_learnings),
                     "Last Modified Timestamp": last_modified_timestamp,
@@ -1377,6 +1456,15 @@ else:
                     # Update summaries
                     from integrations.vendor_db import update_vendor_statistics
                     update_vendor_statistics()
+                    
+                    from integrations.stall_db import add_stalls_for_event
+                    add_stalls_for_event(
+                        event_id=selected_event_id,
+                        event_name=edit_event_name,
+                        event_date=edit_date.isoformat(),
+                        property_name=edit_property,
+                        stalls_list=edit_stalls_data_list if edit_has_stalls else []
+                    )
                     
                     st.toast(f"Successfully updated event: {edit_event_name}!")
                     st.cache_data.clear()
@@ -1399,6 +1487,14 @@ else:
                         event_val=selected_row.get("Event Name")
                     )
                     if success:
+                        from integrations.stall_db import add_stalls_for_event
+                        add_stalls_for_event(
+                            event_id=selected_event_id,
+                            event_name=selected_row.get("Event Name"),
+                            event_date=selected_row.get("Date"),
+                            property_name=selected_row.get("Property"),
+                            stalls_list=[]
+                        )
                         st.toast("Event successfully deleted.")
                         st.cache_data.clear()
                         st.rerun()

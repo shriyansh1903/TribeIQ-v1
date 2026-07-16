@@ -1674,6 +1674,59 @@ with st.form(
                 })
             vendor_name = ", ".join([v["name"] for v in vendors_data_list])
 
+    st.subheader("5.5 Stall Management")
+    has_stalls = st.checkbox("This event includes stalls", help="Check this box if this event featured food festival stalls, popups, or booths.")
+    stalls_data_list = []
+    
+    if has_stalls:
+        try:
+            from integrations.vendor_db import load_vendors
+            vendors_df = load_vendors()
+            active_vendors = vendors_df[vendors_df["Active / Inactive Status"] == "Active"]
+            vendor_options = [f"{row['Vendor Name']} [{row['Vendor ID']}]" for _, row in active_vendors.iterrows()]
+        except Exception:
+            vendor_options = []
+            
+        num_stalls = st.number_input("Number of Stalls", min_value=1, value=1, step=1)
+        for i in range(int(num_stalls)):
+            st.markdown(f"**Stall #{i+1} Details**")
+            col_s1, col_s2, col_s3 = st.columns(3)
+            with col_s1:
+                stall_vendor = st.selectbox(f"Vendor for Stall #{i+1}", options=vendor_options, key=f"stall_vendor_{i}")
+                v_id = stall_vendor.split("[")[-1].rstrip("]") if "[" in stall_vendor else "other"
+                
+                v_row = vendors_df[vendors_df["Vendor ID"] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty else None
+                v_name = v_row["Vendor Name"] if v_row is not None else "Other"
+                v_cat = v_row["Vendor Category"] if v_row is not None else "Miscellaneous"
+                
+                stall_name = st.text_input(f"Stall #{i+1} Name", value=f"{v_name} Stall", key=f"stall_name_{i}")
+            with col_s2:
+                from integrations.stall_db import DEFAULT_STALL_CATEGORIES
+                try:
+                    cat_idx = DEFAULT_STALL_CATEGORIES.index(v_cat)
+                except Exception:
+                    cat_idx = 0
+                stall_cat = st.selectbox(f"Stall #{i+1} Category", options=DEFAULT_STALL_CATEGORIES, index=cat_idx, key=f"stall_cat_{i}")
+                stall_size = st.selectbox(f"Stall #{i+1} Size", options=["Small", "Medium", "Large"], index=1, key=f"stall_size_{i}")
+            with col_s3:
+                rental_amt = st.number_input(f"Rental Amount for Stall #{i+1} (INR)", min_value=0.0, value=0.0, step=100.0, key=f"stall_rental_{i}")
+                stall_status = st.selectbox(f"Stall #{i+1} Status", options=["Reserved", "Confirmed", "Cancelled", "Completed"], index=1, key=f"stall_status_{i}")
+            
+            stall_notes = st.text_input(f"Notes for Stall #{i+1}", key=f"stall_notes_{i}")
+            
+            stalls_data_list.append({
+                "vendor_id": v_id,
+                "stall_name": stall_name,
+                "stall_category": stall_cat,
+                "rental_amount": rental_amt,
+                "stall_size": stall_size,
+                "status": stall_status,
+                "notes": stall_notes
+            })
+            
+        tot_stall_rev = sum([s["rental_amount"] for s in stalls_data_list])
+        st.write(f"**Total Stall Revenue (auto-calculated):** INR {tot_stall_rev}")
+
     st.subheader("6. Notes")
     notes = st.text_area(
         "Notes",
@@ -1999,6 +2052,12 @@ if submitted:
         "Vendors Used":
             json.dumps(vendors_data_list),
 
+        "Has Stalls":
+            has_stalls,
+
+        "Stalls Data":
+            json.dumps(stalls_data_list),
+
         "Learnings":
             safe_text(
                 learnings
@@ -2034,6 +2093,16 @@ if submitted:
         try:
             from integrations.vendor_db import update_vendor_statistics
             update_vendor_statistics()
+            
+            if has_stalls:
+                from integrations.stall_db import add_stalls_for_event
+                add_stalls_for_event(
+                    event_id=unique_event_id,
+                    event_name=selected_event_name,
+                    event_date=event_date.isoformat(),
+                    property_name=selected_property,
+                    stalls_list=stalls_data_list
+                )
         except Exception:
             pass
 

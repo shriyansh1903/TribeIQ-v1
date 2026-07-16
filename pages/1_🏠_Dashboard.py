@@ -373,6 +373,60 @@ metric_row([
 
 
 # ===========================================================
+# Stall Revenue Metrics Calculations
+# ===========================================================
+try:
+    from integrations.stall_db import load_stalls
+    import pandas as pd
+    stalls_df = load_stalls()
+    
+    total_stall_rev = 0.0
+    active_stalls_count = 0
+    upcoming_stall_events_count = 0
+    highest_revenue_event_name = "N/A"
+    
+    if not stalls_df.empty:
+        total_stall_rev = stalls_df["Rental Amount"].sum()
+        active_stalls_count = len(stalls_df[stalls_df["Status"].isin(["Reserved", "Confirmed", "Completed"])])
+        
+        from feature_engineering import get_ist_today
+        today_ist = get_ist_today().strftime("%Y-%m-%d")
+        
+        upcoming_mask = (stalls_df["Date"] >= today_ist) & stalls_df["Status"].isin(["Reserved", "Confirmed"])
+        upcoming_stall_events_count = stalls_df[upcoming_mask]["Event ID"].nunique()
+        
+        event_revs = stalls_df.groupby("Event Name")["Rental Amount"].sum()
+        if not event_revs.empty:
+            highest_revenue_event_name = f"{event_revs.idxmax()} (INR {event_revs.max():,.0f})"
+except Exception:
+    total_stall_rev = 0.0
+    active_stalls_count = 0
+    upcoming_stall_events_count = 0
+    highest_revenue_event_name = "N/A"
+
+st.write("")
+st.write("#### 🏪 Stall Rentals & Revenue Summary")
+metric_row([
+    {
+        "title": "Total Stall Revenue",
+        "value": f"INR {total_stall_rev:,.0f}"
+    },
+    {
+        "title": "Active Stalls",
+        "value": f"{active_stalls_count}"
+    },
+    {
+        "title": "Upcoming Stall Events",
+        "value": f"{upcoming_stall_events_count}"
+    },
+    {
+        "title": "Highest Revenue Event",
+        "value": str(highest_revenue_event_name)
+    }
+])
+
+
+# ===========================================================
 # Property Occupancy Overview
 # ===========================================================
 
