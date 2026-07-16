@@ -161,13 +161,28 @@ try:
 
     st.sidebar.divider()
     st.sidebar.subheader("🔌 Warden API Integration")
+    
+    status_val = sync_status.get("status", "Offline Mode")
+    health_val = sync_status.get("health", "Unknown")
     is_mock = sync_engine.client.auth.mock_mode
-    status_text = "● Connected (Sandbox)" if is_mock else "● Connected (Live API)"
-    st.sidebar.markdown(f"**Status:** {status_text}")
-    st.sidebar.write(f"**Last Sync:** `{sync_status.get('last_sync_time', 'Never')}`")
-    st.sidebar.write(f"**Residents Synced:** `{sync_status.get('residents_synced', 0)}`")
-    st.sidebar.write(f"**Bookings Synced:** `{sync_status.get('bookings_synced', 0)}`")
-    st.sidebar.write(f"**Properties Synced:** `{sync_status.get('properties_synced', 0)}`")
+    
+    if health_val == "Unhealthy" or "Failed" in status_val:
+        st.sidebar.markdown("**Status:** 🔴 Connection Failed")
+        st.sidebar.warning("Running using last synchronized data.")
+    elif status_val == "Token Expired":
+        st.sidebar.markdown("**Status:** 🟡 Token Expired")
+    elif status_val == "Offline Mode" or health_val == "Unknown":
+        st.sidebar.markdown("**Status:** 🔵 Offline Mode")
+        st.sidebar.info("Running using last synchronized data.")
+    else:
+        status_lbl = "🟢 Connected (Sandbox)" if is_mock else "🟢 Connected (Live API)"
+        st.sidebar.markdown(f"**Status:** {status_lbl}")
+        
+    st.sidebar.write(f"**Last Sync:** `{sync_status.get('last_successful_sync', 'Never')}`")
+    st.sidebar.write(f"**API Response Time:** `{sync_status.get('api_response_time_ms', 0)} ms`")
+    st.sidebar.write(f"**Residents Synced:** `{sync_status.get('residents_imported', 0)}`")
+    st.sidebar.write(f"**Bookings Synced:** `{sync_status.get('bookings_imported', 0)}`")
+    st.sidebar.write(f"**Properties Synced:** `{sync_status.get('properties_imported', 0)}`")
     st.sidebar.write(f"**API Health:** `{sync_status.get('health', 'Unknown')}`")
 except Exception:
     pass

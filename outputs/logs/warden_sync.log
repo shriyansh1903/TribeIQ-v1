@@ -1,0 +1,3 @@
+[2026-07-16 12:27:41] [INFO] Synchronization process started.
+[2026-07-16 12:27:41] [INFO] Created backup of Residents.csv at Residents_2026-07-16_1227.csv
+[2026-07-16 12:27:41] [INFO] Sync complete. New data written. Residents: 374, Bookings: 374. Duration: 0.23 s.

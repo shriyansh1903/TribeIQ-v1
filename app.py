@@ -70,6 +70,23 @@ load_css()
 
 
 # ===========================================================
+# Auto Sync on Startup check
+# ===========================================================
+if "auto_synced_on_startup" not in st.session_state:
+    st.session_state["auto_synced_on_startup"] = True
+    try:
+        import sys
+        sys.path.insert(0, str(PROJECT_ROOT / "src"))
+        from integrations.sync import WardenSyncEngine
+        engine = WardenSyncEngine()
+        status = engine.load_sync_status()
+        if status.get("auto_sync_on_startup", False):
+            engine.sync_everything()
+    except Exception:
+        pass
+
+
+# ===========================================================
 # Navigation  (Streamlit 1.58+ requires st.navigation)
 # ===========================================================
 
@@ -84,50 +101,10 @@ pages = [
     st.Page(_PAGES_DIR / "3_🎯_Recommendations.py", title="Smart Recommendations", icon="🎯"),
     st.Page(_PAGES_DIR / "4_📝_Log_Event.py", title="Log Event", icon="📝"),
     st.Page(_PAGES_DIR / "5_📊_Analytics.py", title="Analytics", icon="📈"),
+    st.Page(_PAGES_DIR / "6_⚙️_Settings.py", title="Settings", icon="⚙️"),
 ]
 
 with st.sidebar:
-    st.divider()
-    st.markdown("### Database Management")
-    uploaded_file = st.file_uploader(
-        "Drag & Drop Residents.csv",
-        type=["csv"],
-        help="Upload a new spreadsheet to replace the principal database."
-    )
-    if uploaded_file is not None:
-        file_id = f"uploaded_{uploaded_file.name}_{uploaded_file.size}"
-        if st.session_state.get("last_uploaded_file_id") != file_id:
-            try:
-                file_bytes = uploaded_file.getvalue()
-                import pandas as pd
-                from io import BytesIO
-                test_df = pd.read_csv(BytesIO(file_bytes), nrows=5)
-                test_df.columns = test_df.columns.str.strip()
-                
-                from config import REQUIRED_COLUMNS, RAW_DATA
-                missing = [col for col in REQUIRED_COLUMNS if col not in test_df.columns]
-                if missing:
-                    st.sidebar.error(f"Missing columns: {', '.join(missing)}")
-                else:
-                    with open(RAW_DATA, "wb") as f:
-                        f.write(file_bytes)
-                    
-                    # Automatically update and rebuild downstream databases/profiles
-                    import cleaner
-                    import feature_engineering
-                    import profile_generator
-                    cleaner.run()
-                    feature_engineering.run()
-                    profile_generator.run()
-                    
-                    st.session_state["last_uploaded_file_id"] = file_id
-                    st.cache_data.clear()
-                    st.toast("Database replaced and updated downstream successfully!")
-                    st.rerun()
-            except Exception as e:
-                st.sidebar.error(f"Error: {e}")
-
-    st.divider()
     st.markdown("### System Controls")
     if st.button("🔄 Refresh System", use_container_width=True):
         st.cache_data.clear()
