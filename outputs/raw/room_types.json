@@ -1,0 +1,17 @@
+[
+    {
+        "id": "rt-single",
+        "name": "Single",
+        "base_rent": 25000.0
+    },
+    {
+        "id": "rt-twin",
+        "name": "Twin",
+        "base_rent": 18000.0
+    },
+    {
+        "id": "rt-luxury-twin",
+        "name": "Luxury Twin",
+        "base_rent": 22000.0
+    }
+]

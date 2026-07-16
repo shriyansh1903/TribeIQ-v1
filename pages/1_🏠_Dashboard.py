@@ -151,6 +151,27 @@ page_header(
     "event performance and recommendation activity.",
 )
 
+# ===========================================================
+# Warden API Integration Sidebar Widget
+# ===========================================================
+try:
+    from integrations.sync import WardenSyncEngine
+    sync_engine = WardenSyncEngine()
+    sync_status = sync_engine.load_sync_status()
+
+    st.sidebar.divider()
+    st.sidebar.subheader("🔌 Warden API Integration")
+    is_mock = sync_engine.client.auth.mock_mode
+    status_text = "● Connected (Sandbox)" if is_mock else "● Connected (Live API)"
+    st.sidebar.markdown(f"**Status:** {status_text}")
+    st.sidebar.write(f"**Last Sync:** `{sync_status.get('last_sync_time', 'Never')}`")
+    st.sidebar.write(f"**Residents Synced:** `{sync_status.get('residents_synced', 0)}`")
+    st.sidebar.write(f"**Bookings Synced:** `{sync_status.get('bookings_synced', 0)}`")
+    st.sidebar.write(f"**Properties Synced:** `{sync_status.get('properties_synced', 0)}`")
+    st.sidebar.write(f"**API Health:** `{sync_status.get('health', 'Unknown')}`")
+except Exception:
+    pass
+
 
 # ===========================================================
 # Load Application Data

@@ -1,0 +1,20 @@
+[
+    {
+        "property_name": "Tribe Moro",
+        "total_beds": 100,
+        "occupied_beds": 62,
+        "available_beds": 38
+    },
+    {
+        "property_name": "Tribe Vara",
+        "total_beds": 200,
+        "occupied_beds": 143,
+        "available_beds": 57
+    },
+    {
+        "property_name": "Tribe Wamba",
+        "total_beds": 180,
+        "occupied_beds": 124,
+        "available_beds": 56
+    }
+]

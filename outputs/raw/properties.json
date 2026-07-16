@@ -1,0 +1,23 @@
+[
+    {
+        "property_id": "prop-moro",
+        "name": "Tribe Moro",
+        "capacity": 100,
+        "address": "Pune, Maharashtra, India",
+        "status": "active"
+    },
+    {
+        "property_id": "prop-vara",
+        "name": "Tribe Vara",
+        "capacity": 200,
+        "address": "Pune, Maharashtra, India",
+        "status": "active"
+    },
+    {
+        "property_id": "prop-wamba",
+        "name": "Tribe Wamba",
+        "capacity": 180,
+        "address": "Pune, Maharashtra, India",
+        "status": "active"
+    }
+]
