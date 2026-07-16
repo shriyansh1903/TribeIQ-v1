@@ -1509,7 +1509,7 @@ with st.form(
     clear_on_submit=False,
 ):
 
-    st.subheader("1. Event Details")
+    st.markdown("### 📋 1. Event Details")
     detail_col1, detail_col2 = st.columns(2)
     with detail_col1:
         selected_property = st.selectbox(
@@ -1544,7 +1544,7 @@ with st.form(
                 help="The time when the event was scheduled to end."
             )
 
-    st.subheader("2. Attendance")
+    st.markdown("### 👥 2. Turnout & Attendance")
     attend_col1, attend_col2 = st.columns(2)
     with attend_col1:
         actual_attendance = st.number_input(
@@ -1564,7 +1564,7 @@ with st.form(
         )
     st.info("Attendance Percentage: Automatically calculated on save based on actual attendance and active resident timeline.")
 
-    st.subheader("3. Budget")
+    st.markdown("### 💸 3. Budget & Financials")
     budget_col1, budget_col2 = st.columns(2)
     with budget_col1:
         estimated_budget = st.number_input(
@@ -1583,7 +1583,7 @@ with st.form(
             help="The total final cost incurred to run the event."
         )
 
-    st.subheader("4. Ticketing")
+    st.markdown("### 🎫 4. Ticketing Details")
     is_ticketed = st.checkbox("Ticketed Event", help="Check this box if residents had to purchase tickets to attend.")
     
     ticket_price = 0.0
@@ -1625,7 +1625,7 @@ with st.form(
                 help="Total ticketing revenue collected (calculated as Ticket Price * Tickets Sold)."
             )
 
-    st.subheader("5. Vendor")
+    st.markdown("### 🏪 5. Hired Vendors")
     vendor_used = st.checkbox("Vendor Used", help="Check this box if external vendors were hired.")
     
     vendors_data_list = []
@@ -1674,7 +1674,7 @@ with st.form(
                 })
             vendor_name = ", ".join([v["name"] for v in vendors_data_list])
 
-    st.subheader("5.5 Stall Management")
+    st.markdown("### 🏪 6. Stall Space Rentals")
     has_stalls = st.checkbox("This event includes stalls", help="Check this box if this event featured food festival stalls, popups, or booths.")
     stalls_data_list = []
     
@@ -1727,7 +1727,7 @@ with st.form(
         tot_stall_rev = sum([s["rental_amount"] for s in stalls_data_list])
         st.write(f"**Total Stall Revenue (auto-calculated):** INR {tot_stall_rev}")
 
-    st.subheader("5.7 Materials & Procurement")
+    st.markdown("### 📦 7. Procured Materials")
     requires_materials = st.checkbox("This event requires materials", help="Check this box if this event requires decorations, staging, branding, or equipment.")
     materials_data_list = []
     
@@ -1774,7 +1774,7 @@ with st.form(
         tot_proc_cost = sum([m["quantity"] * m["unit_cost"] for m in materials_data_list])
         st.write(f"**Total Procurement Cost (auto-calculated):** INR {tot_proc_cost}")
 
-    st.subheader("6. Notes")
+    st.markdown("### 📝 8. Operational Learnings & Notes")
     notes = st.text_area(
         "Notes",
         placeholder="Add observations, resident reactions or operational notes...",
