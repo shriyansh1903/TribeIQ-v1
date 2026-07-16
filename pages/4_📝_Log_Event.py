@@ -1566,7 +1566,8 @@ try:
                 c_cost, c_gst = st.columns(2)
                 with c_cost:
                     v_id = lbl.split("[")[-1].rstrip("]") if "[" in lbl else "other"
-                    db_row = vendors_df[vendors_df[id_col] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty and id_col in vendors_df.columns else None
+                    sub_v = vendors_df[vendors_df[id_col] == v_id] if not vendors_df.empty and id_col in vendors_df.columns else pd.DataFrame()
+                    db_row = sub_v.iloc[0] if not sub_v.empty else None
                     db_base = float(db_row[base_col]) if db_row is not None and base_col in db_row else 0.0
                     db_gst_pct = int(db_row[gst_pct_col]) if db_row is not None and gst_pct_col in db_row else 18
                     
@@ -1608,8 +1609,8 @@ try:
             with col_s1:
                 stall_vendor = st.selectbox(f"Vendor for Stall #{i+1}", options=vendor_options, key=f"stall_vendor_{i}")
                 v_id = stall_vendor.split("[")[-1].rstrip("]") if "[" in stall_vendor else "other"
-                
-                v_row = vendors_df[vendors_df["Vendor ID"] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty else None
+                sub_v = vendors_df[vendors_df["Vendor ID"] == v_id] if not vendors_df.empty else pd.DataFrame()
+                v_row = sub_v.iloc[0] if not sub_v.empty else None
                 v_name = v_row["Vendor Name"] if v_row is not None else "Other"
                 v_cat = v_row["Vendor Category"] if v_row is not None else "Miscellaneous"
                 
@@ -2074,7 +2075,9 @@ if submitted:
                     stalls_list=stalls_data_list
                 )
             except Exception as e_stall:
-                st.warning(f"Downstream warning (Stalls update): {e_stall}")
+                st.warning("⚠ Stall records could not be saved. The event was logged successfully.")
+                with st.expander("Optional details"):
+                    st.write(str(e_stall))
                 
         # 2. Materials addition
         if requires_materials:
@@ -2088,7 +2091,9 @@ if submitted:
                     materials_list=materials_data_list
                 )
             except Exception as e_mat:
-                st.warning(f"Downstream warning (Materials update): {e_mat}")
+                st.warning("⚠ Material records could not be saved. The event was logged successfully.")
+                with st.expander("Optional details"):
+                    st.write(str(e_mat))
 
         # 3. Calendar Status update
         try:
@@ -2109,7 +2114,9 @@ if submitted:
                     evt_dict["Completed By"] = "Community Manager"
                     save_calendar_event(evt_dict)
         except Exception as e_cal:
-            st.warning(f"Downstream warning (Calendar update): {e_cal}")
+            st.warning("⚠ Calendar status could not be updated. Please verify manually.")
+            with st.expander("Optional details"):
+                st.write(str(e_cal))
 
         # 4. Learning Pipeline & Profiler Run
         try:
@@ -2121,7 +2128,9 @@ if submitted:
             feature_engineering.run()
             profile_generator.run()
         except Exception as e_learn:
-            st.warning(f"Downstream warning (Learning pipeline): {e_learn}")
+            st.warning("⚠ Learning pipeline could not run. Predictions will update on next sync.")
+            with st.expander("Optional details"):
+                st.write(str(e_learn))
 
         # 5. Rebuild stats summaries
         try:
@@ -2133,7 +2142,9 @@ if submitted:
             update_stall_summary()
             update_material_summary()
         except Exception as e_stats:
-            st.warning(f"Downstream warning (Ledgers update): {e_stats}")
+            st.warning("⚠ Statistics summaries could not be rebuilt. They will update on next sync.")
+            with st.expander("Optional details"):
+                st.write(str(e_stats))
 
     # -------------------------------------------------------
     # Save Continuous-Learning Signal

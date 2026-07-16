@@ -1296,7 +1296,8 @@ else:
                                     def_base = float(prev_match.get("base_cost", 0.0))
                                     def_gst = int(prev_match.get("gst_percent", 18))
                                 else:
-                                    db_row = vendors_df[vendors_df["Vendor ID"] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty else None
+                                    sub_v = vendors_df[vendors_df["Vendor ID"] == v_id] if not vendors_df.empty else pd.DataFrame()
+                                    db_row = sub_v.iloc[0] if not sub_v.empty else None
                                     def_base = float(db_row["Base Amount"]) if db_row is not None else 0.0
                                     def_gst = int(db_row["GST Percentage"]) if db_row is not None else 18
                                 
@@ -1357,7 +1358,8 @@ else:
                         stall_vendor = st.selectbox(f"Vendor for Stall #{i+1}", options=vendor_options, index=default_v_idx, key=f"edit_stall_vendor_{i}")
                         v_id = stall_vendor.split("[")[-1].rstrip("]") if "[" in stall_vendor else "other"
                         
-                        v_row = vendors_df[vendors_df["Vendor ID"] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty else None
+                        sub_v = vendors_df[vendors_df["Vendor ID"] == v_id] if not vendors_df.empty else pd.DataFrame()
+                        v_row = sub_v.iloc[0] if not sub_v.empty else None
                         v_name = v_row["Vendor Name"] if v_row is not None else "Other"
                         v_cat = v_row["Vendor Category"] if v_row is not None else "Miscellaneous"
                         

@@ -24,6 +24,16 @@ from integrations.master_data_db import (
 from ui.styles import load_css
 from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
+def _safe_lookup(df, id_col, id_val, display_col):
+    """Safely look up a display value from a DataFrame row, returning id_val on failure."""
+    try:
+        sub = df[df[id_col] == id_val]
+        if not sub.empty and display_col in sub.columns:
+            return sub.iloc[0][display_col]
+    except Exception:
+        pass
+    return str(id_val)
+
 st.set_page_config(
     page_title="TribeIQ - Master Data Management",
     page_icon="🗃️",
@@ -171,7 +181,7 @@ with tab_prop:
                     else:
                         st.error(f"Missing columns. CSV must contain: {required_cols}")
                 except Exception as e:
-                    st.error(f"Error parsing file: {e}")
+                    st.error("The uploaded file could not be processed. Please check the format and try again.")
                 
     st.write("---")
     
@@ -243,8 +253,12 @@ with tab_prop:
             with col_form:
                 with st.container(border=True):
                     st.markdown("**Property Modifier Panel**")
-                    selected_prop_id = st.selectbox("Select Property to Edit", df_prop["Property ID"].tolist(), format_func=lambda x: f"{x} - {df_prop[df_prop['Property ID'] == x].iloc[0]['Property Name']}")
-                    prop_row = df_prop[df_prop["Property ID"] == selected_prop_id].iloc[0]
+                    selected_prop_id = st.selectbox("Select Property to Edit", df_prop["Property ID"].tolist(), format_func=lambda x: f"{x} - {_safe_lookup(df_prop, 'Property ID', x, 'Property Name')}")
+                    sub_prop = df_prop[df_prop["Property ID"] == selected_prop_id]
+                    if sub_prop.empty:
+                        st.info("The selected property was not found.")
+                        st.stop()
+                    prop_row = sub_prop.iloc[0]
                     
                     col_f1, col_f2 = st.columns(2)
                     with col_f1:
@@ -299,7 +313,7 @@ with tab_evt:
                         else:
                             st.error("Missing columns. CSV must contain 'Event ID' and 'Event Name'.")
                     except Exception as e:
-                        st.error(f"Error parsing file: {e}")
+                        st.error("The uploaded file could not be processed. Please check the format and try again.")
                         
         st.write("---")
         
@@ -387,8 +401,12 @@ with tab_evt:
             with col_form_e:
                 with st.container(border=True):
                     st.markdown("**Edit Catalogue Record**")
-                    selected_eid = st.selectbox("Select Event to Edit", df_evt["Event ID"].tolist(), format_func=lambda x: f"{x} - {df_evt[df_evt['Event ID'] == x].iloc[0]['Event Name']}")
-                    evt_row = df_evt[df_evt["Event ID"] == selected_eid].iloc[0]
+                    selected_eid = st.selectbox("Select Event to Edit", df_evt["Event ID"].tolist(), format_func=lambda x: f"{x} - {_safe_lookup(df_evt, 'Event ID', x, 'Event Name')}")
+                    sub_evt = df_evt[df_evt["Event ID"] == selected_eid]
+                    if sub_evt.empty:
+                        st.info("The selected event was not found.")
+                        st.stop()
+                    evt_row = sub_evt.iloc[0]
                     
                     col_fe1, col_fe2 = st.columns(2)
                     with col_fe1:
@@ -417,8 +435,12 @@ with tab_evt:
             with col_form_e:
                 with st.container(border=True):
                     st.markdown("**Duplicate Catalogue Record**")
-                    dup_eid = st.selectbox("Select Event to Duplicate", df_evt["Event ID"].tolist(), format_func=lambda x: f"{x} - {df_evt[df_evt['Event ID'] == x].iloc[0]['Event Name']}")
-                    dup_row = df_evt[df_evt["Event ID"] == dup_eid].iloc[0].copy()
+                    dup_eid = st.selectbox("Select Event to Duplicate", df_evt["Event ID"].tolist(), format_func=lambda x: f"{x} - {_safe_lookup(df_evt, 'Event ID', x, 'Event Name')}")
+                    sub_dup = df_evt[df_evt["Event ID"] == dup_eid]
+                    if sub_dup.empty:
+                        st.info("The selected event was not found.")
+                        st.stop()
+                    dup_row = sub_dup.iloc[0].copy()
                     
                     dup_new_name = st.text_input("New Event Name", value=f"{dup_row['Event Name']} (Copy)", key="dup_new_name")
                     
@@ -442,7 +464,7 @@ with tab_evt:
             with col_form_e:
                 with st.container(border=True):
                     st.markdown("**Delete Catalogue Record**")
-                    del_eid = st.selectbox("Select Event to Delete", df_evt["Event ID"].tolist(), format_func=lambda x: f"{x} - {df_evt[df_evt['Event ID'] == x].iloc[0]['Event Name']}")
+                    del_eid = st.selectbox("Select Event to Delete", df_evt["Event ID"].tolist(), format_func=lambda x: f"{x} - {_safe_lookup(df_evt, 'Event ID', x, 'Event Name')}")
                     confirm_del = st.checkbox("I confirm that I want to delete this event from the catalogue permanently.")
                     
                     if st.button("🗑️ Delete Event Permanently", key="e_del_btn", disabled=not confirm_del, use_container_width=True):
@@ -477,7 +499,7 @@ with tab_evt_cat:
                     else:
                         st.error("Missing column. CSV must contain 'Category'.")
                 except Exception as e:
-                    st.error(f"Error parsing file: {e}")
+                    st.error("The uploaded file could not be processed. Please check the format and try again.")
                     
     st.write("---")
     
@@ -518,7 +540,11 @@ with tab_evt_cat:
                 with st.container(border=True):
                     st.markdown("**Modify Event Category**")
                     selected_cat = st.selectbox("Select Category", df_cat["Category"].tolist(), key="c_select")
-                    cat_row = df_cat[df_cat["Category"] == selected_cat].iloc[0]
+                    sub_cat = df_cat[df_cat["Category"] == selected_cat]
+                    if sub_cat.empty:
+                        st.info("The selected category was not found.")
+                        st.stop()
+                    cat_row = sub_cat.iloc[0]
                     
                     edit_cat_name = st.text_input("Category Name", value=cat_row["Category"], key="c_edit_name")
                     edit_cat_desc = st.text_input("Description", value=cat_row["Description"], key="c_edit_desc")
@@ -576,7 +602,7 @@ with tab_prop_type:
                     else:
                         st.error("Missing column. CSV must contain 'Property Type'.")
                 except Exception as e:
-                    st.error(f"Error parsing file: {e}")
+                    st.error("The uploaded file could not be processed. Please check the format and try again.")
                     
     st.write("---")
     st.markdown("#### Existing Property Types & Rules")
@@ -617,7 +643,11 @@ with tab_prop_type:
                 with st.container(border=True):
                     st.markdown("**Modify Rules & Preferences**")
                     selected_pt = st.selectbox("Select Property Type", df_pt["Property Type"].tolist(), key="pt_select")
-                    pt_row = df_pt[df_pt["Property Type"] == selected_pt].iloc[0]
+                    sub_pt = df_pt[df_pt["Property Type"] == selected_pt]
+                    if sub_pt.empty:
+                        st.info("The selected property type was not found.")
+                        st.stop()
+                    pt_row = sub_pt.iloc[0]
                     
                     edit_pt_pref = st.text_input("Preferred Categories (comma-separated)", value=pt_row["Preferred Categories"], key="pt_edit_pref")
                     edit_pt_rest = st.text_input("Restricted Categories (comma-separated)", value=pt_row["Restricted Categories"], key="pt_edit_rest")
@@ -656,7 +686,7 @@ with tab_vend_cat:
                     else:
                         st.error("Missing column. CSV must contain 'Category'.")
                 except Exception as e:
-                    st.error(f"Error parsing file: {e}")
+                    st.error("The uploaded file could not be processed. Please check the format and try again.")
                     
     st.write("---")
     st.markdown("#### Existing Vendor Categories")
@@ -695,7 +725,11 @@ with tab_vend_cat:
                 with st.container(border=True):
                     st.markdown("**Modify Vendor Category**")
                     selected_vc = st.selectbox("Select Category", df_vc["Category"].tolist(), key="vc_select")
-                    vc_row = df_vc[df_vc["Category"] == selected_vc].iloc[0]
+                    sub_vc = df_vc[df_vc["Category"] == selected_vc]
+                    if sub_vc.empty:
+                        st.info("The selected vendor category was not found.")
+                        st.stop()
+                    vc_row = sub_vc.iloc[0]
                     
                     edit_vc_name = st.text_input("Category Name", value=vc_row["Category"], key="vc_edit_name")
                     edit_vc_status = st.selectbox("Status", ["Active", "Inactive"], index=0 if vc_row["Status"] == "Active" else 1, key="vc_edit_status")
@@ -752,7 +786,7 @@ with tab_mat_cat:
                     else:
                         st.error("Missing column. CSV must contain 'Category'.")
                 except Exception as e:
-                    st.error(f"Error parsing file: {e}")
+                    st.error("The uploaded file could not be processed. Please check the format and try again.")
                     
     st.write("---")
     st.markdown("#### Existing Material Categories")
@@ -791,7 +825,11 @@ with tab_mat_cat:
                 with st.container(border=True):
                     st.markdown("**Modify Material Category**")
                     selected_mc = st.selectbox("Select Category", df_mc["Category"].tolist(), key="mc_select")
-                    mc_row = df_mc[df_mc["Category"] == selected_mc].iloc[0]
+                    sub_mc = df_mc[df_mc["Category"] == selected_mc]
+                    if sub_mc.empty:
+                        st.info("The selected material category was not found.")
+                        st.stop()
+                    mc_row = sub_mc.iloc[0]
                     
                     edit_mc_name = st.text_input("Category Name", value=mc_row["Category"], key="mc_edit_name")
                     edit_mc_status = st.selectbox("Status", ["Active", "Inactive"], index=0 if mc_row["Status"] == "Active" else 1, key="mc_edit_status")

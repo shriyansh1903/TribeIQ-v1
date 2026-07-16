@@ -228,7 +228,8 @@ try:
             
     with p_col2:
         if not history.empty and feedback_col and name_col:
-            best_ev = history.sort_values(by=feedback_col, ascending=False).iloc[0][name_col]
+            sorted_h = history.sort_values(by=feedback_col, ascending=False)
+            best_ev = sorted_h.iloc[0][name_col] if len(sorted_h) > 0 else "N/A"
             st.metric("Highest Rated Event", best_ev)
         else:
             st.metric("Highest Rated Event", "N/A")
@@ -311,12 +312,13 @@ try:
         prop_col = safe_get_column(history, ["Property", "Property Name"])
         date_col = safe_get_column(history, ["Date", "Event Date"])
         
-        last_event = history.iloc[-1]
-        ev_name = last_event[name_col] if name_col else "N/A"
-        ev_prop = last_event[prop_col] if prop_col else "N/A"
-        ev_date = last_event[date_col] if date_col else "N/A"
-        
-        activity_items.insert(0, f"✅ Event Logged: '{ev_name}' at {ev_prop} on {ev_date}.")
+        last_event = history.iloc[-1] if len(history) > 0 else None
+        if last_event is not None:
+            ev_name = last_event[name_col] if name_col else "N/A"
+            ev_prop = last_event[prop_col] if prop_col else "N/A"
+            ev_date = last_event[date_col] if date_col else "N/A"
+            
+            activity_items.insert(0, f"✅ Event Logged: '{ev_name}' at {ev_prop} on {ev_date}.")
 
     for act in activity_items[:4]:
         st.write(act)

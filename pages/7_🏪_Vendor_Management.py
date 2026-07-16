@@ -88,7 +88,8 @@ try:
         st.metric("Average Base Cost", f"₹{avg_cost:,.2f}")
     with k_col3:
         if not vendors_df.empty and fc_col in vendors_df.columns and name_col in vendors_df.columns:
-            top_v = vendors_df.sort_values(by=fc_col, ascending=False).iloc[0][name_col]
+            sorted_v = vendors_df.sort_values(by=fc_col, ascending=False)
+            top_v = sorted_v.iloc[0][name_col] if len(sorted_v) > 0 else "N/A"
             st.metric("Primary Contractor", top_v)
         else:
             st.metric("Primary Contractor", "N/A")
@@ -207,7 +208,11 @@ if not vendors_df.empty:
         selected_vendor_lbl = st.selectbox("Choose Vendor", options=vendor_options)
         selected_vendor_id = selected_vendor_lbl.split("[")[-1].rstrip("]")
         
-        row_data = vendors_df[vendors_df[id_col] == selected_vendor_id].iloc[0]
+        sub_v = vendors_df[vendors_df[id_col] == selected_vendor_id]
+        if sub_v.empty:
+            st.info("The selected vendor record was not found in the database.")
+            st.stop()
+        row_data = sub_v.iloc[0]
         
         col_e1, col_e2 = st.columns(2)
         with col_e1:

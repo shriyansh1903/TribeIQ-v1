@@ -87,7 +87,9 @@ def build_unique_interest_dataframe(top_interests: Any) -> pd.DataFrame:
 try:
     application_data = load_application_data() or {}
 except Exception as error:
-    st.error(f"Unable to load property data: {error}")
+    st.error("Unable to load property data. Please check your data files and try again.")
+    with st.expander("Optional details"):
+        st.write(str(error))
     st.stop()
 
 profiles = application_data.get("profiles", {})

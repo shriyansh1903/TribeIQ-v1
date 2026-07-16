@@ -236,7 +236,9 @@ with st.expander("🚨 Emergency Database Import (Fallback)", expanded=False):
                     st.toast("Emergency manual database import complete!")
                     st.rerun()
             except Exception as e:
-                st.error(f"Emergency import failed: {e}")
+                st.error("Emergency import failed. Please verify the file format and try again.")
+                with st.expander("Optional details"):
+                    st.write(str(e))
 
 st.write("")
 

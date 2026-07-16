@@ -278,7 +278,11 @@ st.write("### 📝 Event Details & Status Workflow Management")
 try:
     if not df_filtered.empty and name_col in df_filtered.columns:
         selected_event_name = st.selectbox("Select Event for Action", df_filtered[name_col].tolist())
-        evt_row = df_filtered[df_filtered[name_col] == selected_event_name].iloc[0]
+        sub_evt = df_filtered[df_filtered[name_col] == selected_event_name]
+        if sub_evt.empty:
+            st.info("No matching event found. Please select a different event.")
+            st.stop()
+        evt_row = sub_evt.iloc[0]
         
         col_d1, col_d2 = st.columns(2)
         with col_d1:
