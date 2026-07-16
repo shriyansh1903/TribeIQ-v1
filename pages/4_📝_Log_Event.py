@@ -1626,22 +1626,53 @@ with st.form(
             )
 
     st.subheader("5. Vendor")
-    vendor_used = st.checkbox("Vendor Used", help="Check this box if external vendors were hired for food, decoration, or entertainment.")
+    vendor_used = st.checkbox("Vendor Used", help="Check this box if external vendors were hired.")
+    
+    vendors_data_list = []
     vendor_name = "None"
+    
     if vendor_used:
-        vendor_name = st.selectbox(
-            "Vendor Name",
-            options=[
-                "Select Vendor",
-                "Food & Beverage Vendor",
-                "Decorations Vendor",
-                "Sound & AV Vendor",
-                "Workshop Facilitator",
-                "Security & Logistics",
-                "Other"
-            ],
-            help="Select the name/type of the primary vendor used."
+        try:
+            from integrations.vendor_db import load_vendors
+            vendors_df = load_vendors()
+            active_vendors = vendors_df[vendors_df["Active / Inactive Status"] == "Active"]
+            vendor_options = [f"{row['Vendor Name']} [{row['Vendor ID']}]" for _, row in active_vendors.iterrows()]
+        except Exception:
+            vendor_options = []
+            
+        selected_vendor_lbls = st.multiselect(
+            "Select Vendors Hired",
+            options=vendor_options,
+            help="Choose one or more vendors from the central database."
         )
+        
+        if selected_vendor_lbls:
+            for lbl in selected_vendor_lbls:
+                st.markdown(f"**Vendor Details: {lbl}**")
+                c_cost, c_gst = st.columns(2)
+                with c_cost:
+                    v_id = lbl.split("[")[-1].rstrip("]") if "[" in lbl else "other"
+                    db_row = vendors_df[vendors_df["Vendor ID"] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty else None
+                    db_base = float(db_row["Base Amount"]) if db_row is not None else 0.0
+                    db_gst_pct = int(db_row["GST Percentage"]) if db_row is not None else 18
+                    
+                    base_cost = st.number_input(f"Base Cost for {lbl.split(' [')[0]} (INR)", min_value=0.0, value=db_base, key=f"base_cost_{v_id}")
+                with c_gst:
+                    gst_pct = st.selectbox(f"GST % for {lbl.split(' [')[0]}", options=[12, 18], index=[12, 18].index(db_gst_pct), key=f"gst_pct_{v_id}")
+                
+                gst_amt = round((base_cost * gst_pct) / 100.0, 2)
+                final_cost = round(base_cost + gst_amt, 2)
+                
+                vendors_data_list.append({
+                    "vendor_id": v_id,
+                    "name": lbl.split(" [")[0],
+                    "category": db_row["Vendor Category"] if db_row is not None else "Miscellaneous",
+                    "base_cost": base_cost,
+                    "gst_percent": gst_pct,
+                    "gst_amount": gst_amt,
+                    "final_cost": final_cost
+                })
+            vendor_name = ", ".join([v["name"] for v in vendors_data_list])
 
     st.subheader("6. Notes")
     notes = st.text_area(
@@ -1965,6 +1996,9 @@ if submitted:
         "Vendor Name":
             vendor_name,
 
+        "Vendors Used":
+            json.dumps(vendors_data_list),
+
         "Learnings":
             safe_text(
                 learnings
@@ -1995,6 +2029,13 @@ if submitted:
             history_record
         )
     )
+
+    if history_saved:
+        try:
+            from integrations.vendor_db import update_vendor_statistics
+            update_vendor_statistics()
+        except Exception:
+            pass
 
     # -------------------------------------------------------
     # Save Continuous-Learning Signal

@@ -102,6 +102,7 @@ pages = [
     st.Page(_PAGES_DIR / "4_📝_Log_Event.py", title="Log Event", icon="📝"),
     st.Page(_PAGES_DIR / "5_📊_Analytics.py", title="Analytics", icon="📈"),
     st.Page(_PAGES_DIR / "6_⚙️_Settings.py", title="Settings", icon="⚙️"),
+    st.Page(_PAGES_DIR / "7_🏪_Vendor_Management.py", title="Vendor Management", icon="🏪"),
 ]
 
 with st.sidebar:

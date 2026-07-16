@@ -1230,90 +1230,159 @@ else:
 
                 st.subheader("5. Vendor")
                 edit_vendor_used = st.checkbox("Vendor Used", value=bool(selected_row.get("Vendor Used", False)) if pd.notna(selected_row.get("Vendor Used")) else False)
-                vendor_names = ["None", "Food & Beverage Vendor", "Decorations Vendor", "Sound & AV Vendor", "Workshop Facilitator", "Security & Logistics", "Other"]
-                current_vendor = str(selected_row.get("Vendor Name", "None"))
-                vendor_idx = vendor_names.index(current_vendor) if current_vendor in vendor_names else 0
-                edit_vendor_name = st.selectbox("Vendor Name", options=vendor_names, index=vendor_idx)
-
-                st.subheader("6. Notes & Learnings")
-                edit_notes = st.text_area("Notes", value=str(selected_row.get("Notes", "")) if pd.notna(selected_row.get("Notes")) else "")
-                edit_learnings = st.text_area("Learnings", value=str(selected_row.get("Learnings", "")) if pd.notna(selected_row.get("Learnings")) else "")
-
-                save_submitted = st.form_submit_button("💾 Save Changes", type="primary", use_container_width=True)
-
-                if save_submitted:
-                    # Calculate Turnout Rate Automatically
-                    from occupancy_forecaster import load_resident_export, get_active_residents
-                    residents_timeline = load_resident_export()
-                    event_timestamp = pd.Timestamp(edit_date).normalize()
-                    active_res = get_active_residents(
-                        dataframe=residents_timeline,
-                        property_name=edit_property,
-                        event_date=event_timestamp
-                    )
-                    active_count = len(active_res)
-                    if active_count > 0:
-                        new_turnout_pct = (float(edit_actual_attendance) / float(active_count)) * 100.0
-                        new_turnout_pct = min(new_turnout_pct, 100.0)
-                    else:
-                        new_turnout_pct = 0.0
-
-                    new_success_score = calculate_success_score(
-                        attendance_percent=new_turnout_pct,
-                        feedback_score=edit_feedback_score,
-                        budget_planned=edit_estimated_budget,
-                        budget_spent=edit_actual_budget,
+                
+                edit_vendors_data_list = []
+                edit_vendor_name = "None"
+                
+                if edit_vendor_used:
+                    try:
+                        from integrations.vendor_db import load_vendors
+                        vendors_df = load_vendors()
+                        active_vendors = vendors_df[vendors_df["Active / Inactive Status"] == "Active"]
+                        vendor_options = [f"{row['Vendor Name']} [{row['Vendor ID']}]" for _, row in active_vendors.iterrows()]
+                    except Exception:
+                        vendor_options = []
+                        
+                    prev_used_str = selected_row.get("Vendors Used", "[]")
+                    prev_used = []
+                    if pd.notna(prev_used_str) and str(prev_used_str).strip():
+                        try:
+                            prev_used = json.loads(prev_used_str)
+                        except Exception:
+                            pass
+                    
+                    prev_ids = [v.get("vendor_id") for v in prev_used]
+                    default_selected_lbls = []
+                    for opt in vendor_options:
+                        opt_id = opt.split("[")[-1].rstrip("]") if "[" in opt else "other"
+                        if opt_id in prev_ids:
+                            default_selected_lbls.append(opt)
+                            
+                    edit_selected_lbls = st.multiselect(
+                        "Select Vendors Hired",
+                        options=vendor_options,
+                        default=default_selected_lbls,
+                        help="Choose one or more vendors from the central database."
                     )
                     
-                    pred_attendance = safe_int(selected_row.get("Predicted Attendance"))
-                    has_prediction = pd.notna(selected_row.get("Predicted Attendance")) and str(selected_row.get("Predicted Attendance")).strip() != ""
+                    if edit_selected_lbls:
+                        for lbl in edit_selected_lbls:
+                            st.markdown(f"**Vendor Details: {lbl}**")
+                            c_cost, c_gst = st.columns(2)
+                            with c_cost:
+                                v_id = lbl.split("[")[-1].rstrip("]") if "[" in lbl else "other"
+                                prev_match = next((v for v in prev_used if str(v.get("vendor_id")) == str(v_id)), None)
+                                
+                                if prev_match:
+                                    def_base = float(prev_match.get("base_cost", 0.0))
+                                    def_gst = int(prev_match.get("gst_percent", 18))
+                                else:
+                                    db_row = vendors_df[vendors_df["Vendor ID"] == v_id].iloc[0] if v_id != "other" and not vendors_df.empty else None
+                                    def_base = float(db_row["Base Amount"]) if db_row is not None else 0.0
+                                    def_gst = int(db_row["GST Percentage"]) if db_row is not None else 18
+                                
+                                edit_base_cost = st.number_input(f"Base Cost for {lbl.split(' [')[0]} (INR)", min_value=0.0, value=def_base, key=f"edit_base_cost_{v_id}")
+                            with c_gst:
+                                edit_gst_pct = st.selectbox(f"GST % for {lbl.split(' [')[0]}", options=[12, 18], index=[12, 18].index(def_gst), key=f"edit_gst_pct_{v_id}")
+                            
+                            edit_gst_amt = round((edit_base_cost * edit_gst_pct) / 100.0, 2)
+                            edit_final_cost = round(edit_base_cost + edit_gst_amt, 2)
+                            
+                            edit_vendors_data_list.append({
+                                "vendor_id": v_id,
+                                "name": lbl.split(" [")[0],
+                                "category": db_row["Vendor Category"] if v_id != "other" and not vendors_df.empty else "Miscellaneous",
+                                "base_cost": edit_base_cost,
+                                "gst_percent": edit_gst_pct,
+                                "gst_amount": edit_gst_amt,
+                                "final_cost": edit_final_cost
+                            })
+                        edit_vendor_name = ", ".join([v["name"] for v in edit_vendors_data_list])
+
+            st.subheader("6. Notes & Learnings")
+            edit_notes = st.text_area("Notes", value=str(selected_row.get("Notes", "")) if pd.notna(selected_row.get("Notes")) else "")
+            edit_learnings = st.text_area("Learnings", value=str(selected_row.get("Learnings", "")) if pd.notna(selected_row.get("Learnings")) else "")
+
+            save_submitted = st.form_submit_button("💾 Save Changes", type="primary", use_container_width=True)
+
+            if save_submitted:
+                # Calculate Turnout Rate Automatically
+                from occupancy_forecaster import load_resident_export, get_active_residents
+                residents_timeline = load_resident_export()
+                event_timestamp = pd.Timestamp(edit_date).normalize()
+                active_res = get_active_residents(
+                    dataframe=residents_timeline,
+                    property_name=edit_property,
+                    event_date=event_timestamp
+                )
+                active_count = len(active_res)
+                if active_count > 0:
+                    new_turnout_pct = (float(edit_actual_attendance) / float(active_count)) * 100.0
+                    new_turnout_pct = min(new_turnout_pct, 100.0)
+                else:
+                    new_turnout_pct = 0.0
+
+                new_success_score = calculate_success_score(
+                    attendance_percent=new_turnout_pct,
+                    feedback_score=edit_feedback_score,
+                    budget_planned=edit_estimated_budget,
+                    budget_spent=edit_actual_budget,
+                )
+                
+                pred_attendance = safe_int(selected_row.get("Predicted Attendance"))
+                has_prediction = pd.notna(selected_row.get("Predicted Attendance")) and str(selected_row.get("Predicted Attendance")).strip() != ""
+                
+                new_pred_error = calculate_prediction_error(
+                    actual_attendance=int(edit_actual_attendance),
+                    predicted_attendance=pred_attendance,
+                    has_prediction=has_prediction
+                )
+
+                import pytz
+                ist_tz = pytz.timezone("Asia/Kolkata")
+                now_ist = datetime.now(ist_tz)
+                last_modified_timestamp = now_ist.isoformat()
+
+                updated_data = {
+                    "Date": edit_date.isoformat(),
+                    "Property": edit_property,
+                    "Event Name": edit_event_name,
+                    "Attendance %": round(new_turnout_pct, 2),
+                    "Actual Attendance": int(edit_actual_attendance),
+                    "Average Feedback": round(edit_feedback_score, 2),
+                    "Success Score": new_success_score,
+                    "Budget Planned": round(edit_estimated_budget, 2),
+                    "Budget Spent": round(edit_actual_budget, 2),
+                    "Estimated Budget": edit_estimated_budget,
+                    "Actual Budget": edit_actual_budget,
+                    "Ticketed Event": edit_is_ticketed,
+                    "Ticket Price": edit_ticket_price,
+                    "Tickets Available": edit_tickets_available,
+                    "Tickets Sold": edit_tickets_sold,
+                    "Revenue Collected": edit_revenue_collected,
+                    "Vendor Used": edit_vendor_used,
+                    "Vendor Name": edit_vendor_name if edit_vendor_used else "None",
+                    "Vendors Used": json.dumps(edit_vendors_data_list),
+                    "Notes": safe_text(edit_notes),
+                    "Learnings": safe_text(edit_learnings),
+                    "Last Modified Timestamp": last_modified_timestamp,
+                    "Attendance Prediction Error": new_pred_error.get("error_count"),
+                    "Absolute Attendance Error": new_pred_error.get("absolute_error"),
+                    "Attendance Error %": new_pred_error.get("error_percent"),
+                }
+
+                from ui_data_bridge import update_logged_event
+                success = update_logged_event(selected_event_id, updated_data)
+                if success:
+                    # Update summaries
+                    from integrations.vendor_db import update_vendor_statistics
+                    update_vendor_statistics()
                     
-                    new_pred_error = calculate_prediction_error(
-                        actual_attendance=int(edit_actual_attendance),
-                        predicted_attendance=pred_attendance,
-                        has_prediction=has_prediction
-                    )
-
-                    import pytz
-                    ist_tz = pytz.timezone("Asia/Kolkata")
-                    now_ist = datetime.now(ist_tz)
-                    last_modified_timestamp = now_ist.isoformat()
-
-                    updated_data = {
-                        "Date": edit_date.isoformat(),
-                        "Property": edit_property,
-                        "Event Name": edit_event_name,
-                        "Attendance %": round(new_turnout_pct, 2),
-                        "Actual Attendance": int(edit_actual_attendance),
-                        "Average Feedback": round(edit_feedback_score, 2),
-                        "Success Score": new_success_score,
-                        "Budget Planned": round(edit_estimated_budget, 2),
-                        "Budget Spent": round(edit_actual_budget, 2),
-                        "Estimated Budget": edit_estimated_budget,
-                        "Actual Budget": edit_actual_budget,
-                        "Ticketed Event": edit_is_ticketed,
-                        "Ticket Price": edit_ticket_price,
-                        "Tickets Available": edit_tickets_available,
-                        "Tickets Sold": edit_tickets_sold,
-                        "Revenue Collected": edit_revenue_collected,
-                        "Vendor Used": edit_vendor_used,
-                        "Vendor Name": edit_vendor_name if edit_vendor_used else "None",
-                        "Notes": safe_text(edit_notes),
-                        "Learnings": safe_text(edit_learnings),
-                        "Last Modified Timestamp": last_modified_timestamp,
-                        "Attendance Prediction Error": new_pred_error.get("error_count"),
-                        "Absolute Attendance Error": new_pred_error.get("absolute_error"),
-                        "Attendance Error %": new_pred_error.get("error_percent"),
-                    }
-
-                    from ui_data_bridge import update_logged_event
-                    success = update_logged_event(selected_event_id, updated_data)
-                    if success:
-                        st.toast(f"Successfully updated event: {edit_event_name}!")
-                        st.cache_data.clear()
-                        st.rerun()
-                    else:
-                        st.error("Failed to update event details.")
+                    st.toast(f"Successfully updated event: {edit_event_name}!")
+                    st.cache_data.clear()
+                    st.rerun()
+                else:
+                    st.error("Failed to update event details.")
 
         # -------------------------------------------------------
         # Delete Confirmation
