@@ -12,8 +12,8 @@ from integrations.calendar_db import load_calendar_events
 from intelligence.occupancy_forecaster import load_resident_export, forecast_property_occupancy
 
 def render_executive_dashboard(history_df):
-    st.write("## 👔 Executive Decision-Making Suite")
-    st.write("Consolidated operational, financial, occupancy and engagement intelligence for TribeIQ leadership.")
+    st.markdown("## 👔 Executive Decision-Making Suite")
+    st.markdown("*Consolidated operational, financial, occupancy and engagement intelligence for TribeIQ leadership.*")
     
     # -------------------------------------------------------
     # 1. Load All Data
@@ -88,7 +88,7 @@ def render_executive_dashboard(history_df):
     # 3. Monthly Insights Panel
     # -------------------------------------------------------
     st.write("---")
-    st.write("### 💡 Monthly Planning Insights")
+    st.markdown("### 💡 Monthly Planning Insights")
     
     insights = []
     if not filtered_history.empty:
@@ -119,7 +119,7 @@ def render_executive_dashboard(history_df):
     # 4. KPI Summary Cards
     # -------------------------------------------------------
     st.write("---")
-    st.write("### 🏢 Executive KPI Summary")
+    st.markdown("### 🏢 Executive KPI Summary")
     
     # Calculate KPIs
     total_events = len(filtered_history)
@@ -216,7 +216,7 @@ def render_executive_dashboard(history_df):
     # 6. Bulk Export Worksheets
     # -------------------------------------------------------
     st.write("---")
-    st.write("### 📥 Export Worksheets")
+    st.markdown("### 📥 Export Worksheets")
     col_ex1, col_ex2, col_ex3 = st.columns(3)
     
     with col_ex1:

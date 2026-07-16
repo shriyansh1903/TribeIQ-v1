@@ -286,18 +286,22 @@ def get_application_data() -> Dict[str, Any]:
 # Page Header
 # ===========================================================
 
-page_header(
-    "📊 Analytics",
-    "Track event performance, recommendation quality and "
-    "the real outcomes feeding TribeIQ's continuous-learning "
-    "system."
-)
+from datetime import date, datetime
+import datetime as dt_module
 
+st.markdown("## 📊 Executive Intelligence Dashboard")
+st.markdown(f"*Analytics & Reporting Center — {date.today().strftime('%B %d, %Y')}*")
+st.write("")
 
 # ===========================================================
 # Workspace View Mode Selection
 # ===========================================================
-view_mode = st.radio("Workspace Mode", ["👔 Executive Dashboard", "🎯 Operational Analytics"], horizontal=True)
+view_mode = st.radio(
+    "Workspace Mode",
+    ["👔 Executive Dashboard", "🎯 Operational Analytics"],
+    horizontal=True,
+    label_visibility="collapsed"
+)
 
 if view_mode == "👔 Executive Dashboard":
     hist_df = load_history_data()
@@ -409,7 +413,7 @@ if property_names:
         )
 
     selected_property = st.selectbox(
-        "Property",
+        "🏢 Target Property",
         options=property_options,
         index=default_index
     )
@@ -536,6 +540,9 @@ average_success = (
 )
 
 
+st.write("---")
+st.markdown("### 📊 Core Performance Metrics")
+
 metric_row([
     {"title": "Events Logged", "value": len(filtered_history)},
     {"title": "Average Attendance", "value": f"{average_attendance:.1f}%"},
@@ -548,10 +555,10 @@ metric_row([
 # Recommendation Intelligence
 # ===========================================================
 
-st.divider()
+st.write("---")
 
-section_header(
-    "Recommendation Intelligence"
+st.markdown(
+    "### 🧠 Recommendation Intelligence"
 )
 
 
@@ -646,10 +653,10 @@ else:
 # Continuous Learning
 # ===========================================================
 
-st.divider()
+st.write("---")
 
-section_header(
-    "Continuous Learning"
+st.markdown(
+    "### 📚 Continuous Learning Pipeline"
 )
 
 
@@ -775,10 +782,10 @@ else:
 
 if not filtered_history.empty:
 
-    st.divider()
+    st.write("---")
 
-    section_header(
-        "Event Performance"
+    st.markdown(
+        "### 📈 Event Performance Analytics"
     )
 
 
@@ -873,10 +880,10 @@ if (
     and category_column is not None
 ):
 
-    st.divider()
+    st.write("---")
 
-    section_header(
-        "Category Performance"
+    st.markdown(
+        "### 🏷️ Category Performance Benchmarks"
     )
 
 
@@ -962,10 +969,10 @@ if (
 # Event History Table
 # ===========================================================
 
-st.divider()
+st.write("---")
 
-section_header(
-    "Event History"
+st.markdown(
+    "### 📜 Event History & Records"
 )
 
 
@@ -1107,7 +1114,7 @@ else:
     # Event Management Controls (Edit / Delete)
     # -------------------------------------------------------
     st.markdown("---")
-    st.subheader("🛠️ Manage Selected Event")
+    st.markdown("### 🛠️ Manage Selected Event")
 
     if display_history.empty:
         st.info("No matching historical events found to manage.")
@@ -1168,7 +1175,7 @@ else:
             event_idx = all_event_names.index(selected_row["Event Name"]) if "Event Name" in selected_row and selected_row["Event Name"] in all_event_names else 0
 
             with st.form("edit_logged_event_form"):
-                st.subheader("1. Event Details")
+                st.markdown("### 📋 1. Event Details")
                 edit_col1, edit_col2 = st.columns(2)
                 with edit_col1:
                     edit_property = st.selectbox("Property", options=all_property_names, index=prop_idx)
@@ -1193,7 +1200,7 @@ else:
                     edit_start_time = st.time_input("Event Start Time", value=parse_time(selected_row.get("Event Start Time"), dt_module.time(18, 0)))
                     edit_end_time = st.time_input("Event End Time", value=parse_time(selected_row.get("Event End Time"), dt_module.time(20, 0)))
 
-                st.subheader("2. Attendance")
+                st.markdown("### 👥 2. Attendance")
                 edit_att_col1, edit_att_col2 = st.columns(2)
                 with edit_att_col1:
                     edit_actual_attendance = st.number_input(
@@ -1208,7 +1215,7 @@ else:
                     closest_idx = min(range(len(feedback_options)), key=lambda i: abs(feedback_options[i] - current_feedback))
                     edit_feedback_score = st.selectbox("Feedback Rating", options=feedback_options, index=closest_idx, format_func=get_star_string)
 
-                st.subheader("3. Budget")
+                st.markdown("### 💸 3. Budget")
                 edit_bud_col1, edit_bud_col2 = st.columns(2)
                 with edit_bud_col1:
                     edit_estimated_budget = st.number_input(
@@ -1225,7 +1232,7 @@ else:
                         step=100.0
                     )
 
-                st.subheader("4. Ticketing")
+                st.markdown("### 🎫 4. Ticketing")
                 edit_is_ticketed = st.checkbox("Ticketed Event", value=bool(selected_row.get("Ticketed Event", False)) if pd.notna(selected_row.get("Ticketed Event")) else False)
                 edit_ticket_price = float(selected_row.get("Ticket Price", 0.0)) if pd.notna(selected_row.get("Ticket Price")) else 0.0
                 edit_tickets_available = int(selected_row.get("Tickets Available", 0)) if pd.notna(selected_row.get("Tickets Available")) else 0
@@ -1240,7 +1247,7 @@ else:
                     edit_revenue_collected = edit_ticket_price * edit_tickets_sold
                     st.number_input("Revenue Collected (auto-calculated)", min_value=0.0, value=float(edit_revenue_collected), disabled=True)
 
-                st.subheader("5. Vendor")
+                st.markdown("### 🏪 5. Vendor")
                 edit_vendor_used = st.checkbox("Vendor Used", value=bool(selected_row.get("Vendor Used", False)) if pd.notna(selected_row.get("Vendor Used")) else False)
                 
                 edit_vendors_data_list = []
@@ -1311,7 +1318,7 @@ else:
                             })
                         edit_vendor_name = ", ".join([v["name"] for v in edit_vendors_data_list])
 
-            st.subheader("5.5 Stall Management")
+            st.markdown("### 🏪 6. Stall Management")
             edit_has_stalls = st.checkbox("This event includes stalls", value=bool(selected_row.get("Has Stalls", False)) if pd.notna(selected_row.get("Has Stalls")) else False)
             edit_stalls_data_list = []
             
@@ -1388,7 +1395,7 @@ else:
                 tot_stall_rev = sum([s["rental_amount"] for s in edit_stalls_data_list])
                 st.write(f"**Total Stall Revenue (auto-calculated):** INR {tot_stall_rev}")
 
-            st.subheader("5.7 Materials & Procurement")
+            st.markdown("### 📦 7. Materials & Procurement")
             edit_requires_materials = st.checkbox("This event requires materials", value=bool(selected_row.get("Requires Materials", False)) if pd.notna(selected_row.get("Requires Materials")) else False)
             edit_materials_data_list = []
             
@@ -1457,7 +1464,7 @@ else:
                 tot_proc_cost = sum([m["quantity"] * m["unit_cost"] for m in edit_materials_data_list])
                 st.write(f"**Total Procurement Cost (auto-calculated):** INR {tot_proc_cost}")
 
-            st.subheader("6. Notes & Learnings")
+            st.markdown("### 📝 8. Notes & Learnings")
             edit_notes = st.text_area("Notes", value=str(selected_row.get("Notes", "")) if pd.notna(selected_row.get("Notes")) else "")
             edit_learnings = st.text_area("Learnings", value=str(selected_row.get("Learnings", "")) if pd.notna(selected_row.get("Learnings")) else "")
 
@@ -1604,8 +1611,8 @@ else:
 # ===========================================================
 # History Management (Danger Zone - Global Operations)
 # ===========================================================
-st.divider()
-st.subheader("⚠️ Global History Operations")
+st.write("---")
+st.markdown("### ⚠️ Global History Operations")
 
 manage_col1, manage_col2 = st.columns(2)
 
