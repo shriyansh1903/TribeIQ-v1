@@ -87,6 +87,17 @@ if "auto_synced_on_startup" not in st.session_state:
 
 
 # ===========================================================
+# Initialize Master Data Configurations
+# ===========================================================
+try:
+    from integrations.master_data_db import init_master_data_files, update_capacities_config
+    init_master_data_files()
+    update_capacities_config()
+except Exception:
+    pass
+
+
+# ===========================================================
 # Navigation  (Streamlit 1.58+ requires st.navigation)
 # ===========================================================
 
@@ -104,6 +115,7 @@ pages = [
     st.Page(_PAGES_DIR / "6_⚙️_Settings.py", title="Settings", icon="⚙️"),
     st.Page(_PAGES_DIR / "7_🏪_Vendor_Management.py", title="Vendor Management", icon="🏪"),
     st.Page(_PAGES_DIR / "8_📅_Community_Calendar.py", title="Community Calendar", icon="📅"),
+    st.Page(_PAGES_DIR / "9_🗃️_Master_Data.py", title="Master Data", icon="🗃️"),
 ]
 
 with st.sidebar:
