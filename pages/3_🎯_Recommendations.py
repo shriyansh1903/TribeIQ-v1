@@ -1580,6 +1580,62 @@ if (
 
 
 # ===========================================================
+# Save Schedule to Community Calendar
+# ===========================================================
+if has_date_intelligence:
+    st.write("---")
+    st.write("#### 📅 Calendar Sync")
+    if st.button("📅 Save Schedule to Community Calendar", type="primary", use_container_width=True):
+        from integrations.calendar_db import save_calendar_event
+        saved_count = 0
+        if isinstance(major_event, dict):
+            maj_date = major_event.get("predicted_event_date") or major_event.get("event_date")
+            if maj_date:
+                save_calendar_event({
+                    "Event Name": major_event.get("event_name", ""),
+                    "Property": result_property,
+                    "Category": major_event.get("category", ""),
+                    "Date": str(maj_date),
+                    "Time": "18:30",
+                    "Status": "Proposed",
+                    "Event Type": "Major",
+                    "Budget Estimate": float(major_event.get("Cost Estimate (₹)", 5000) or 5000),
+                    "Ticket Recommendation": major_event.get("ticket_recommendation", "Free"),
+                    "Assigned Vendors": "",
+                    "Assigned Materials": "",
+                    "Notes": "AI Recommended major event.",
+                    "Predicted Attendance": int(major_event.get("predicted_attendance", 0)),
+                    "Expected Occupancy": float(major_event.get("occupancy_percent", 0.0)),
+                    "Recommendation Score": float(major_event.get("final_score", 0.0))
+                })
+                saved_count += 1
+                
+        for index, min_ev in enumerate(minor_events):
+            if isinstance(min_ev, dict):
+                min_date = min_ev.get("predicted_event_date") or min_ev.get("event_date")
+                if min_date:
+                    save_calendar_event({
+                        "Event Name": min_ev.get("event_name", ""),
+                        "Property": result_property,
+                        "Category": min_ev.get("category", ""),
+                        "Date": str(min_date),
+                        "Time": "17:00",
+                        "Status": "Proposed",
+                        "Event Type": "Minor",
+                        "Budget Estimate": float(min_ev.get("Cost Estimate (₹)", 5000) or 5000),
+                        "Ticket Recommendation": min_ev.get("ticket_recommendation", "Free"),
+                        "Assigned Vendors": "",
+                        "Assigned Materials": "",
+                        "Notes": f"AI Recommended minor event {index + 1}.",
+                        "Predicted Attendance": int(min_ev.get("predicted_attendance", 0)),
+                        "Expected Occupancy": float(min_ev.get("occupancy_percent", 0.0)),
+                        "Recommendation Score": float(min_ev.get("final_score", 0.0))
+                    })
+                    saved_count += 1
+        st.success(f"Successfully saved {saved_count} events to the Community Calendar as 'Proposed'!")
+
+
+# ===========================================================
 # Full Candidate Ranking
 # ===========================================================
 
