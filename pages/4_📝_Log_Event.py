@@ -1434,6 +1434,12 @@ try:
             options=event_names,
             help="The name of the event that was executed.",
         )
+        is_rec = selected_event_name in recommended_event_names
+        is_unplanned = st.checkbox(
+            "Unplanned Event (Not predicted/recommended by TribeIQ)",
+            value=not is_rec,
+            help="Check this if the event was organized spontaneously and not suggested by the tool."
+        )
         import datetime
         time_col1, time_col2 = st.columns(2)
         with time_col1:
@@ -1738,7 +1744,12 @@ if submitted:
         )
     )
 
-    if isinstance(
+    if is_unplanned:
+        event_id = ""
+        category = ""
+        recommendation_type = "unplanned"
+        recommendation_score = 0.0
+    elif isinstance(
         selected_recommendation,
         dict,
     ):
