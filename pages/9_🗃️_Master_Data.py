@@ -126,8 +126,8 @@ st.write("---")
 # ===========================================================
 # SECTION 3: Tabbed Navigation
 # ===========================================================
-tab_prop, tab_evt, tab_evt_cat, tab_prop_type, tab_vend_cat, tab_mat_cat = st.tabs([
-    "🏢 Properties", "🎯 Events", "🏷️ Event Categories", "🏠 Property Types", "🏪 Vendor Categories", "📦 Material Categories"
+tab_prop, tab_evt, tab_evt_cat, tab_prop_type, tab_vend_cat, tab_mat_cat, tab_ext = st.tabs([
+    "🏢 Properties", "🎯 Events", "🏷️ Event Categories", "🏠 Property Types", "🏪 Vendor Categories", "📦 Material Categories", "🌐 External Events"
 ])
 
 # Helper for pagination
@@ -859,3 +859,246 @@ with tab_mat_cat:
                         save_material_categories_df(df_mc)
                         st.warning("Category deactivated successfully.")
                         st.rerun()
+
+with tab_ext:
+    st.write("### 🌐 External Events Context Registry")
+    st.write("Manage external events (festivals, conferences, college fests) that occur near properties to provide planning awareness.")
+    
+    from integrations.external_events_db import load_external_events, save_external_event, delete_external_event
+    df_ext = load_external_events()
+    
+    # 1. Table & Export
+    st.markdown("#### 📋 Existing Registry")
+    if df_ext.empty:
+        st.info("No external events found.")
+    else:
+        df_ext_display = df_ext.copy()
+        page_size = 5
+        total_rows = len(df_ext_display)
+        total_pages = max(1, (total_rows - 1) // page_size + 1)
+        
+        page_key = "ext_current_page"
+        if page_key not in st.session_state:
+            st.session_state[page_key] = 1
+            
+        col_prev, col_info, col_next = st.columns([1, 4, 1])
+        with col_prev:
+            if st.button("⬅️ Prev", key="ext_btn_prev") and st.session_state[page_key] > 1:
+                st.session_state[page_key] -= 1
+        with col_info:
+            st.write(f"<p style='text-align: center;'>Page {st.session_state[page_key]} of {total_pages} (Total: {total_rows})</p>", unsafe_allow_html=True)
+        with col_next:
+            if st.button("Next ➡", key="ext_btn_next") and st.session_state[page_key] < total_pages:
+                st.session_state[page_key] += 1
+                
+        start_idx = (st.session_state[page_key] - 1) * page_size
+        end_idx = min(start_idx + page_size, total_rows)
+        
+        st.dataframe(df_ext_display.iloc[start_idx:end_idx], use_container_width=True)
+        
+        csv_data = df_ext.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Export Registry (CSV)",
+            data=csv_data,
+            file_name="external_events.csv",
+            mime="text/csv",
+            use_container_width=True,
+            key="ext_export_btn"
+        )
+        
+    st.write("---")
+    
+    # 2. CSV Import / Bulk Import
+    st.markdown("#### 📤 CSV Import / Bulk Import")
+    uploaded_file = st.file_uploader("Upload external_events.csv to merge/bulk import", type=["csv"], key="ext_uploader")
+    if uploaded_file is not None:
+        try:
+            up_df = pd.read_csv(uploaded_file)
+            required_fields = ["Event Name", "Category", "City", "Start Date", "End Date"]
+            missing = [f for f in required_fields if f not in up_df.columns]
+            if missing:
+                st.error(f"Invalid schema. Missing required columns: {', '.join(missing)}")
+            else:
+                if st.button("⚡ Execute Bulk Import"):
+                    for _, row in up_df.iterrows():
+                        save_external_event(row.to_dict())
+                    st.success("Successfully imported/merged external events!")
+                    st.rerun()
+        except Exception as e:
+            st.error(f"Failed to parse CSV file: {str(e)}")
+            
+    st.write("---")
+    
+    # 3. Actions Workspace
+    col_menu_ext, col_form_ext = st.columns([1, 2])
+    with col_menu_ext:
+        action_ext = st.radio("Actions Menu", ["Add External Event", "Edit External Event", "Archive/Delete Event"], key="ext_action")
+        
+    if action_ext == "Add External Event":
+        with col_form_ext:
+            with st.container(border=True):
+                st.markdown("**Create New External Event**")
+                
+                new_ext_name = st.text_input("Event Name", key="ext_new_name")
+                new_ext_cat = st.selectbox("Category", ["Tech Conferences", "Music Festivals", "College Festivals", "Sports Events", "Exhibitions", "Weekend Markets", "Holiday Celebrations", "Corporate Events", "Local Concerts", "City Festivals"], key="ext_new_cat")
+                new_ext_desc = st.text_area("Description", key="ext_new_desc")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    new_ext_city = st.selectbox("City", ["Bengaluru", "Delhi", "Pune", "Mumbai", "Hyderabad"], key="ext_new_city")
+                    new_ext_area = st.text_input("Area", key="ext_new_area")
+                    new_ext_lat = st.number_input("Latitude", value=12.9716, format="%.4f", key="ext_new_lat")
+                    new_ext_lon = st.number_input("Longitude", value=77.5946, format="%.4f", key="ext_new_lon")
+                with col2:
+                    new_ext_rad = st.number_input("Affecting Radius (km)", value=5.0, min_value=0.5, max_value=50.0, key="ext_new_rad")
+                    new_ext_start = st.date_input("Start Date", key="ext_new_start")
+                    new_ext_end = st.date_input("End Date", key="ext_new_end")
+                    new_ext_foot = st.number_input("Expected Footfall", value=1000, min_value=1, key="ext_new_foot")
+                    
+                col3, col4 = st.columns(2)
+                with col3:
+                    new_ext_audience = st.text_input("Target Audience", value="All", key="ext_new_audience")
+                    new_ext_org = st.text_input("Organizer", key="ext_new_org")
+                    new_ext_venue = st.text_input("Venue", key="ext_new_venue")
+                    new_ext_web = st.text_input("Website Link", key="ext_new_web")
+                with col4:
+                    new_ext_reg = st.text_input("Registration Link", key="ext_new_reg")
+                    new_ext_type = st.selectbox("Free/Paid", ["Free", "Paid"], key="ext_new_type")
+                    new_ext_pop = st.selectbox("Popularity", ["Low", "Medium", "High"], key="ext_new_pop")
+                    new_ext_occ = st.number_input("Expected Occupancy Impact %", value=5.0, min_value=-50.0, max_value=100.0, key="ext_new_occ")
+                    
+                new_ext_comm = st.selectbox("Expected Community Impact", ["Low", "Medium", "High"], key="ext_new_comm")
+                new_ext_tags = st.text_input("Tags (comma separated)", key="ext_new_tags")
+                
+                if st.button("💾 Save External Event", key="ext_save_btn", use_container_width=True):
+                    if not new_ext_name:
+                        st.error("Event Name is required.")
+                    else:
+                        save_external_event({
+                            "Event Name": new_ext_name,
+                            "Category": new_ext_cat,
+                            "Description": new_ext_desc,
+                            "City": new_ext_city,
+                            "Area": new_ext_area,
+                            "Latitude": new_ext_lat,
+                            "Longitude": new_ext_lon,
+                            "Property Radius (km)": new_ext_rad,
+                            "Start Date": new_ext_start.strftime("%Y-%m-%d"),
+                            "End Date": new_ext_end.strftime("%Y-%m-%d"),
+                            "Expected Footfall": new_ext_foot,
+                            "Target Audience": new_ext_audience,
+                            "Organizer": new_ext_org,
+                            "Venue": new_ext_venue,
+                            "Website": new_ext_web,
+                            "Registration Link": new_ext_reg,
+                            "Free/Paid": new_ext_type,
+                            "Estimated Popularity": new_ext_pop,
+                            "Expected Occupancy Impact": new_ext_occ,
+                            "Expected Community Impact": new_ext_comm,
+                            "Tags": new_ext_tags,
+                            "Status": "Active",
+                            "Created By": "Manager"
+                        })
+                        st.success("External Event registered successfully!")
+                        st.rerun()
+                        
+    elif action_ext == "Edit External Event":
+        if df_ext.empty:
+            st.info("No external events registered yet.")
+        else:
+            with col_form_ext:
+                with st.container(border=True):
+                    st.markdown("**Modify Existing External Event**")
+                    selected_lbl = st.selectbox("Select Event", [f"{r['Event Name']} [{r['Event ID']}]" for _, r in df_ext.iterrows()], key="ext_edit_select")
+                    event_id = selected_lbl.split("[")[-1].rstrip("]")
+                    sub_e = df_ext[df_ext["Event ID"] == event_id]
+                    if sub_e.empty:
+                        st.info("Event not found.")
+                        st.stop()
+                    e_row = sub_e.iloc[0]
+                    
+                    edit_ext_name = st.text_input("Event Name", value=e_row["Event Name"], key="ext_edit_name")
+                    edit_ext_cat = st.selectbox("Category", ["Tech Conferences", "Music Festivals", "College Festivals", "Sports Events", "Exhibitions", "Weekend Markets", "Holiday Celebrations", "Corporate Events", "Local Concerts", "City Festivals"], index=["Tech Conferences", "Music Festivals", "College Festivals", "Sports Events", "Exhibitions", "Weekend Markets", "Holiday Celebrations", "Corporate Events", "Local Concerts", "City Festivals"].index(e_row["Category"]) if e_row["Category"] in ["Tech Conferences", "Music Festivals", "College Festivals", "Sports Events", "Exhibitions", "Weekend Markets", "Holiday Celebrations", "Corporate Events", "Local Concerts", "City Festivals"] else 0, key="ext_edit_cat")
+                    edit_ext_desc = st.text_area("Description", value=e_row["Description"], key="ext_edit_desc")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        edit_ext_city = st.selectbox("City", ["Bengaluru", "Delhi", "Pune", "Mumbai", "Hyderabad"], index=["Bengaluru", "Delhi", "Pune", "Mumbai", "Hyderabad"].index(e_row["City"]) if e_row["City"] in ["Bengaluru", "Delhi", "Pune", "Mumbai", "Hyderabad"] else 0, key="ext_edit_city")
+                        edit_ext_area = st.text_input("Area", value=e_row["Area"], key="ext_edit_area")
+                        edit_ext_lat = st.number_input("Latitude", value=float(e_row["Latitude"]) if e_row["Latitude"] != "" else 12.9716, format="%.4f", key="ext_edit_lat")
+                        edit_ext_lon = st.number_input("Longitude", value=float(e_row["Longitude"]) if e_row["Longitude"] != "" else 77.5946, format="%.4f", key="ext_edit_lon")
+                    with col2:
+                        edit_ext_rad = st.number_input("Affecting Radius (km)", value=float(e_row["Property Radius (km)"]) if e_row["Property Radius (km)"] != "" else 5.0, min_value=0.5, max_value=50.0, key="ext_edit_rad")
+                        edit_ext_start = st.date_input("Start Date", value=datetime.datetime.strptime(e_row["Start Date"], "%Y-%m-%d").date() if e_row["Start Date"] else datetime.date.today(), key="ext_edit_start")
+                        edit_ext_end = st.date_input("End Date", value=datetime.datetime.strptime(e_row["End Date"], "%Y-%m-%d").date() if e_row["End Date"] else datetime.date.today(), key="ext_edit_end")
+                        edit_ext_foot = st.number_input("Expected Footfall", value=int(e_row["Expected Footfall"]) if e_row["Expected Footfall"] != "" else 1000, min_value=1, key="ext_edit_foot")
+                        
+                    col3, col4 = st.columns(2)
+                    with col3:
+                        edit_ext_audience = st.text_input("Target Audience", value=e_row["Target Audience"], key="ext_edit_audience")
+                        edit_ext_org = st.text_input("Organizer", value=e_row["Organizer"], key="ext_edit_org")
+                        edit_ext_venue = st.text_input("Venue", value=e_row["Venue"], key="ext_edit_venue")
+                        edit_ext_web = st.text_input("Website Link", value=e_row["Website"], key="ext_edit_web")
+                    with col4:
+                        edit_ext_reg = st.text_input("Registration Link", value=e_row["Registration Link"], key="ext_edit_reg")
+                        edit_ext_type = st.selectbox("Free/Paid", ["Free", "Paid"], index=0 if e_row["Free/Paid"] == "Free" else 1, key="ext_edit_type")
+                        edit_ext_pop = st.selectbox("Popularity", ["Low", "Medium", "High"], index=["Low", "Medium", "High"].index(e_row["Estimated Popularity"]) if e_row["Estimated Popularity"] in ["Low", "Medium", "High"] else 1, key="ext_edit_pop")
+                        edit_ext_occ = st.number_input("Expected Occupancy Impact %", value=float(e_row["Expected Occupancy Impact"]) if e_row["Expected Occupancy Impact"] != "" else 5.0, min_value=-50.0, max_value=100.0, key="ext_edit_occ")
+                        
+                    edit_ext_comm = st.selectbox("Expected Community Impact", ["Low", "Medium", "High"], index=["Low", "Medium", "High"].index(e_row["Expected Community Impact"]) if e_row["Expected Community Impact"] in ["Low", "Medium", "High"] else 1, key="ext_edit_comm")
+                    edit_ext_tags = st.text_input("Tags (comma separated)", value=e_row["Tags"], key="ext_edit_tags")
+                    edit_ext_status = st.selectbox("Status", ["Active", "Archived"], index=0 if e_row["Status"] == "Active" else 1, key="ext_edit_status")
+                    
+                    if st.button("💾 Update External Event", key="ext_update_btn", use_container_width=True):
+                        if not edit_ext_name:
+                            st.error("Event Name is required.")
+                        else:
+                            save_external_event({
+                                "Event ID": event_id,
+                                "Event Name": edit_ext_name,
+                                "Category": edit_ext_cat,
+                                "Description": edit_ext_desc,
+                                "City": edit_ext_city,
+                                "Area": edit_ext_area,
+                                "Latitude": edit_ext_lat,
+                                "Longitude": edit_ext_lon,
+                                "Property Radius (km)": edit_ext_rad,
+                                "Start Date": edit_ext_start.strftime("%Y-%m-%d"),
+                                "End Date": edit_ext_end.strftime("%Y-%m-%d"),
+                                "Expected Footfall": edit_ext_foot,
+                                "Target Audience": edit_ext_audience,
+                                "Organizer": edit_ext_org,
+                                "Venue": edit_ext_venue,
+                                "Website": edit_ext_web,
+                                "Registration Link": edit_ext_reg,
+                                "Free/Paid": edit_ext_type,
+                                "Estimated Popularity": edit_ext_pop,
+                                "Expected Occupancy Impact": edit_ext_occ,
+                                "Expected Community Impact": edit_ext_comm,
+                                "Tags": edit_ext_tags,
+                                "Status": edit_ext_status
+                            })
+                            st.success("External Event updated successfully!")
+                            st.rerun()
+                            
+    elif action_ext == "Archive/Delete Event":
+        if df_ext.empty:
+            st.info("No external events registered yet.")
+        else:
+            with col_form_ext:
+                with st.container(border=True):
+                    st.markdown("**Archive or Delete External Event**")
+                    selected_lbl = st.selectbox("Select Event", [f"{r['Event Name']} [{r['Event ID']}]" for _, r in df_ext.iterrows()], key="ext_del_select")
+                    event_id = selected_lbl.split("[")[-1].rstrip("]")
+                    
+                    col_b1, col_b2 = st.columns(2)
+                    with col_b1:
+                        if st.button("📁 Archive Event", key="ext_archive_btn", use_container_width=True):
+                            save_external_event({"Event ID": event_id, "Status": "Archived"})
+                            st.warning("Event archived successfully.")
+                            st.rerun()
+                    with col_b2:
+                        if st.button("🗑️ Delete Event", key="ext_del_btn", use_container_width=True):
+                            delete_external_event(event_id)
+                            st.error("Event deleted from database.")
+                            st.rerun()

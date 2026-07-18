@@ -101,6 +101,14 @@ st.markdown("""
     .status-approved { background-color: #D1FAE5; color: #059669; }
     .status-completed { background-color: #DBEAFE; color: #2563EB; }
     .status-cancelled { background-color: #FEE2E2; color: #DC2626; }
+    .badge-external {
+        border-left: 3px solid #F0883E;
+        background-color: #211a14;
+    }
+    .status-external {
+        background-color: #FFE5D9;
+        color: #D9480F;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -149,6 +157,11 @@ try:
         months = sorted(list(set(months)))
         selected_month_str = st.selectbox("Planning Period", months, index=months.index(today.strftime("%Y-%m")) if today.strftime("%Y-%m") in months else 0)
 
+    with col_c:
+        st.write("")
+        st.write("")
+        show_external = st.toggle("Show External Events", value=False, help="Overlay external events and local activities impacting your property.")
+
     # Parse Year and Month
     year, month = map(int, selected_month_str.split("-"))
 
@@ -157,9 +170,24 @@ try:
     if selected_property != "All":
         df_filtered = df_filtered[df_filtered[cal_prop_col] == selected_property] if cal_prop_col in df_filtered.columns else df_filtered
     df_filtered = df_filtered[df_filtered[date_col].str.startswith(selected_month_str)] if date_col in df_filtered.columns else df_filtered
+
+    # Load nearby external events for the month
+    if show_external and selected_property != "All":
+        from integrations.external_events_db import get_nearby_external_events
+        start_month_d = datetime.date(year, month, 1)
+        # Calculate last day of month
+        if month == 12:
+            end_month_d = datetime.date(year + 1, 1, 1) - datetime.timedelta(days=1)
+        else:
+            end_month_d = datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
+        df_ext_month = get_nearby_external_events(selected_property, start_date=start_month_d, end_date=end_month_d)
+    else:
+        df_ext_month = pd.DataFrame()
+
 except Exception as e:
     st.warning("Failed to initialize planning context.")
     df_filtered = pd.DataFrame()
+    df_ext_month = pd.DataFrame()
 
 # ===========================================================
 # SECTION 2: Monthly Planning KPIs (Error Boundary)
@@ -244,6 +272,22 @@ try:
     <small>{ev_prop} | Pred: {ev_turnout}</small>
 </div>
 """
+                    # Find external events for this day
+                    if not df_ext_month.empty:
+                        day_ext = df_ext_month[(df_ext_month["Start Date"] <= day_str) & (df_ext_month["End Date"] >= day_str)]
+                        for idx, row in day_ext.iterrows():
+                            ev_lbl = row["Event Name"]
+                            ev_cat = row["Category"]
+                            dist_val = row.get("Distance (km)", 0.0)
+                            dist_str = f"{dist_val:.1f}km" if dist_val != 999.0 else "Local"
+                            
+                            cards_html += f"""
+<div class='calendar-card badge-external'>
+    <strong>🌐 {ev_lbl}</strong><br/>
+    <span class='status-badge status-external'>{ev_cat}</span><br/>
+    <small>{dist_str} away</small>
+</div>
+"""
                         
                     st.markdown(f"""
 <div class='{box_class}'>
@@ -276,72 +320,147 @@ st.write("---")
 st.write("### 📝 Event Details & Status Workflow Management")
 
 try:
+    event_options = []
+    # Add Tribe events
     if not df_filtered.empty and name_col in df_filtered.columns:
-        selected_event_name = st.selectbox("Select Event for Action", df_filtered[name_col].tolist())
-        sub_evt = df_filtered[df_filtered[name_col] == selected_event_name]
-        if sub_evt.empty:
-            st.info("No matching event found. Please select a different event.")
-            st.stop()
-        evt_row = sub_evt.iloc[0]
+        for idx, row in df_filtered.iterrows():
+            event_id = row.get("Event ID", "")
+            lbl = f"{row[name_col]} [{event_id}]" if event_id else row[name_col]
+            event_options.append((lbl, "tribe", row))
+    # Add External events
+    if not df_ext_month.empty:
+        for idx, row in df_ext_month.iterrows():
+            event_id = row.get("Event ID", "")
+            lbl = f"{row['Event Name']} [{event_id}]" if event_id else row["Event Name"]
+            event_options.append((lbl, "external", row))
+
+    if event_options:
+        selected_option = st.selectbox(
+            "Select Event for Action",
+            options=event_options,
+            format_func=lambda x: f"🌐 {x[0]} (External)" if x[1] == "external" else x[0]
+        )
+        selected_lbl, event_origin, evt_row = selected_option
         
-        col_d1, col_d2 = st.columns(2)
-        with col_d1:
-            st.write(f"#### {evt_row[name_col]}")
-            st.caption(f"Property: {evt_row.get(cal_prop_col, 'N/A')}  •  Category: {evt_row.get('Category', 'N/A')}")
-            
-            # Formatted dates
-            rec_date_val = evt_row.get("Recommended Date") or evt_row.get("Date")
-            app_date_val = evt_row.get("Approved Date") or "Awaiting Approval"
-            
-            st.write(f"📅 **Recommended Date:** {rec_date_val}")
-            st.write(f"📅 **Approved Date:** {app_date_val}")
-            
-            # Predict Turnout / Metrics
-            pred_att = evt_row.get("Predicted Attendance")
-            pred_att_str = f"{float(pred_att):.0f}%" if pred_att and str(pred_att) != "" else "N/A"
-            st.metric("Predicted Turnout", pred_att_str)
-            occ_val = evt_row.get("Expected Occupancy")
-            occ_str = f"{float(occ_val):.1f}%" if occ_val and str(occ_val) != "" else "N/A"
-            st.metric("Occupancy Forecast", occ_str)
-            
-        with col_d2:
-            st.write("**Workflow Actions:**")
-            curr_status = evt_row[status_col] if status_col in evt_row else "AI Recommended"
-            
-            statuses = ["AI Recommended", "Awaiting Approval", "Approved", "Completed", "Cancelled"]
-            new_status = st.selectbox("Status Tag", statuses, index=statuses.index(curr_status) if curr_status in statuses else 0)
-            
-            # Allow Rescheduling Date
-            current_date_val = datetime.datetime.strptime(evt_row["Date"], "%Y-%m-%d").date() if isinstance(evt_row["Date"], str) and evt_row["Date"] else datetime.date.today()
-            new_date = st.date_input("Reschedule Event Date", value=current_date_val)
-            
-            if st.button("💾 Save Event Changes"):
-                # Compute approved date
-                app_date_to_save = evt_row.get("Approved Date")
-                if new_status == "Approved" and not app_date_to_save:
-                    app_date_to_save = datetime.date.today().strftime("%Y-%m-%d")
+        if event_origin == "external":
+            col_d1, col_d2 = st.columns(2)
+            with col_d1:
+                st.write(f"#### 🌐 {evt_row['Event Name']}")
+                st.caption(f"Category: {evt_row.get('Category', 'N/A')}  •  Organizer: {evt_row.get('Organizer', 'N/A')}")
                 
-                save_calendar_event({
-                    "Event ID": evt_row["Event ID"],
-                    "Date": new_date.strftime("%Y-%m-%d"),
-                    "Property": evt_row[cal_prop_col],
-                    "Event Name": evt_row[name_col],
-                    "Event Type": evt_row[et_col] if et_col in evt_row else "Minor",
-                    "Category": evt_row.get("Category", "Social"),
-                    "Status": new_status,
-                    "Budget Estimate": float(evt_row.get("Budget Estimate", 3000.0)) if evt_row.get("Budget Estimate") else 3000.0,
-                    "Recommended Date": rec_date_val,
-                    "Approved Date": app_date_to_save
-                })
-                st.success("Changes saved successfully!")
-                st.rerun()
+                st.write(f"📅 **Start Date:** {evt_row.get('Start Date')}")
+                st.write(f"📅 **End Date:** {evt_row.get('End Date')}")
+                st.write(f"📍 **Venue:** {evt_row.get('Venue', 'N/A')} ({evt_row.get('Area', 'N/A')})")
                 
-            if st.button("🗑️ Delete Scheduled Event"):
-                delete_calendar_event(evt_row["Event ID"])
-                st.warning("Event removed from plan.")
-                st.rerun()
+                dist_val = evt_row.get("Distance (km)", 0.0)
+                dist_str = f"{dist_val:.2f} km" if dist_val != 999.0 else "N/A"
+                st.metric("Distance from Property", dist_str)
+                st.metric("Expected Footfall", f"{int(evt_row.get('Expected Footfall', 0)):,}")
+                
+            with col_d2:
+                st.write("**Impact & Intelligence Insights:**")
+                st.info(f"📈 **Expected Occupancy Impact:** {evt_row.get('Expected Occupancy Impact', 0.0):+.1f}%")
+                st.info(f"👥 **Expected Community Impact:** {evt_row.get('Expected Community Impact', 'Medium')}")
+                
+                st.write("**Suggested Partnerships / Actions:**")
+                cat_lower = str(evt_row.get("Category", "")).lower()
+                actions = []
+                if "music" in cat_lower or "concert" in cat_lower:
+                    actions = ["Organize an after-party at the property.", "Host a late-night cafe meetup for concert-goers.", "Coordinate a food pop-up/stall."]
+                elif "college" in cat_lower or "university" in cat_lower:
+                    actions = ["Set up a gaming night or open mic for visiting students.", "Host a student mixer event."]
+                elif "tech" in cat_lower or "startup" in cat_lower or "conference" in cat_lower:
+                    actions = ["Host a founder/developer meetup.", "Organize a pitch night/networking brunch."]
+                elif "sports" in cat_lower or "marathon" in cat_lower:
+                    actions = ["Set up a recovery breakfast station.", "Coordinate a community morning run."]
+                else:
+                    actions = ["Reach out to organizer for collaboration/ticket discounts."]
+                    
+                for act in actions:
+                    st.write(f"- {act}")
+                    
+                if evt_row.get("Website"):
+                    st.markdown(f"[🌐 Visit Official Website]({evt_row.get('Website')})")
+                if evt_row.get("Registration Link"):
+                    st.markdown(f"[🎫 Get Tickets / Register]({evt_row.get('Registration Link')})")
+        else:
+            # Render Tribe event details (existing flow)
+            col_d1, col_d2 = st.columns(2)
+            with col_d1:
+                st.write(f"#### {evt_row[name_col]}")
+                st.caption(f"Property: {evt_row.get(cal_prop_col, 'N/A')}  •  Category: {evt_row.get('Category', 'N/A')}")
+                
+                # Formatted dates
+                rec_date_val = evt_row.get("Recommended Date") or evt_row.get("Date")
+                app_date_val = evt_row.get("Approved Date") or "Awaiting Approval"
+                
+                st.write(f"📅 **Recommended Date:** {rec_date_val}")
+                st.write(f"📅 **Approved Date:** {app_date_val}")
+                
+                # Predict Turnout / Metrics
+                pred_att = evt_row.get("Predicted Attendance")
+                pred_att_str = f"{float(pred_att):.0f}%" if pred_att and str(pred_att) != "" else "N/A"
+                st.metric("Predicted Turnout", pred_att_str)
+                occ_val = evt_row.get("Expected Occupancy")
+                occ_str = f"{float(occ_val):.1f}%" if occ_val and str(occ_val) != "" else "N/A"
+                st.metric("Occupancy Forecast", occ_str)
+                
+                # Check conflict/opportunity on the planned date of the selected Tribe event
+                evt_date = evt_row["Date"]
+                if not df_ext_month.empty:
+                    conflicting = df_ext_month[(df_ext_month["Start Date"] <= evt_date) & (df_ext_month["End Date"] >= evt_date)]
+                    if not conflicting.empty:
+                        st.write("---")
+                        st.write("**Local External Context:**")
+                        for _, ext_ev in conflicting.iterrows():
+                            ext_name = ext_ev["Event Name"]
+                            ext_cat = ext_ev["Category"]
+                            footfall = ext_ev["Expected Footfall"]
+                            occ_impact = ext_ev["Expected Occupancy Impact"]
+                            
+                            if occ_impact > 10.0:
+                                st.success(f"🌟 **AI Opportunity:** Nearby *{ext_name}* ({ext_cat}) is happening on this day. It may boost property occupancy by approx {occ_impact:.1f}%. Consider running a partnership/meetup.")
+                            elif "college" in str(ext_cat).lower() or "music" in str(ext_cat).lower():
+                                st.warning(f"⚠️ **AI Conflict Warning:** Nearby *{ext_name}* ({ext_cat}) is expected to attract youth away from the property on this day. Consider running a social mixer or rescheduling.")
+                
+            with col_d2:
+                st.write("**Workflow Actions:**")
+                curr_status = evt_row[status_col] if status_col in evt_row else "AI Recommended"
+                
+                statuses = ["AI Recommended", "Awaiting Approval", "Approved", "Completed", "Cancelled"]
+                new_status = st.selectbox("Status Tag", statuses, index=statuses.index(curr_status) if curr_status in statuses else 0)
+                
+                # Allow Rescheduling Date
+                current_date_val = datetime.datetime.strptime(evt_row["Date"], "%Y-%m-%d").date() if isinstance(evt_row["Date"], str) and evt_row["Date"] else datetime.date.today()
+                new_date = st.date_input("Reschedule Event Date", value=current_date_val)
+                
+                if st.button("💾 Save Event Changes"):
+                    # Compute approved date
+                    app_date_to_save = evt_row.get("Approved Date")
+                    if new_status == "Approved" and not app_date_to_save:
+                        app_date_to_save = datetime.date.today().strftime("%Y-%m-%d")
+                    
+                    save_calendar_event({
+                        "Event ID": evt_row["Event ID"],
+                        "Date": new_date.strftime("%Y-%m-%d"),
+                        "Property": evt_row[cal_prop_col],
+                        "Event Name": evt_row[name_col],
+                        "Event Type": evt_row[et_col] if et_col in evt_row else "Minor",
+                        "Category": evt_row.get("Category", "Social"),
+                        "Status": new_status,
+                        "Budget Estimate": float(evt_row.get("Budget Estimate", 3000.0)) if evt_row.get("Budget Estimate") else 3000.0,
+                        "Recommended Date": rec_date_val,
+                        "Approved Date": app_date_to_save
+                    })
+                    st.success("Changes saved successfully!")
+                    st.rerun()
+                    
+                if st.button("🗑️ Delete Scheduled Event"):
+                    delete_calendar_event(evt_row["Event ID"])
+                    st.warning("Event removed from plan.")
+                    st.rerun()
     else:
-        st.info("No planned events to inspect for the target filter. Add recommendations or schedule slots.")
+        st.info("No events to inspect for the target filter. Add recommendations or schedule slots.")
 except Exception as e:
     st.warning("⚠ Unable to load this widget.")
     with st.expander("Details"):

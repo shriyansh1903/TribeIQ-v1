@@ -78,13 +78,24 @@ def build_system_state_context() -> Dict[str, Any]:
     if not df_cal.empty:
         calendar_summary = df_cal.head(5)[["Date", "Property", "Event Name", "Status", "Event Type"]].to_dict(orient="records")
         
+    # 7. External Events Context
+    external_events_summary = []
+    try:
+        from integrations.external_events_db import load_external_events
+        df_ext = load_external_events()
+        if not df_ext.empty:
+            external_events_summary = df_ext[df_ext["Status"].astype(str).str.lower() != "archived"][["Event Name", "Category", "City", "Start Date", "End Date", "Expected Footfall", "Expected Occupancy Impact"]].to_dict(orient="records")
+    except Exception:
+        pass
+
     return {
         "properties": properties_summary,
         "history": history_summary,
         "vendors": vendor_summary,
         "stalls": stall_summary,
         "materials": material_summary,
-        "calendar": calendar_summary
+        "calendar": calendar_summary,
+        "external_events": external_events_summary
     }
 
 def rule_based_fallback(query: str, system_context: Dict[str, Any]) -> str:
@@ -111,6 +122,13 @@ def rule_based_fallback(query: str, system_context: Dict[str, Any]) -> str:
         return f"Budget Variance & Financial Overview:\n* **Total Events Logged**: {total_ev} events.\n* **Financial Status**: Operations are within planned limits with positive budget variance of +₹12,400. [ACTION: analytics]"
     elif "recommend" in q or "plan" in q or "calendar" in q:
         return "TribeIQ Recommendation Engine suggests:\n* **Major Event**: Networking Mixer & Live Music (Scheduled for week 2, expected turnout: 84%).\n* **Minor Events**: Skill Share workshop (week 3), Culinary Exchange (week 4).\n[ACTION: recommendations]"
+    elif "external" in q or "nearby" in q or "festival" in q or "happen" in q or "avoid" in q or "partner" in q or "collaboration" in q:
+        ext_evs = system_context.get("external_events", [])
+        if ext_evs:
+            ev_list = "\n".join([f"* **{e['Event Name']}** ({e['Category']}): In {e['City']}, starting {e['Start Date']}. Expected occupancy impact: {e['Expected Occupancy Impact']:+.1f}%" for e in ext_evs[:4]])
+            return f"Nearby External Events & Collaboration Context:\n{ev_list}\n\n* **Partnership Advice**: Consider organizing recovery breakfasts, mixers, or founder meetups corresponding to local events.\n[ACTION: calendar]"
+        else:
+            return "There are currently no active nearby external events registered in the system. [ACTION: calendar]"
     elif "directory" in q or "capacity" in q or "property" in q or "properties" in q:
         p_list = "\n".join([f"* **{p['Property Name']}** ({p['Property Type']}): Capacity {p['Capacity']} beds, Location: {p['City']}" for p in props]) if props else "* **Tribe Moro** (Commune): Capacity 296 beds\n* **Tribe Vara** (Student): Capacity 192 beds"
         return f"TribeIQ Properties Directory:\n{p_list}"

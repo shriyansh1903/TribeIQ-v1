@@ -17,7 +17,7 @@ This module does not perform final calendar selection.
 ===========================================================
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 try:
     from recommendation.config import (
@@ -610,8 +610,87 @@ def rank_candidate(
 # Batch Ranking
 # ===========================================================
 
+def apply_external_events_boosts(candidates: List[Dict[str, Any]], property_name: str) -> List[Dict[str, Any]]:
+    if not property_name:
+        return candidates
+        
+    try:
+        from integrations.external_events_db import get_nearby_external_events
+        import datetime
+        today = datetime.date.today()
+        end_date = today + datetime.timedelta(days=45)
+        nearby = get_nearby_external_events(property_name, start_date=today, end_date=end_date)
+        if nearby.empty:
+            return candidates
+            
+        categories_nearby = set(nearby["Category"].dropna().unique())
+        
+        boosts = {}
+        for cat in categories_nearby:
+            cat_lower = str(cat).lower()
+            if "music" in cat_lower or "concert" in cat_lower:
+                boosts.update({
+                    "After-party": 15.0,
+                    "Café Meet": 10.0,
+                    "Food Pop-up": 12.0,
+                    "Networking": 8.0,
+                })
+            elif "college" in cat_lower or "university" in cat_lower:
+                boosts.update({
+                    "Gaming Night": 15.0,
+                    "Open Mic": 15.0,
+                    "Karaoke": 12.0,
+                    "Mixer": 10.0,
+                    "Career Networking": 10.0,
+                })
+            elif "tech" in cat_lower or "startup" in cat_lower or "conference" in cat_lower:
+                boosts.update({
+                    "Founder Meetup": 18.0,
+                    "Pitch Night": 15.0,
+                    "AI Workshop": 15.0,
+                    "Coffee Networking": 10.0,
+                    "Hackathon Watch Party": 12.0,
+                })
+            elif "sports" in cat_lower or "marathon" in cat_lower or "run" in cat_lower:
+                boosts.update({
+                    "Recovery Breakfast": 15.0,
+                    "Yoga": 15.0,
+                    "Healthy Brunch": 12.0,
+                    "Community Run": 15.0,
+                })
+                
+        if not boosts:
+            boosts = {
+                "Flagship Community Event": 10.0,
+                "Community Event": 5.0
+            }
+            
+        for cand in candidates:
+            evt_name = cand.get("event_name", "")
+            cat_name = cand.get("category", "")
+            boost_amt = 0.0
+            for k, val in boosts.items():
+                if k.lower() in evt_name.lower() or k.lower() in cat_name.lower():
+                    boost_amt = max(boost_amt, val)
+            if boost_amt > 0:
+                cand["final_score"] = cand.get("final_score", 50.0) + boost_amt
+                cand["base_score"] = cand.get("base_score", 50.0) + boost_amt
+                if "signals" in cand:
+                    cand["signals"]["external_events_boost"] = boost_amt
+                    
+    except Exception:
+        pass
+        
+    return candidates
+
+
+# ===========================================================
+# Batch Ranking
+# ===========================================================
+
 def rank_candidates(
-    candidates: List[Dict[str, Any]]
+    candidates: List[Dict[str, Any]],
+    property_name: Optional[str] = None
 ) -> List[Dict[str, Any]]:
 
     if not isinstance(candidates, list):
@@ -635,6 +714,9 @@ def rank_candidates(
             ranked.append(
                 ranked_candidate
             )
+
+    if property_name:
+        ranked = apply_external_events_boosts(ranked, property_name)
 
     ranked.sort(
         key=lambda candidate: (

@@ -226,7 +226,8 @@ def run_recommendation_pipeline(
     # -------------------------------------------------------
 
     candidates = rank_candidates(
-        candidates
+        candidates,
+        property_name=property_name
     )
 
     # -------------------------------------------------------
