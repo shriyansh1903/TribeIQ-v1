@@ -151,9 +151,20 @@ try:
     with col_m:
         today = datetime.date.today()
         months = []
-        for i in range(-2, 6):
+        for i in range(-3, 18):
             d = today + datetime.timedelta(days=i*30)
             months.append(d.strftime("%Y-%m"))
+            
+        if not df_calendar.empty and date_col in df_calendar.columns:
+            for d_val in df_calendar[date_col].dropna().unique():
+                try:
+                    if isinstance(d_val, str) and len(d_val) >= 7:
+                        parts = d_val.split("-")
+                        if len(parts) >= 2 and len(parts[0]) == 4 and len(parts[1]) == 2:
+                            months.append(f"{parts[0]}-{parts[1]}")
+                except Exception:
+                    pass
+                    
         months = sorted(list(set(months)))
         selected_month_str = st.selectbox("Planning Period", months, index=months.index(today.strftime("%Y-%m")) if today.strftime("%Y-%m") in months else 0)
 
