@@ -1165,7 +1165,9 @@ else:
             prop_idx = all_property_names.index(selected_row["Property"]) if "Property" in selected_row and selected_row["Property"] in all_property_names else 0
 
             # Gather catalogue event list
-            cat_event_name_column = find_event_name_column(events_dataframe)
+            from utils.schema_utils import safe_get_column
+            events_dataframe = application_data.get("events", pd.DataFrame())
+            cat_event_name_column = safe_get_column(events_dataframe, ["Event Name", "event_name", "Event", "event", "Name", "name"])
             all_event_names = []
             if cat_event_name_column is not None and not events_dataframe.empty:
                 all_event_names = sorted(events_dataframe[cat_event_name_column].dropna().unique().tolist())
