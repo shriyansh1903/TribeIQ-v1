@@ -300,7 +300,9 @@ try:
             pred_att = evt_row.get("Predicted Attendance")
             pred_att_str = f"{float(pred_att):.0f}%" if pred_att and str(pred_att) != "" else "N/A"
             st.metric("Predicted Turnout", pred_att_str)
-            st.metric("Occupancy Forecast", f"{evt_row.get('Expected Occupancy', 75.0):.1f}%")
+            occ_val = evt_row.get("Expected Occupancy")
+            occ_str = f"{float(occ_val):.1f}%" if occ_val and str(occ_val) != "" else "N/A"
+            st.metric("Occupancy Forecast", occ_str)
             
         with col_d2:
             st.write("**Workflow Actions:**")
