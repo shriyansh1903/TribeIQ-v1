@@ -205,14 +205,14 @@ if rec_result and isinstance(rec_result, dict):
                         "Time": "18:00",
                         "Status": "Approved",
                         "Event Type": "Major",
-                        "Budget Estimate": float(major_event.get("cost_estimate", 5000.0)),
+                        "Budget Estimate": safe_float(major_event.get("cost_estimate"), 5000.0),
                         "Ticket Recommendation": "Yes" if major_event.get("ticket_eligible") == "Yes" else "No",
                         "Assigned Vendors": major_event.get("recommended_vendors", ""),
                         "Assigned Materials": major_event.get("suggested_materials", ""),
                         "Notes": "Approved directly from Smart Recommendations.",
-                        "Predicted Attendance": int(major_event.get("predicted_attendance", 50)),
-                        "Expected Occupancy": float(major_event.get("predicted_turnout_rate", 75.0)),
-                        "Recommendation Score": float(major_event.get("final_score", 90.0)),
+                        "Predicted Attendance": safe_int(major_event.get("predicted_attendance"), 50),
+                        "Expected Occupancy": safe_float(major_event.get("predicted_turnout_rate"), 75.0),
+                        "Recommendation Score": safe_float(major_event.get("final_score"), 90.0),
                         "Recommended Date": ai_date_str,
                         "Approved Date": datetime.date.today().strftime("%Y-%m-%d")
                     }
@@ -229,13 +229,15 @@ if rec_result and isinstance(rec_result, dict):
                         "Event Type": "Major",
                         "AI Suggested Date": ai_date_str,
                         "Approved Date": sched_date.strftime("%Y-%m-%d"),
-                        "Recommendation Score": float(major_event.get("final_score", 90.0)),
+                        "Recommendation Score": safe_float(major_event.get("final_score"), 90.0),
                         "Status": "Approved"
                     })
                     st.success("Major event approved and scheduled!")
                     st.rerun()
     except Exception as e:
         st.warning("⚠ Unable to load this widget.")
+        with st.expander("Debugging Details"):
+            st.exception(e)
 
     # ===========================================================
     # SECTION 4: Minor Event Cards (Error Boundary)
@@ -281,14 +283,14 @@ if rec_result and isinstance(rec_result, dict):
                             "Time": "18:00",
                             "Status": "Approved",
                             "Event Type": "Minor",
-                            "Budget Estimate": float(m_ev.get("cost_estimate", 3000.0)),
+                            "Budget Estimate": safe_float(m_ev.get("cost_estimate"), 3000.0),
                             "Ticket Recommendation": "Yes" if m_ev.get("ticket_eligible") == "Yes" else "No",
                             "Assigned Vendors": m_ev.get("recommended_vendors", ""),
                             "Assigned Materials": m_ev.get("suggested_materials", ""),
                             "Notes": "Approved directly from Smart Recommendations.",
-                            "Predicted Attendance": int(m_ev.get("predicted_attendance", 30)),
-                            "Expected Occupancy": float(m_ev.get("predicted_turnout_rate", 65.0)),
-                            "Recommendation Score": float(m_ev.get("final_score", 80.0)),
+                            "Predicted Attendance": safe_int(m_ev.get("predicted_attendance"), 30),
+                            "Expected Occupancy": safe_float(m_ev.get("predicted_turnout_rate"), 65.0),
+                            "Recommendation Score": safe_float(m_ev.get("final_score"), 80.0),
                             "Recommended Date": m_ai_date_str,
                             "Approved Date": datetime.date.today().strftime("%Y-%m-%d")
                         }
@@ -305,7 +307,7 @@ if rec_result and isinstance(rec_result, dict):
                             "Event Type": "Minor",
                             "AI Suggested Date": m_ai_date_str,
                             "Approved Date": m_sched_date.strftime("%Y-%m-%d"),
-                            "Recommendation Score": float(m_ev.get("final_score", 80.0)),
+                            "Recommendation Score": safe_float(m_ev.get("final_score"), 80.0),
                             "Status": "Approved"
                         })
                         st.success(f"Minor Event '{m_ev.get('event_name')}' approved!")
@@ -343,10 +345,10 @@ if rec_result and isinstance(rec_result, dict):
     try:
         chart_data = []
         if isinstance(major_event, dict) and major_event:
-            chart_data.append({"Event Name": major_event.get("event_name"), "Turnout Score %": float(major_event.get("predicted_turnout_rate", 75.0))})
+            chart_data.append({"Event Name": major_event.get("event_name"), "Turnout Score %": safe_float(major_event.get("predicted_turnout_rate"), 75.0)})
         for m_ev in minor_events:
             if isinstance(m_ev, dict):
-                chart_data.append({"Event Name": m_ev.get("event_name"), "Turnout Score %": float(m_ev.get("predicted_turnout_rate", 70.0))})
+                chart_data.append({"Event Name": m_ev.get("event_name"), "Turnout Score %": safe_float(m_ev.get("predicted_turnout_rate"), 70.0)})
                 
         if chart_data:
             st.bar_chart(pd.DataFrame(chart_data).set_index("Event Name"))
