@@ -159,9 +159,20 @@ def sync_approved_event_to_history(event_dict):
     
     if not h_df.empty and event_id in h_df["Event ID"].values:
         idx = h_df[h_df["Event ID"] == event_id].index[0]
+        # Only overwrite fields that were explicitly modified/provided in event_dict (avoid zeroing out forecasts)
+        key_mapping = {
+            "Budget Planned": "Budget Estimate",
+            "Recommendation Type": "Event Type",
+            "Predicted Occupancy %": "Expected Occupancy",
+            "Predicted Attendance": "Predicted Attendance",
+            "Recommendation Score": "Recommendation Score",
+            "Notes": "Notes"
+        }
         for col in h_df.columns:
             if col in row_data:
-                h_df.at[idx, col] = row_data[col]
+                dict_key = key_mapping.get(col, col)
+                if dict_key in event_dict or col in ["Date", "Predicted Weekday", "Predicted Event Date", "Property", "Event ID", "Event Name", "Category"]:
+                    h_df.at[idx, col] = row_data[col]
     else:
         new_row_df = pd.DataFrame([row_data])
         h_df = pd.concat([h_df, new_row_df], ignore_index=True)
