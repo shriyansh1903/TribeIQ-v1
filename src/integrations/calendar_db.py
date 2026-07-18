@@ -118,6 +118,10 @@ def sync_approved_event_to_history(event_dict):
         
     try:
         h_df = pd.read_csv(history_csv)
+        # Cast potential empty string columns to object dtype to avoid float64 TypeError crashes
+        for col in ["Image Data", "Notes", "Attendance Confidence", "Recommendation Type", "Category", "Event Name", "Property", "Event ID", "Date"]:
+            if col in h_df.columns:
+                h_df[col] = h_df[col].astype(object)
     except Exception:
         return
         

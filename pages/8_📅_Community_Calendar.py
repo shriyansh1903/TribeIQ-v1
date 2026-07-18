@@ -238,19 +238,19 @@ try:
                         ev_turnout = f"{float(turnout_val):.0f}%" if turnout_val and str(turnout_val) != "" else "N/A"
                         
                         cards_html += f"""
-                        <div class='calendar-card {badge_class}'>
-                            <strong>{ev_lbl}</strong><br/>
-                            <span class='status-badge status-{ev_status.lower().replace(" ", "-")}'>{ev_status}</span><br/>
-                            <small>{ev_prop} | Pred: {ev_turnout}</small>
-                        </div>
-                        """
+<div class='calendar-card {badge_class}'>
+    <strong>{ev_lbl}</strong><br/>
+    <span class='status-badge status-{ev_status.lower().replace(" ", "-")}'>{ev_status}</span><br/>
+    <small>{ev_prop} | Pred: {ev_turnout}</small>
+</div>
+"""
                         
                     st.markdown(f"""
-                    <div class='{box_class}'>
-                        <div class='calendar-day-number'>{current_day}</div>
-                        {cards_html}
-                    </div>
-                    """, unsafe_allow_html=True)
+<div class='{box_class}'>
+    <div class='calendar-day-number'>{current_day}</div>
+    {cards_html}
+</div>
+""", unsafe_allow_html=True)
                     
                     current_day += 1
 except Exception as e:
