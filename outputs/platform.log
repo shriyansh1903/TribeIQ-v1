@@ -1,0 +1,43 @@
+2026-07-20 18:01:05,120 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:01:19,612 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:01:19,613 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-20 18:01:20,216 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-20 18:02:48,131 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:02:48,132 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-20 18:02:48,618 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-20 18:02:48,618 - TribeIQPlatform - INFO - Starting database bootstrap process...
+2026-07-20 18:02:48,658 - TribeIQPlatform - INFO - Creating collection: users
+2026-07-20 18:02:48,722 - TribeIQPlatform - INFO - Creating index for field 'User ID' on collection 'users'
+2026-07-20 18:02:48,763 - TribeIQPlatform - INFO - Creating collection: properties
+2026-07-20 18:02:48,820 - TribeIQPlatform - INFO - Creating index for field 'Property ID' on collection 'properties'
+2026-07-20 18:02:48,859 - TribeIQPlatform - INFO - Creating collection: residents
+2026-07-20 18:02:48,925 - TribeIQPlatform - INFO - Creating index for field 'Resident ID' on collection 'residents'
+2026-07-20 18:02:48,982 - TribeIQPlatform - INFO - Creating index for field 'Property' on collection 'residents'
+2026-07-20 18:02:49,026 - TribeIQPlatform - INFO - Creating collection: events
+2026-07-20 18:02:49,090 - TribeIQPlatform - INFO - Creating index for field 'Event ID' on collection 'events'
+2026-07-20 18:02:49,130 - TribeIQPlatform - INFO - Creating collection: calendar_events
+2026-07-20 18:02:49,196 - TribeIQPlatform - INFO - Creating index for field 'Event ID' on collection 'calendar_events'
+2026-07-20 18:02:49,245 - TribeIQPlatform - INFO - Creating index for field 'Date' on collection 'calendar_events'
+2026-07-20 18:02:49,294 - TribeIQPlatform - INFO - Creating collection: recommendations
+2026-07-20 18:02:49,356 - TribeIQPlatform - INFO - Creating index for field 'Date' on collection 'recommendations'
+2026-07-20 18:02:49,398 - TribeIQPlatform - INFO - Creating collection: vendors
+2026-07-20 18:02:49,463 - TribeIQPlatform - INFO - Creating index for field 'Vendor ID' on collection 'vendors'
+2026-07-20 18:02:49,513 - TribeIQPlatform - INFO - Creating collection: materials
+2026-07-20 18:02:49,570 - TribeIQPlatform - INFO - Creating index for field 'Category' on collection 'materials'
+2026-07-20 18:02:49,612 - TribeIQPlatform - INFO - Creating collection: stalls
+2026-07-20 18:02:49,685 - TribeIQPlatform - INFO - Creating index for field 'Stall ID' on collection 'stalls'
+2026-07-20 18:02:49,726 - TribeIQPlatform - INFO - Creating collection: external_events
+2026-07-20 18:02:49,792 - TribeIQPlatform - INFO - Creating index for field 'Event ID' on collection 'external_events'
+2026-07-20 18:02:49,840 - TribeIQPlatform - INFO - Creating index for field 'Start Date' on collection 'external_events'
+2026-07-20 18:02:49,890 - TribeIQPlatform - INFO - Creating collection: settings
+2026-07-20 18:02:49,955 - TribeIQPlatform - INFO - Creating index for field 'key' on collection 'settings'
+2026-07-20 18:02:49,994 - TribeIQPlatform - INFO - Database bootstrap completed successfully.
+2026-07-20 18:03:01,135 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:03:01,587 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-20 18:03:02,114 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-20 18:03:11,384 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:03:11,749 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-20 18:03:12,225 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-20 18:03:45,981 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:03:59,392 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:04:34,777 - TribeIQPlatform - INFO - Loaded development environment configurations.

@@ -17,6 +17,7 @@ if str(SRC_DIR) not in sys.path:
 from ui.styles import load_css
 from integrations.sync import WardenSyncEngine
 from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
+from src.services.health_service import HealthService
 
 st.set_page_config(
     page_title="TribeIQ - Administration",
@@ -110,6 +111,48 @@ for idx, item in enumerate(health_items):
             st.markdown(f"**{item['name']}**")
             st.markdown(f"Status: {item['status']}")
             st.markdown(f"*Last Checked: {item['checked']}*")
+
+st.write("---")
+
+# ===========================================================
+# SECTION 2.5: Platform Database & Repository Health
+# ===========================================================
+st.markdown("### 🌐 Platform Database & Repository Health")
+try:
+    db_health = HealthService.get_database_status()
+    db_connected = db_health.get("connected", False)
+    
+    health_cols_p = st.columns(4)
+    with health_cols_p[0]:
+        with st.container(border=True):
+            st.markdown("**MongoDB Status**")
+            status_color = "🟢 Connected" if db_connected else "🔴 Offline"
+            st.markdown(f"Status: {status_color}")
+            st.markdown(f"Database: `{db_health.get('database_name', 'N/A')}`")
+            
+    with health_cols_p[1]:
+        with st.container(border=True):
+            st.markdown("**Platform Version**")
+            st.markdown(f"Version: `{HealthService.get_app_version()}`")
+            st.markdown(f"Environment: `{HealthService.get_environment().upper()}`")
+            
+    with health_cols_p[2]:
+        with st.container(border=True):
+            st.markdown("**Datastore Modes**")
+            st.markdown("Legacy CSV Mode: `🟢 Enabled`")
+            st.markdown("MongoDB Write: `⚪ Prepared`")
+            
+    with health_cols_p[3]:
+        with st.container(border=True):
+            st.markdown("**Repository Connectivity**")
+            rep_status = "🟢 Connected" if db_connected else "🔴 Disconnected"
+            st.markdown(f"Base Repository: {rep_status}")
+            st.markdown(f"Child Repositories: {len(db_health.get('collections', {}))} / 11")
+            
+    if not db_connected:
+        st.warning("⚠️ MongoDB Atlas is currently offline or unreachable. The system is operating in fallback CSV mode.")
+except Exception as e:
+    st.error(f"Failed to load platform database health metrics: {str(e)}")
 
 st.write("---")
 

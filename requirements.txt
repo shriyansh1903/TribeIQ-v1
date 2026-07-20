@@ -4,3 +4,6 @@ requests
 python-dotenv
 openpyxl
 streamlit
+pymongo
+bcrypt
+pydantic
