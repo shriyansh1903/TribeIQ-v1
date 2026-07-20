@@ -16,6 +16,9 @@ if str(PROJECT_ROOT) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+from src.auth.session_manager import require_login
+require_login("Resident Profiles")
+
 # Backend Imports
 from ui_data_bridge import get_session_property, load_application_data
 from intelligence.occupancy_forecaster import get_active_residents, get_current_occupancy, load_resident_export

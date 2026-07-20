@@ -12,6 +12,9 @@ if str(PROJECT_ROOT) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+from src.auth.session_manager import require_login
+require_login("Master Data")
+
 # Imports
 from integrations.master_data_db import (
     get_properties_df, save_properties_df,

@@ -12,6 +12,9 @@ if str(PROJECT_ROOT) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+from src.auth.session_manager import require_login
+require_login("Vendor Management")
+
 from ui.components import page_header
 from integrations.vendor_db import (
     load_vendors, add_vendor, edit_vendor, 

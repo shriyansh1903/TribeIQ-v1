@@ -16,6 +16,9 @@ if str(PROJECT_ROOT) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+from src.auth.session_manager import require_login
+require_login("Recommendations")
+
 # Backend Imports
 from ui_data_bridge import (
     generate_property_recommendations,

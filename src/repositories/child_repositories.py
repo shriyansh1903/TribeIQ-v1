@@ -4,6 +4,28 @@ class UsersRepository(BaseRepository):
     def __init__(self):
         super().__init__("users")
 
+    def find_by_username(self, username: str):
+        if self.collection is None:
+            return None
+        return self.collection.find_one({"username": username})
+
+    def increment_failed_attempts(self, username: str, lock_until=None):
+        if self.collection is None:
+            return
+        update_data = {"$inc": {"failed_attempts": 1}}
+        if lock_until:
+            update_data["$set"] = {"locked_until": lock_until}
+        self.collection.update_one({"username": username}, update_data)
+
+    def reset_failed_attempts(self, username: str):
+        if self.collection is None:
+            return
+        self.collection.update_one(
+            {"username": username}, 
+            {"$set": {"failed_attempts": 0, "locked_until": None}}
+        )
+
+
 class PropertiesRepository(BaseRepository):
     def __init__(self):
         super().__init__("properties")

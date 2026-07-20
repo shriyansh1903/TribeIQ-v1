@@ -41,3 +41,25 @@
 2026-07-20 18:03:45,981 - TribeIQPlatform - INFO - Loaded development environment configurations.
 2026-07-20 18:03:59,392 - TribeIQPlatform - INFO - Loaded development environment configurations.
 2026-07-20 18:04:34,777 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:07:58,918 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:07:59,271 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-20 18:07:59,707 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-20 18:08:01,975 - TribeIQPlatform - INFO - User created: 'admin' with role 'Admin' by administrator.
+2026-07-20 18:08:08,758 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:08:08,763 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-20 18:08:09,214 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-20 18:10:53,567 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:11:36,081 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:11:36,377 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-20 18:11:38,426 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-20 18:11:40,226 - TribeIQPlatform - INFO - User created: 'test_user_auth' with role 'Community Manager' by administrator.
+2026-07-20 18:12:14,017 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-20 18:12:14,492 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-20 18:12:16,959 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-20 18:12:18,554 - TribeIQPlatform - INFO - User created: 'test_user_auth' with role 'Community Manager' by administrator.
+2026-07-20 18:12:29,043 - TribeIQPlatform - INFO - Successful login: User 'test_user_auth' logged in.
+2026-07-20 18:12:33,283 - TribeIQPlatform - WARNING - Failed login attempt: Incorrect password for user 'test_user_auth'.
+2026-07-20 18:12:33,906 - TribeIQPlatform - WARNING - Failed login attempt: Incorrect password for user 'test_user_auth'.
+2026-07-20 18:12:35,151 - TribeIQPlatform - WARNING - Failed login attempt: Incorrect password for user 'test_user_auth'.
+2026-07-20 18:12:35,865 - TribeIQPlatform - WARNING - Failed login attempt: Incorrect password for user 'test_user_auth'.
+2026-07-20 18:12:36,522 - TribeIQPlatform - WARNING - Account locked: User 'test_user_auth' reached max failed attempts.

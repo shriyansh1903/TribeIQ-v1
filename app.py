@@ -38,6 +38,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+from src.auth.session_manager import require_login
+require_login("Dashboard")
+
 
 # ===========================================================
 # Shared Session State

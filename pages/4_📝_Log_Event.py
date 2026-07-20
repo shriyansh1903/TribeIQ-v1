@@ -71,6 +71,10 @@ for path in (
         )
 
 
+
+from src.auth.session_manager import require_login
+require_login("Log Event")
+
 # ===========================================================
 # Backend Imports
 # ===========================================================

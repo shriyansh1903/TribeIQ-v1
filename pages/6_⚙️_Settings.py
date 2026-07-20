@@ -25,6 +25,9 @@ st.set_page_config(
     layout="wide"
 )
 
+from src.auth.session_manager import require_login
+require_login("Settings")
+
 load_css()
 
 # Load sync engine and status
@@ -151,6 +154,20 @@ try:
             
     if not db_connected:
         st.warning("⚠️ MongoDB Atlas is currently offline or unreachable. The system is operating in fallback CSV mode.")
+        
+    st.write("")
+    st.markdown("#### 👤 Active User Session Status")
+    s_col1, s_col2, s_col3 = st.columns(3)
+    with s_col1:
+        st.write(f"**Authenticated User:** `{st.session_state.user.get('username')}`")
+        st.write(f"**Display Name:** `{st.session_state.user.get('display_name', 'N/A')}`")
+    with s_col2:
+        st.write(f"**Security Profile Role:** `{st.session_state.user.get('role', 'Read Only')}`")
+        rem_str = "Indefinite (Remember Me active)" if st.session_state.remember_me else "30 Minutes Inactivity Expiry"
+        st.write(f"**Session Expiry Profile:** `{rem_str}`")
+    with s_col3:
+        if st.button("🚪 Terminate Session (Sign Out)", type="primary", use_container_width=True, key="settings_logout_btn"):
+            logout()
 except Exception as e:
     st.error(f"Failed to load platform database health metrics: {str(e)}")
 

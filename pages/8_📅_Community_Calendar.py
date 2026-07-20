@@ -20,6 +20,17 @@ st.set_page_config(
     layout="wide"
 )
 
+import sys
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = PROJECT_ROOT / "src"
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+from src.auth.session_manager import require_login
+require_login("Community Calendar")
+
 load_css()
 
 # Custom styles for calendar grid

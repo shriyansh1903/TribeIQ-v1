@@ -13,6 +13,9 @@ if str(PROJECT_ROOT) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+from src.auth.session_manager import require_login
+require_login("Recommendations") # AI Copilot is tied to the Recommendations engine permission
+
 from intelligence.copilot_orchestrator import ask_copilot
 from ui.styles import load_css
 
