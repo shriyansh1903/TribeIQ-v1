@@ -78,9 +78,10 @@ load_css()
 if "auto_synced_on_startup" not in st.session_state:
     st.session_state["auto_synced_on_startup"] = True
     try:
-        import sys
-        sys.path.insert(0, str(PROJECT_ROOT / "src"))
-        from integrations.sync import WardenSyncEngine
+        try:
+            from src.integrations.sync import WardenSyncEngine
+        except ImportError:
+            from integrations.sync import WardenSyncEngine
         engine = WardenSyncEngine()
         status = engine.load_sync_status()
         if status.get("auto_sync_on_startup", False):
@@ -93,7 +94,10 @@ if "auto_synced_on_startup" not in st.session_state:
 # Initialize Master Data Configurations
 # ===========================================================
 try:
-    from integrations.master_data_db import init_master_data_files, update_capacities_config
+    try:
+        from src.integrations.master_data_db import init_master_data_files, update_capacities_config
+    except ImportError:
+        from integrations.master_data_db import init_master_data_files, update_capacities_config
     init_master_data_files()
     update_capacities_config()
 except Exception:
