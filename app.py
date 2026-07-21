@@ -124,6 +124,7 @@ pages = [
     st.Page(_PAGES_DIR / "8_📅_Community_Calendar.py", title="Community Calendar", icon="📅"),
     st.Page(_PAGES_DIR / "9_🗃️_Master_Data.py", title="Master Data", icon="🗃️"),
     st.Page(_PAGES_DIR / "10_🤖_AI_Community_Copilot.py", title="AI Community Copilot", icon="🤖"),
+    st.Page(_PAGES_DIR / "11_👤_User_Management.py", title="User Management", icon="👤"),
 ]
 
 with st.sidebar:
