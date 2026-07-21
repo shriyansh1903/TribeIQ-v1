@@ -74,6 +74,13 @@ class CalendarEventService:
                     if "_id" in df.columns:
                         df = df.drop(columns=["_id"])
                     return df
+                else:
+                    import src.integrations.calendar_db as legacy_calendar_db
+                    csv_df = legacy_calendar_db.load_calendar_events_csv()
+                    if not csv_df.empty:
+                        records = csv_df.to_dict(orient="records")
+                        self.repo.collection.insert_many(records)
+                        return csv_df
             except Exception as e:
                 logger.error(f"Error fetching calendar events from MongoDB: {str(e)}")
         # Fallback

@@ -59,10 +59,49 @@ def load_calendar_events():
     from src.services import calendar_service
     return calendar_service.get_calendar_events()
 
+def save_calendar_event_csv(event_dict):
+    init_calendar_db()
+    try:
+        df = pd.read_csv(CALENDAR_CSV)
+    except Exception:
+        df = pd.DataFrame()
+
+    event_id = event_dict.get("Event ID")
+    if not event_id:
+        event_id = f"EVT-{uuid.uuid4().hex[:6].upper()}"
+        event_dict["Event ID"] = event_id
+
+    if not df.empty and "Event ID" in df.columns and event_id in df["Event ID"].values:
+        idx = df[df["Event ID"] == event_id].index[0]
+        for col in df.columns:
+            if col in event_dict:
+                df.at[idx, col] = event_dict[col]
+    else:
+        new_row = {col: event_dict.get(col, "") for col in df.columns}
+        for k, v in event_dict.items():
+            new_row[k] = v
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+
+    df.to_csv(CALENDAR_CSV, index=False)
+    return event_id
+
+def delete_calendar_event_csv(event_id):
+    if CALENDAR_CSV.exists():
+        try:
+            df = pd.read_csv(CALENDAR_CSV)
+            if "Event ID" in df.columns:
+                df = df[df["Event ID"] != event_id]
+                df.to_csv(CALENDAR_CSV, index=False)
+                return True
+        except Exception:
+            pass
+    return False
+
 def save_calendar_event(event_dict):
     from src.services import calendar_service
     st.cache_data.clear()
     event_id = calendar_service.save_calendar_event(event_dict)
+    save_calendar_event_csv(event_dict)
     
     # Sync with event_history.csv if Approved / Completed
     if event_dict.get("Status") in ["Approved", "Completed"]:
@@ -73,6 +112,7 @@ def save_calendar_event(event_dict):
 def delete_calendar_event(event_id):
     from src.services import calendar_service
     st.cache_data.clear()
+    delete_calendar_event_csv(event_id)
     return calendar_service.delete_calendar_event(event_id)
 
 def sync_approved_event_to_history(event_dict):

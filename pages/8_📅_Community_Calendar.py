@@ -470,18 +470,14 @@ try:
                     if new_status == "Approved" and not app_date_to_save:
                         app_date_to_save = datetime.date.today().strftime("%Y-%m-%d")
                     
-                    save_calendar_event({
-                        "Event ID": evt_row["Event ID"],
+                    event_data_to_save = dict(evt_row)
+                    event_data_to_save.update({
                         "Date": new_date.strftime("%Y-%m-%d"),
-                        "Property": evt_row[cal_prop_col],
-                        "Event Name": evt_row[name_col],
-                        "Event Type": evt_row[et_col] if et_col in evt_row else "Minor",
-                        "Category": evt_row.get("Category", "Social"),
                         "Status": new_status,
-                        "Budget Estimate": float(evt_row.get("Budget Estimate", 3000.0)) if evt_row.get("Budget Estimate") else 3000.0,
-                        "Recommended Date": rec_date_val,
-                        "Approved Date": app_date_to_save
+                        "Approved Date": app_date_to_save,
+                        "Recommended Date": rec_date_val
                     })
+                    save_calendar_event(event_data_to_save)
                     st.success("Changes saved successfully!")
                     st.rerun()
                     
