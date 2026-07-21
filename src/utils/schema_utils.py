@@ -36,3 +36,21 @@ def safe_date_column(df: pd.DataFrame, col_name: str) -> pd.Series:
     if actual_col and actual_col in df.columns:
         return pd.to_datetime(df[actual_col], errors='coerce')
     return pd.Series(dtype='datetime64[ns]')
+
+def clean_dataframe_for_ui(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Sanitizes a DataFrame for PyArrow and Streamlit display by removing '_id'
+    and converting non-primitive objects (e.g., bson.ObjectId) to strings.
+    """
+    if df is None or df.empty:
+        return pd.DataFrame()
+    df_clean = df.copy()
+    if "_id" in df_clean.columns:
+        df_clean = df_clean.drop(columns=["_id"])
+    for col in df_clean.columns:
+        if df_clean[col].dtype == 'object':
+            df_clean[col] = df_clean[col].apply(
+                lambda x: str(x) if x is not None and not isinstance(x, (str, int, float, bool, list, dict)) else (x if x is not None else "")
+            )
+    return df_clean
+

@@ -93,6 +93,8 @@ def get_properties_df():
     df = property_service.get_properties()
     if df is None or df.empty:
         df = get_properties_df_csv()
+    if "_id" in df.columns:
+        df = df.drop(columns=["_id"])
     return df
 
 def save_properties_df(df):
@@ -107,7 +109,10 @@ def save_properties_df(df):
 @st.cache_data
 def get_event_categories_df():
     init_master_data_files()
-    return pd.read_csv(EVENT_CATEGORIES_CSV).fillna("")
+    df = pd.read_csv(EVENT_CATEGORIES_CSV).fillna("")
+    if "_id" in df.columns:
+        df = df.drop(columns=["_id"])
+    return df
 
 def save_event_categories_df(df):
     df.to_csv(EVENT_CATEGORIES_CSV, index=False)
@@ -116,7 +121,10 @@ def save_event_categories_df(df):
 @st.cache_data
 def get_property_types_df():
     init_master_data_files()
-    return pd.read_csv(PROPERTY_TYPES_CSV).fillna("")
+    df = pd.read_csv(PROPERTY_TYPES_CSV).fillna("")
+    if "_id" in df.columns:
+        df = df.drop(columns=["_id"])
+    return df
 
 def save_property_types_df(df):
     df.to_csv(PROPERTY_TYPES_CSV, index=False)
@@ -125,7 +133,10 @@ def save_property_types_df(df):
 @st.cache_data
 def get_vendor_categories_df():
     init_master_data_files()
-    return pd.read_csv(VENDOR_CATEGORIES_CSV).fillna("")
+    df = pd.read_csv(VENDOR_CATEGORIES_CSV).fillna("")
+    if "_id" in df.columns:
+        df = df.drop(columns=["_id"])
+    return df
 
 def save_vendor_categories_df(df):
     df.to_csv(VENDOR_CATEGORIES_CSV, index=False)
@@ -134,11 +145,15 @@ def save_vendor_categories_df(df):
 @st.cache_data
 def get_material_categories_df():
     init_master_data_files()
-    return pd.read_csv(MATERIAL_CATEGORIES_CSV).fillna("")
+    df = pd.read_csv(MATERIAL_CATEGORIES_CSV).fillna("")
+    if "_id" in df.columns:
+        df = df.drop(columns=["_id"])
+    return df
 
 def save_material_categories_df(df):
     df.to_csv(MATERIAL_CATEGORIES_CSV, index=False)
     st.cache_data.clear()
+
 
 def update_capacities_config():
     # Update PROPERTY_CAPACITY dynamically in forecasters

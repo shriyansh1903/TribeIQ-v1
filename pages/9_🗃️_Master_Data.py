@@ -31,7 +31,7 @@ from src.integrations.master_data_db import (
     update_capacities_config, EVENTS_CSV
 )
 from ui.styles import load_css
-from src.utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
+from src.utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists, clean_dataframe_for_ui
 
 def _safe_lookup(df, id_col, id_val, display_col):
     """Safely look up a display value from a DataFrame row, returning id_val on failure."""
@@ -47,12 +47,13 @@ load_css()
 
 
 # Load all dataframes to count records
-df_prop = get_properties_df()
-df_evt = pd.read_csv(EVENTS_CSV) if Path(EVENTS_CSV).exists() else pd.DataFrame()
-df_cat = get_event_categories_df()
-df_pt = get_property_types_df()
-df_vc = get_vendor_categories_df()
-df_mc = get_material_categories_df()
+df_prop = clean_dataframe_for_ui(get_properties_df())
+df_evt = clean_dataframe_for_ui(pd.read_csv(EVENTS_CSV) if Path(EVENTS_CSV).exists() else pd.DataFrame())
+df_cat = clean_dataframe_for_ui(get_event_categories_df())
+df_pt = clean_dataframe_for_ui(get_property_types_df())
+df_vc = clean_dataframe_for_ui(get_vendor_categories_df())
+df_mc = clean_dataframe_for_ui(get_material_categories_df())
+
 
 total_records = len(df_prop) + len(df_evt) + len(df_cat) + len(df_pt) + len(df_vc) + len(df_mc)
 
@@ -869,7 +870,7 @@ with tab_ext:
     st.write("Manage external events (festivals, conferences, college fests) that occur near properties to provide planning awareness.")
     
     from src.integrations.external_events_db import load_external_events, save_external_event, delete_external_event
-    df_ext = load_external_events()
+    df_ext = clean_dataframe_for_ui(load_external_events())
     
     # 1. Table & Export
     st.markdown("#### 📋 Existing Registry")
@@ -877,6 +878,7 @@ with tab_ext:
         st.info("No external events found.")
     else:
         df_ext_display = df_ext.copy()
+
         page_size = 5
         total_rows = len(df_ext_display)
         total_pages = max(1, (total_rows - 1) // page_size + 1)
