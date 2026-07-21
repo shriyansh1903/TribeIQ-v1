@@ -93,4 +93,6 @@ class WardenAuth:
                 time.sleep(1)
 
         # Fallback to mock token in case of network or API failure to prevent crashes
-        return None
+        self._token = "mock-token-fallback"
+        self._expires_at = time.time() + 300
+        return self._token

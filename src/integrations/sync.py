@@ -248,9 +248,18 @@ class WardenSyncEngine:
                 progress_callback("Refreshing Profiles & Rebuilding Pipelines...")
             
             # Execute downstream pipeline updates
-            import cleaner
-            import feature_engineering
-            import profile_generator
+            try:
+                import cleaner
+                import feature_engineering
+                import profile_generator
+            except ImportError:
+                import sys
+                src_dir = str(self.project_root / "src")
+                if src_dir not in sys.path:
+                    sys.path.insert(0, src_dir)
+                import cleaner
+                import feature_engineering
+                import profile_generator
 
             cleaner.run()
             feature_engineering.run()
