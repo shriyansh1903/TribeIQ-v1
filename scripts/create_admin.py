@@ -33,9 +33,24 @@ def main():
         sys.exit(1)
         
     if len(admins) > 0:
-        print(f"Safe Exit: An administrator account ('{admins[0].get('username')}') already exists.")
-        print("TribeIQ does not allow overwriting administrator accounts via bootstrap.")
-        sys.exit(0)
+        admin_user = admins[0]
+        print(f"Notice: Administrator account ('{admin_user.get('username')}') already exists in MongoDB.")
+        reset_choice = input("Would you like to reset the password for this account? (y/N): ").strip().lower()
+        if reset_choice == 'y':
+            new_pwd = getpass.getpass("New Password    : ")
+            confirm_pwd = getpass.getpass("Confirm Password: ")
+            if new_pwd != confirm_pwd:
+                print("Error: Passwords do not match.")
+                sys.exit(1)
+            if auth_service.reset_password(str(admin_user['_id']), new_pwd):
+                print(f"Success: Password for '{admin_user.get('username')}' has been updated successfully!")
+                sys.exit(0)
+            else:
+                print("Error: Failed to update password.")
+                sys.exit(1)
+        else:
+            print("Exiting without making changes.")
+            sys.exit(0)
 
     print("\nNo administrator accounts detected. Please configure the initial admin:")
     

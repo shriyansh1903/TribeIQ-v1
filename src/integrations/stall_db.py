@@ -15,6 +15,14 @@ DEFAULT_STALL_CATEGORIES = [
     "Sponsor Booth", "Information Booth", "Miscellaneous"
 ]
 
+def load_stalls_csv() -> pd.DataFrame:
+    if STALLS_CSV.exists():
+        try:
+            return pd.read_csv(STALLS_CSV)
+        except Exception:
+            pass
+    return pd.DataFrame()
+
 import streamlit as st
 
 @st.cache_data

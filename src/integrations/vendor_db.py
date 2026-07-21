@@ -32,6 +32,14 @@ def get_vendor_categories() -> List[str]:
             pass
     return categories
 
+def load_vendors_csv() -> pd.DataFrame:
+    if VENDORS_CSV.exists():
+        try:
+            return pd.read_csv(VENDORS_CSV)
+        except Exception:
+            pass
+    return pd.DataFrame()
+
 import streamlit as st
 
 @st.cache_data

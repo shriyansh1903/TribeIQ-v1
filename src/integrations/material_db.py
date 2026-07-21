@@ -22,6 +22,14 @@ PROCUREMENT_STATUS_BADGES = {
     "Returned": "🟣 Returned"
 }
 
+def load_materials_csv() -> pd.DataFrame:
+    if MATERIALS_CSV.exists():
+        try:
+            return pd.read_csv(MATERIALS_CSV)
+        except Exception:
+            pass
+    return pd.DataFrame()
+
 import streamlit as st
 
 @st.cache_data

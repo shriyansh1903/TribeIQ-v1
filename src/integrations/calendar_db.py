@@ -45,6 +45,15 @@ def init_rec_history_db():
         ])
         df.to_csv(REC_HISTORY_CSV, index=False)
 
+def load_calendar_events_csv() -> pd.DataFrame:
+    init_calendar_db()
+    if CALENDAR_CSV.exists():
+        try:
+            return pd.read_csv(CALENDAR_CSV)
+        except Exception:
+            pass
+    return pd.DataFrame()
+
 @st.cache_data
 def load_calendar_events():
     from src.services import calendar_service

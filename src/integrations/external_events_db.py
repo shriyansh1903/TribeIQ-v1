@@ -183,6 +183,15 @@ def init_external_events_db():
         except Exception:
             pass
 
+def load_external_events_csv() -> pd.DataFrame:
+    init_external_events_db()
+    if EXTERNAL_EVENTS_CSV.exists():
+        try:
+            return pd.read_csv(EXTERNAL_EVENTS_CSV)
+        except Exception:
+            pass
+    return pd.DataFrame()
+
 @st.cache_data
 def load_external_events():
     from src.services import external_event_service

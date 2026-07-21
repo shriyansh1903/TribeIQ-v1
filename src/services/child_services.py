@@ -83,7 +83,7 @@ class CalendarEventService:
             except Exception as e:
                 logger.error(f"Error fetching calendar events from MongoDB: {str(e)}")
         # Fallback
-        return legacy_calendar_db.load_calendar_events()
+        return legacy_calendar_db.load_calendar_events_csv()
 
     def save_calendar_event(self, event_data: Dict[str, Any]) -> bool:
         if db_manager.ping_check():
@@ -127,7 +127,7 @@ class VendorService:
             except Exception as e:
                 logger.error(f"Error fetching vendors from MongoDB: {str(e)}")
         # Fallback
-        return legacy_vendor_db.load_vendors()
+        return legacy_vendor_db.load_vendors_csv()
 
     def add_vendor(self, vendor_data: Dict[str, Any]) -> bool:
         if db_manager.ping_check():
@@ -178,7 +178,7 @@ class MaterialService:
             except Exception as e:
                 logger.error(f"Error fetching materials from MongoDB: {str(e)}")
         # Fallback
-        return legacy_material_db.load_materials()
+        return legacy_material_db.load_materials_csv()
 
 class StallService:
     def __init__(self):
@@ -196,7 +196,7 @@ class StallService:
             except Exception as e:
                 logger.error(f"Error fetching stalls from MongoDB: {str(e)}")
         # Fallback
-        return legacy_stall_db.load_stalls()
+        return legacy_stall_db.load_stalls_csv()
 
 class ExternalEventService:
     def __init__(self):
@@ -214,7 +214,7 @@ class ExternalEventService:
             except Exception as e:
                 logger.error(f"Error fetching external events from MongoDB: {str(e)}")
         # Fallback
-        return legacy_external_db.load_external_events()
+        return legacy_external_db.load_external_events_csv()
 
     def save_external_event(self, event_data: Dict[str, Any]) -> str:
         if db_manager.ping_check():
