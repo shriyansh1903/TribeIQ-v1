@@ -177,27 +177,27 @@ try:
             if not v_name or not category_to_save:
                 st.error("Vendor Name and Category are required.")
             else:
-            new_v_id = f"VND{len(vendors_df)+1:03d}"
-            new_vendor = {
-                "Vendor ID": new_v_id,
-                "Vendor Name": v_name,
-                "Vendor Category": category_to_save,
-                "Contact Person": v_contact,
-                "Phone Number": v_phone,
-                "Email Address": v_email,
-                "GST Number": v_gst_num,
-                "Address": v_address,
-                "Description": v_desc,
-                "Active / Inactive Status": v_status,
-                "Base Amount": v_base,
-                "GST Percentage": v_gst_pct,
-                "GST Amount": gst_amt,
-                "Final Cost": final_cost
-            }
-            if add_vendor(new_vendor):
-                st.success(f"Vendor '{v_name}' registered successfully with ID {new_v_id}!")
-                st.cache_data.clear()
-                st.rerun()
+                new_v_id = f"VND{len(vendors_df)+1:03d}"
+                new_vendor = {
+                    "Vendor ID": new_v_id,
+                    "Vendor Name": v_name,
+                    "Vendor Category": category_to_save,
+                    "Contact Person": v_contact,
+                    "Phone Number": v_phone,
+                    "Email Address": v_email,
+                    "GST Number": v_gst_num,
+                    "Address": v_address,
+                    "Description": v_desc,
+                    "Active / Inactive Status": v_status,
+                    "Base Amount": v_base,
+                    "GST Percentage": v_gst_pct,
+                    "GST Amount": gst_amt,
+                    "Final Cost": final_cost
+                }
+                if add_vendor(new_vendor):
+                    st.success(f"Vendor '{v_name}' registered successfully with ID {new_v_id}!")
+                    st.cache_data.clear()
+                    st.rerun()
 except Exception as e:
     st.warning("⚠ Unable to load this form.")
     with st.expander("Details"):
