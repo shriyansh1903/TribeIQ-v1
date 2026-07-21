@@ -286,6 +286,86 @@ class ExternalEventService:
         import src.integrations.external_events_db as legacy_external_db
         return legacy_external_db.delete_external_event(event_id)
 
+class RecommendationService:
+    def __init__(self):
+        self.repo = RecommendationsRepository()
+
+    def get_recommendations(self) -> pd.DataFrame:
+        if db_manager.ping_check():
+            try:
+                docs = self.repo.find_all()
+                if docs:
+                    df = pd.DataFrame(docs)
+                    if "_id" in df.columns:
+                        df = df.drop(columns=["_id"])
+                    return df
+            except Exception as e:
+                logger.error(f"Error fetching recommendations from MongoDB: {str(e)}")
+        # Fallback to CSV
+        from src.integrations.calendar_db import REC_HISTORY_CSV, init_rec_history_db
+        init_rec_history_db()
+        if REC_HISTORY_CSV.exists():
+            try:
+                return pd.read_csv(REC_HISTORY_CSV)
+            except Exception:
+                pass
+        return pd.DataFrame()
+
+    def save_recommendation(self, rec_data: Dict[str, Any]) -> bool:
+        if db_manager.ping_check():
+            try:
+                rec_id = rec_data.get("Recommendation ID")
+                if rec_id:
+                    existing = self.repo.collection.find_one({"Recommendation ID": rec_id})
+                    if existing:
+                        self.repo.collection.update_one({"Recommendation ID": rec_id}, {"$set": rec_data})
+                        return True
+                self.repo.insert(rec_data)
+                return True
+            except Exception as e:
+                logger.error(f"Error saving recommendation to MongoDB: {str(e)}")
+        return False
+
+class EventHistoryService:
+    def __init__(self):
+        self.repo = EventsRepository()
+
+    def get_event_history(self) -> pd.DataFrame:
+        if db_manager.ping_check():
+            try:
+                docs = self.repo.find_all()
+                if docs:
+                    df = pd.DataFrame(docs)
+                    if "_id" in df.columns:
+                        df = df.drop(columns=["_id"])
+                    return df
+            except Exception as e:
+                logger.error(f"Error fetching event history from MongoDB: {str(e)}")
+        # Fallback to CSV
+        from pathlib import Path
+        csv_path = Path(__file__).resolve().parents[2] / "data" / "event_history.csv"
+        if csv_path.exists():
+            try:
+                return pd.read_csv(csv_path)
+            except Exception:
+                pass
+        return pd.DataFrame()
+
+    def save_event_history(self, event_data: Dict[str, Any]) -> bool:
+        if db_manager.ping_check():
+            try:
+                event_id = event_data.get("Event ID")
+                if event_id:
+                    existing = self.repo.collection.find_one({"Event ID": event_id})
+                    if existing:
+                        self.repo.collection.update_one({"Event ID": event_id}, {"$set": event_data})
+                        return True
+                self.repo.insert(event_data)
+                return True
+            except Exception as e:
+                logger.error(f"Error saving event history to MongoDB: {str(e)}")
+        return False
+
 # Singleton instances of child services
 property_service = PropertyService()
 resident_service = ResidentService()
@@ -294,3 +374,6 @@ vendor_service = VendorService()
 material_service = MaterialService()
 stall_service = StallService()
 external_event_service = ExternalEventService()
+recommendation_service = RecommendationService()
+event_history_service = EventHistoryService()
+

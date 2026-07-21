@@ -20,7 +20,7 @@ from src.auth.session_manager import require_login
 require_login("Recommendations")
 
 # Backend Imports
-from ui_data_bridge import (
+from src.ui_data_bridge import (
     generate_property_recommendations,
     get_session_property,
     get_session_result,
@@ -28,12 +28,12 @@ from ui_data_bridge import (
     save_result_to_session,
     save_predictions_to_csv,
 )
-from recommendation_date_bridge import (
+from src.recommendation_date_bridge import (
     enrich_recommendation_result_for_date,
     enrich_recommendation_result_with_best_dates,
 )
 from ui.styles import load_css
-from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
+from src.utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 # Load CSS Theme
 load_css()
@@ -198,7 +198,7 @@ if rec_result and isinstance(rec_result, dict):
                 st.write("")
                 st.write("")
                 if st.button("👍 Approve Major Event", key="approve_major_btn", type="primary", use_container_width=True):
-                    from integrations.calendar_db import save_calendar_event, save_recommendation_history
+                    from src.integrations.calendar_db import save_calendar_event, save_recommendation_history
                     
                     event_dict = {
                         "Event Name": major_event.get("event_name", "Major Event"),
@@ -276,7 +276,7 @@ if rec_result and isinstance(rec_result, dict):
                     
                     m_sched_date = st.date_input("Schedule Date", value=m_ai_date, key=f"minor_sched_date_{idx}")
                     if st.button("👍 Approve Event", key=f"approve_minor_btn_{idx}", use_container_width=True):
-                        from integrations.calendar_db import save_calendar_event, save_recommendation_history
+                        from src.integrations.calendar_db import save_calendar_event, save_recommendation_history
                         
                         event_dict = {
                             "Event Name": m_ev.get("event_name", "Minor Event"),

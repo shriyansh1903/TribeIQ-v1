@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Any
 
 class Event(BaseModel):
-    event_id: str = Field(alias="Event ID")
+    event_id: Optional[str] = Field(None, alias="Event ID")
     event_name: str = Field(alias="Event Name")
     property_name: str = Field(alias="Property")
     category: str = Field(alias="Category")
@@ -16,3 +16,5 @@ class Event(BaseModel):
 
     class Config:
         populate_by_name = True
+        extra = "allow"
+

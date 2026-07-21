@@ -100,7 +100,28 @@ def delete_calendar_event_csv(event_id):
 def save_calendar_event(event_dict):
     from src.services import calendar_service
     st.cache_data.clear()
+
+    # Clean empty/invalid Event ID before validation
+    if not event_dict.get("Event ID") or str(event_dict.get("Event ID")).strip().lower() in ["none", ""]:
+        event_dict.pop("Event ID", None)
+
+    # Validate event schema via Pydantic model
+    try:
+        from src.models.event import Event
+        validated_obj = Event.model_validate(event_dict) if hasattr(Event, "model_validate") else Event(**event_dict)
+        validated_dict = validated_obj.model_dump(by_alias=True) if hasattr(validated_obj, "model_dump") else validated_obj.dict(by_alias=True)
+        for k, v in validated_dict.items():
+            if v is not None:
+                event_dict[k] = v
+    except Exception as e:
+        print(f"Pydantic Event validation notice: {e}")
+
+    # Remove Event ID if None was re-introduced by model dump
+    if not event_dict.get("Event ID") or str(event_dict.get("Event ID")).strip().lower() in ["none", ""]:
+        event_dict.pop("Event ID", None)
+
     event_id = calendar_service.save_calendar_event(event_dict)
+    event_dict["Event ID"] = event_id
     save_calendar_event_csv(event_dict)
     
     # Sync with event_history.csv if Approved / Completed
@@ -183,6 +204,13 @@ def sync_approved_event_to_history(event_dict):
         
     h_df.to_csv(history_csv, index=False)
 
+    # Live sync to MongoDB events collection
+    try:
+        from src.services.child_services import event_history_service
+        event_history_service.save_event_history(row_data)
+    except Exception as ex:
+        print(f"MongoDB event_history sync notice: {ex}")
+
 def save_recommendation_history(rec_dict):
     st.cache_data.clear()
     init_rec_history_db()
@@ -208,3 +236,11 @@ def save_recommendation_history(rec_dict):
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         
     df.to_csv(REC_HISTORY_CSV, index=False)
+
+    # Live sync to MongoDB recommendations collection
+    try:
+        from src.services.child_services import recommendation_service
+        recommendation_service.save_recommendation(rec_dict)
+    except Exception as ex:
+        print(f"MongoDB recommendation sync notice: {ex}")
+

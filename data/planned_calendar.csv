@@ -1,2 +1,6 @@
-Event ID,Event Name,Property,Category,Date,Time,Status,Event Type,Budget Estimate,Ticket Recommendation,Assigned Vendors,Assigned Materials,Notes,Predicted Attendance,Expected Occupancy,Recommendation Score,Recommended Date,Approved Date
-PC64A11F,Networking Mixer,Tribe Moro,Social,2027-08-19,18:00,Approved,Major,5000.0,Yes,Sound Express,Banners,Approved directly from Smart Recommendations.,60,78.5,92.4,2027-08-19,2026-07-18
+Event ID,Event Name,Property,Category,Date,Time,Status,Event Type,Budget Estimate,Ticket Recommendation,Assigned Vendors,Assigned Materials,Notes,Predicted Attendance,Expected Occupancy,Recommendation Score,Recommended Date,Approved Date,_id
+PC64A11F,Networking Mixer,Tribe Moro,Social,2027-08-19,18:00,Approved,Major,5000.0,Yes,Sound Express,Banners,Approved directly from Smart Recommendations.,60,78.5,92.4,2027-08-19,2026-07-18,
+EVT-92A40D,Local Business Expo,Tribe Moro,Flea Market,2026-07-21,18:00,Approved,Major,5000.0,No,,,Test save,1,2.0,25.875,2026-07-21,2026-07-21,6a5f4cf6afceb9114fcc0169
+EVT-6C3305,MongoDB Verification Test Party,Commune,Social,2026-09-01,18:00,Approved,Minor,3000.0,,,,,0,0.0,,,,6a5f6142bddd842467c5e757
+EVT-94FAF8,MongoDB Live Approval Test,Commune,Social,2026-09-01,18:00,Approved,Minor,3000.0,,,,,0,0.0,,,,6a5f615c6f65f7afb2f722f2
+EVT_TEST_0016,Test Live Sync Event,Tribe Moro,Social,2026-08-05,18:00,Approved,Major,5000.0,,,,,0,0.0,88.0,,,6a5f665987d1d251cfc33fa3
