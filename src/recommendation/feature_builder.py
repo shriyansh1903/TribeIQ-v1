@@ -208,7 +208,11 @@ def overlap_score(
 
     right_set = to_token_set(right)
 
-    if not left_set or not right_set:
+    if not right_set:
+
+        return 50.0
+
+    if not left_set:
 
         return 0.0
 
