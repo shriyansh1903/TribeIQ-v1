@@ -68,52 +68,78 @@ class CalendarEventService:
     def get_calendar_events(self) -> pd.DataFrame:
         if db_manager.ping_check():
             try:
+                import src.integrations.calendar_db as legacy_calendar_db
+                csv_df = legacy_calendar_db.load_calendar_events_csv()
                 docs = self.repo.find_all()
-                if docs:
+                df = pd.DataFrame()
+                if docs and len(docs) >= len(csv_df):
                     df = pd.DataFrame(docs)
-                    if "_id" in df.columns:
-                        df = df.drop(columns=["_id"])
-                    return df
                 else:
-                    import src.integrations.calendar_db as legacy_calendar_db
-                    csv_df = legacy_calendar_db.load_calendar_events_csv()
                     if not csv_df.empty:
-                        records = csv_df.to_dict(orient="records")
-                        self.repo.collection.insert_many(records)
-                        return csv_df
+                        existing_ids = {str(d.get("Event ID")) for d in docs if "Event ID" in d} if docs else set()
+                        missing_records = [row for row in csv_df.to_dict(orient="records") if str(row.get("Event ID")) not in existing_ids]
+                        if missing_records:
+                            self.repo.collection.insert_many(missing_records)
+                        all_docs = self.repo.find_all()
+                        if all_docs:
+                            df = pd.DataFrame(all_docs)
+                        else:
+                            df = csv_df.copy()
+                    else:
+                        df = csv_df.copy()
+
+                if "_id" in df.columns:
+                    df = df.drop(columns=["_id"])
+
+                # Guarantee 'Event ID' column exists and has no empty values
+                if "Event ID" not in df.columns:
+                    df["Event ID"] = [f"EVT-{idx+1:04d}" for idx in range(len(df))]
+                else:
+                    for idx, row in df.iterrows():
+                        if pd.isna(row["Event ID"]) or not str(row["Event ID"]).strip():
+                            df.at[idx, "Event ID"] = f"EVT-{idx+1:04d}"
+                return df
             except Exception as e:
                 logger.error(f"Error fetching calendar events from MongoDB: {str(e)}")
         # Fallback
         import src.integrations.calendar_db as legacy_calendar_db
-        return legacy_calendar_db.load_calendar_events_csv()
+        csv_df = legacy_calendar_db.load_calendar_events_csv()
+        if not csv_df.empty and "Event ID" not in csv_df.columns:
+            csv_df["Event ID"] = [f"EVT-{idx+1:04d}" for idx in range(len(csv_df))]
+        return csv_df
 
-    def save_calendar_event(self, event_data: Dict[str, Any]) -> bool:
+    def save_calendar_event(self, event_data: Dict[str, Any]) -> str:
         if db_manager.ping_check():
             try:
-                event_id = event_data.get("Event ID")
-                if event_id:
-                    existing = self.repo.collection.find_one({"Event ID": event_id})
-                    if existing:
-                        self.repo.collection.update_one({"Event ID": event_id}, {"$set": event_data})
-                        return True
-                self.repo.insert(event_data)
-                return True
+                event_id = str(event_data.get("Event ID", "")).strip()
+                if not event_id:
+                    import uuid
+                    event_id = f"EVT-{uuid.uuid4().hex[:6].upper()}"
+                    event_data["Event ID"] = event_id
+
+                existing = self.repo.collection.find_one({"Event ID": event_id})
+                if existing:
+                    self.repo.collection.update_one({"Event ID": event_id}, {"$set": event_data})
+                else:
+                    self.repo.insert(event_data)
+                return event_id
             except Exception as e:
                 logger.error(f"Error saving calendar event to MongoDB: {str(e)}")
         # Fallback
         import src.integrations.calendar_db as legacy_calendar_db
-        return legacy_calendar_db.save_calendar_event(event_data)
+        return legacy_calendar_db.save_calendar_event_csv(event_data)
 
     def delete_calendar_event(self, event_id: str) -> bool:
         if db_manager.ping_check():
             try:
-                self.repo.collection.delete_one({"Event ID": event_id})
-                return True
+                if event_id:
+                    self.repo.collection.delete_one({"Event ID": str(event_id)})
+                    return True
             except Exception as e:
                 logger.error(f"Error deleting calendar event from MongoDB: {str(e)}")
         # Fallback
         import src.integrations.calendar_db as legacy_calendar_db
-        return legacy_calendar_db.delete_calendar_event(event_id)
+        return legacy_calendar_db.delete_calendar_event_csv(event_id)
 
 class VendorService:
     def __init__(self):
