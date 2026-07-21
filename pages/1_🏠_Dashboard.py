@@ -196,12 +196,15 @@ try:
                 "Active Residents": int(f.get("active_residents", 0))
             })
         df_occ_summary = pd.DataFrame(occ_rows)
-        
-        col_chart, col_data = st.columns([2, 1])
-        with col_chart:
-            st.bar_chart(df_occ_summary.set_index("Property")[["Current Occupancy %"]])
-        with col_data:
-            st.dataframe(df_occ_summary, use_container_width=True, hide_index=True)
+        if not df_occ_summary.empty:
+            df_occ_summary["Current Occupancy %"] = df_occ_summary["Current Occupancy %"].fillna(0.0)
+            col_chart, col_data = st.columns([2, 1])
+            with col_chart:
+                st.bar_chart(df_occ_summary.set_index("Property")[["Current Occupancy %"]])
+            with col_data:
+                st.dataframe(df_occ_summary, use_container_width=True, hide_index=True)
+        else:
+            st.warning("Occupancy timeline data is unavailable.")
     else:
         st.warning("Occupancy timeline data is unavailable.")
 except Exception as e:
