@@ -343,26 +343,34 @@ st.write("### 📝 Event Details & Status Workflow Management")
 
 try:
     event_options = []
+    events_map = {}
+
     # Add Tribe events
     if not df_filtered.empty and name_col in df_filtered.columns:
         for idx, row in df_filtered.iterrows():
-            event_id = row.get("Event ID", "")
-            lbl = f"{row[name_col]} [{event_id}]" if event_id else row[name_col]
-            event_options.append((lbl, "tribe", row))
+            event_id = str(row.get("Event ID", ""))
+            lbl = f"{row[name_col]} [{event_id}]" if event_id else str(row[name_col])
+            key = f"tribe_{idx}_{event_id}"
+            event_options.append((lbl, key))
+            events_map[key] = ("tribe", row.to_dict())
+
     # Add External events
     if not df_ext_month.empty:
         for idx, row in df_ext_month.iterrows():
-            event_id = row.get("Event ID", "")
-            lbl = f"{row['Event Name']} [{event_id}]" if event_id else row["Event Name"]
-            event_options.append((lbl, "external", row))
+            event_id = str(row.get("Event ID", ""))
+            lbl = f"{row['Event Name']} [{event_id}]" if event_id else str(row["Event Name"])
+            key = f"external_{idx}_{event_id}"
+            event_options.append((lbl, key))
+            events_map[key] = ("external", row.to_dict())
 
     if event_options:
         selected_option = st.selectbox(
             "Select Event for Action",
             options=event_options,
-            format_func=lambda x: f"🌐 {x[0]} (External)" if x[1] == "external" else x[0]
+            format_func=lambda x: f"🌐 {x[0]} (External)" if events_map.get(x[1], ("", {}))[0] == "external" else x[0]
         )
-        selected_lbl, event_origin, evt_row = selected_option
+        selected_lbl, selected_key = selected_option
+        event_origin, evt_row = events_map[selected_key]
         
         if event_origin == "external":
             col_d1, col_d2 = st.columns(2)
