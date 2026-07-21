@@ -4,30 +4,53 @@ import datetime
 import io
 from pathlib import Path
 
-# Database loaders
-from integrations.vendor_db import load_vendors
-from integrations.stall_db import load_stalls
-from integrations.material_db import load_materials
-from integrations.calendar_db import load_calendar_events
-from intelligence.occupancy_forecaster import load_resident_export, forecast_property_occupancy
-from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
+# Database & Intelligence Loaders
+try:
+    from src.integrations.vendor_db import load_vendors
+    from src.integrations.stall_db import load_stalls
+    from src.integrations.material_db import load_materials
+    from src.integrations.calendar_db import load_calendar_events
+    from src.intelligence.occupancy_forecaster import load_resident_export, forecast_property_occupancy
+    from src.utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
+except ImportError:
+    from integrations.vendor_db import load_vendors
+    from integrations.stall_db import load_stalls
+    from integrations.material_db import load_materials
+    from integrations.calendar_db import load_calendar_events
+    from intelligence.occupancy_forecaster import load_resident_export, forecast_property_occupancy
+    from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 def render_executive_dashboard(history_df):
     st.markdown("## 👔 Executive Decision-Making Suite")
     st.markdown("*Consolidated operational, financial, occupancy and engagement intelligence for TribeIQ leadership.*")
     
     # -------------------------------------------------------
-    # 1. Load All Data
+    # 1. Load All Data safely
     # -------------------------------------------------------
     try:
         df_residents = load_resident_export()
     except Exception:
         df_residents = pd.DataFrame()
         
-    df_stalls = load_stalls()
-    df_materials = load_materials()
-    df_vendors = load_vendors()
-    df_calendar = load_calendar_events()
+    try:
+        df_stalls = load_stalls()
+    except Exception:
+        df_stalls = pd.DataFrame()
+
+    try:
+        df_materials = load_materials()
+    except Exception:
+        df_materials = pd.DataFrame()
+
+    try:
+        df_vendors = load_vendors()
+    except Exception:
+        df_vendors = pd.DataFrame()
+
+    try:
+        df_calendar = load_calendar_events()
+    except Exception:
+        df_calendar = pd.DataFrame()
     
     # Clean history_df Date column
     if not history_df.empty and "Date" in history_df.columns:

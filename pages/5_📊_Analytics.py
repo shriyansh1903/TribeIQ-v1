@@ -307,7 +307,10 @@ view_mode = st.radio(
 
 if view_mode == "👔 Executive Dashboard":
     hist_df = load_history_data()
-    from integrations.executive_analytics import render_executive_dashboard
+    try:
+        from src.integrations.executive_analytics import render_executive_dashboard
+    except ImportError:
+        from integrations.executive_analytics import render_executive_dashboard
     render_executive_dashboard(hist_df)
     st.stop()
 
