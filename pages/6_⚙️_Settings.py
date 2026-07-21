@@ -135,25 +135,34 @@ try:
             
     with health_cols_p[1]:
         with st.container(border=True):
-            st.markdown("**Platform Version**")
+            st.markdown("**Platform Status**")
             st.markdown(f"Version: `{HealthService.get_app_version()}`")
-            st.markdown(f"Environment: `{HealthService.get_environment().upper()}`")
+            mode_str = "MongoDB Active" if db_connected else "CSV Fallback Active"
+            st.markdown(f"Mode: `{mode_str}`")
             
     with health_cols_p[2]:
         with st.container(border=True):
-            st.markdown("**Datastore Modes**")
-            st.markdown("Legacy CSV Mode: `🟢 Enabled`")
-            st.markdown("MongoDB Write: `⚪ Prepared`")
+            st.markdown("**Datastore Fallback**")
+            fb_status = "⚪ Ready" if db_connected else "🟢 Active"
+            st.markdown(f"CSV Fallback: {fb_status}")
+            mig_status = "Completed" if db_connected else "Standby (Offline)"
+            st.markdown(f"Migration: `{mig_status}`")
             
     with health_cols_p[3]:
         with st.container(border=True):
-            st.markdown("**Repository Connectivity**")
+            st.markdown("**Repository Collections**")
             rep_status = "🟢 Connected" if db_connected else "🔴 Disconnected"
-            st.markdown(f"Base Repository: {rep_status}")
-            st.markdown(f"Child Repositories: {len(db_health.get('collections', {}))} / 11")
+            st.markdown(f"Repositories: {rep_status}")
+            st.markdown(f"Collections: {len(db_health.get('collections', {}))} / 11")
             
     if not db_connected:
         st.warning("⚠️ MongoDB Atlas is currently offline or unreachable. The system is operating in fallback CSV mode.")
+    else:
+        st.success("🟢 Connected to MongoDB Atlas. Active database repositories are loaded.")
+        # Render a small expandable section with actual record counts
+        with st.expander("📊 MongoDB Collection Record Counts"):
+            for coll, count in db_health.get("collections", {}).items():
+                st.write(f"- Collection `{coll}`: **{count}** records")
         
     st.write("")
     st.markdown("#### 👤 Active User Session Status")

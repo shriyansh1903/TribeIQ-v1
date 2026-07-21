@@ -47,69 +47,24 @@ def init_rec_history_db():
 
 @st.cache_data
 def load_calendar_events():
-    init_calendar_db()
-    try:
-        df = pd.read_csv(CALENDAR_CSV)
-        df = df.fillna("")
-        return df
-    except Exception:
-        return pd.DataFrame()
+    from src.services import calendar_service
+    return calendar_service.get_calendar_events()
 
 def save_calendar_event(event_dict):
-    init_calendar_db()
+    from src.services import calendar_service
     st.cache_data.clear()
-    df = load_calendar_events()
-    
-    if "Event ID" not in event_dict or not event_dict["Event ID"]:
-        event_dict["Event ID"] = f"PC{uuid.uuid4().hex[:6].upper()}"
-        
-    # Check if duplicate Event ID OR duplicate Property + Event Name + Recommended Date
-    match_idx = None
-    if not df.empty:
-        if event_dict["Event ID"] in df["Event ID"].values:
-            match_idx = df[df["Event ID"] == event_dict["Event ID"]].index[0]
-        else:
-            prop_val = event_dict.get("Property", "")
-            name_val = event_dict.get("Event Name", "")
-            rec_date = event_dict.get("Recommended Date", "")
-            
-            if prop_val and name_val and rec_date:
-                matches = df[
-                    (df["Property"] == prop_val) & 
-                    (df["Event Name"] == name_val) & 
-                    (df["Recommended Date"] == rec_date)
-                ]
-                if not matches.empty:
-                    match_idx = matches.index[0]
-                    # Update Event ID if it matched by columns
-                    event_dict["Event ID"] = df.at[match_idx, "Event ID"]
-        
-    if match_idx is not None:
-        # Update existing
-        for col in df.columns:
-            if col in event_dict:
-                df.at[match_idx, col] = event_dict[col]
-    else:
-        # Append new
-        new_row = {col: event_dict.get(col, "") for col in df.columns}
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-        
-    df.to_csv(CALENDAR_CSV, index=False)
+    event_id = calendar_service.save_calendar_event(event_dict)
     
     # Sync with event_history.csv if Approved / Completed
     if event_dict.get("Status") in ["Approved", "Completed"]:
         sync_approved_event_to_history(event_dict)
         
-    return event_dict["Event ID"]
+    return event_id
 
 def delete_calendar_event(event_id):
+    from src.services import calendar_service
     st.cache_data.clear()
-    df = load_calendar_events()
-    if not df.empty and event_id in df["Event ID"].values:
-        df = df[df["Event ID"] != event_id]
-        df.to_csv(CALENDAR_CSV, index=False)
-        return True
-    return False
+    return calendar_service.delete_calendar_event(event_id)
 
 def sync_approved_event_to_history(event_dict):
     history_csv = PROJECT_ROOT / "data" / "event_history.csv"

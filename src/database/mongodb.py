@@ -21,7 +21,7 @@ class MongoManager:
             self._client = pymongo.MongoClient(
                 settings.MONGO_URI,
                 maxPoolSize=50,
-                minPoolSize=5,
+                minPoolSize=0,
                 serverSelectionTimeoutMS=5000
             )
             # Test ping on startup
@@ -46,19 +46,31 @@ class MongoManager:
             return None
         return db[collection_name]
 
+    _last_ping_time = None
+    _last_ping_result = False
+
     def ping_check(self) -> bool:
         if self._client is None:
             return False
+            
+        import time
+        now = time.time()
+        if self._last_ping_time is not None and (now - self._last_ping_time < 30):
+            return self._last_ping_result
+            
         try:
             # Send a ping command
             self._client.admin.command('ping')
-            return True
+            self._last_ping_result = True
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
             logger.warning(f"MongoDB ping check failed: {str(e)}")
-            return False
+            self._last_ping_result = False
         except Exception as e:
             logger.warning(f"MongoDB ping check encountered error: {str(e)}")
-            return False
+            self._last_ping_result = False
+            
+        self._last_ping_time = now
+        return self._last_ping_result
 
 # Global Singleton Manager
 db_manager = MongoManager()

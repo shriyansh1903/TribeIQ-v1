@@ -36,151 +36,53 @@ import streamlit as st
 
 @st.cache_data
 def load_vendors() -> pd.DataFrame:
-    """
-    Loads vendors from data/vendors.csv. Creates default sample vendors if missing.
-    """
-    if VENDORS_CSV.exists():
-        try:
-            return pd.read_csv(VENDORS_CSV)
-        except Exception:
-            pass
-
-    # Create default sample vendors
-    VENDORS_CSV.parent.mkdir(parents=True, exist_ok=True)
-    sample_vendors = [
-        {
-            "Vendor ID": "VND001",
-            "Vendor Name": "Pune Sound Systems",
-            "Vendor Category": "Sound",
-            "Contact Person": "Rajesh Kumar",
-            "Phone Number": "+919876543210",
-            "Email Address": "rajesh@punesound.in",
-            "GST Number": "27AAAAA1111A1Z1",
-            "Address": "Kothrud, Pune",
-            "Description": "Professional audio equipment and speakers.",
-            "Active / Inactive Status": "Active",
-            "Base Amount": 10000.0,
-            "GST Percentage": 18,
-            "GST Amount": 1800.0,
-            "Final Cost": 11800.0
-        },
-        {
-            "Vendor ID": "VND002",
-            "Vendor Name": "Deccan Lights & LED",
-            "Vendor Category": "Lighting",
-            "Contact Person": "Amit Joshi",
-            "Phone Number": "+919922881100",
-            "Email Address": "amit@deccanlights.com",
-            "GST Number": "27BBBBB2222B2Z2",
-            "Address": "Shivajinagar, Pune",
-            "Description": "Ambient lighting and outdoor LEDs.",
-            "Active / Inactive Status": "Active",
-            "Base Amount": 8000.0,
-            "GST Percentage": 18,
-            "GST Amount": 1440.0,
-            "Final Cost": 9440.0
-        },
-        {
-            "Vendor ID": "VND003",
-            "Vendor Name": "Good Food Catering",
-            "Vendor Category": "Food & Beverage",
-            "Contact Person": "Sneha Patil",
-            "Phone Number": "+919555112233",
-            "Email Address": "contact@goodfoodpune.com",
-            "GST Number": "27CCCCC3333C3Z3",
-            "Address": "Viman Nagar, Pune",
-            "Description": "High-quality catering, snacks and meals.",
-            "Active / Inactive Status": "Active",
-            "Base Amount": 15000.0,
-            "GST Percentage": 12,
-            "GST Amount": 1800.0,
-            "Final Cost": 16800.0
-        }
-    ]
-    df = pd.DataFrame(sample_vendors)
-    df.to_csv(VENDORS_CSV, index=False)
-    update_vendor_statistics()
-    return df
+    from src.services import vendor_service
+    return vendor_service.get_vendors()
 
 def save_vendors(df: pd.DataFrame) -> None:
+    # This is called during CSV fallback saving, let's keep CSV writing intact as fallback
     st.cache_data.clear()
     VENDORS_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(VENDORS_CSV, index=False)
     update_vendor_statistics()
 
 def add_vendor(vendor_data: Dict[str, Any]) -> bool:
-    try:
-        df = load_vendors()
-        # Generate new unique ID
-        if df.empty:
-            next_id = "VND001"
-        else:
-            ids = df["Vendor ID"].str.replace("VND", "").astype(int).tolist()
-            next_id = f"VND{max(ids) + 1:03d}"
-            
-        vendor_data["Vendor ID"] = next_id
-        new_row = pd.DataFrame([vendor_data])
-        df = pd.concat([df, new_row], ignore_index=True)
-        save_vendors(df)
-        return True
-    except Exception:
-        return False
+    from src.services import vendor_service
+    st.cache_data.clear()
+    return vendor_service.add_vendor(vendor_data)
 
 def edit_vendor(vendor_id: str, updated_fields: Dict[str, Any]) -> bool:
-    try:
-        df = load_vendors()
-        mask = df["Vendor ID"] == vendor_id
-        if not mask.any():
-            return False
-            
-        for col, val in updated_fields.items():
-            df.loc[mask, col] = val
-            
-        save_vendors(df)
-        return True
-    except Exception:
-        return False
+    from src.services import vendor_service
+    st.cache_data.clear()
+    return vendor_service.edit_vendor(vendor_id, updated_fields)
 
 def delete_or_deactivate_vendor(vendor_id: str) -> str:
-    """
-    Deletes the vendor from data/vendors.csv.
-    If the vendor is linked to any historical events in event_history.csv,
-    it marks the status as 'Inactive' instead of deleting it to preserve integrity.
-    """
-    try:
-        df = load_vendors()
-        mask = df["Vendor ID"] == vendor_id
-        if not mask.any():
-            return "Vendor not found."
+    from src.services import vendor_service
+    st.cache_data.clear()
+    # Check if linked to history
+    is_linked = False
+    if EVENT_HISTORY_CSV.exists():
+        try:
+            history_df = pd.read_csv(EVENT_HISTORY_CSV)
+            if "Vendors Used" in history_df.columns:
+                for _, row in history_df.iterrows():
+                    v_used_str = row.get("Vendors Used", "[]")
+                    try:
+                        v_used = json.loads(v_used_str)
+                        if any(str(v.get("vendor_id")) == str(vendor_id) for v in v_used):
+                            is_linked = True
+                            break
+                    except Exception:
+                        pass
+        except Exception:
+            pass
 
-        # Check if linked to history
-        is_linked = False
-        if EVENT_HISTORY_CSV.exists():
-            try:
-                history_df = pd.read_csv(EVENT_HISTORY_CSV)
-                if "Vendors Used" in history_df.columns:
-                    for _, row in history_df.iterrows():
-                        v_used_str = row.get("Vendors Used", "[]")
-                        try:
-                            v_used = json.loads(v_used_str)
-                            if any(str(v.get("vendor_id")) == str(vendor_id) for v in v_used):
-                                is_linked = True
-                                break
-                        except Exception:
-                            pass
-            except Exception:
-                pass
-
-        if is_linked:
-            df.loc[mask, "Active / Inactive Status"] = "Inactive"
-            save_vendors(df)
-            return "Vendor is linked to historical events. Marked as Inactive instead of deleting."
-        else:
-            df = df[~mask]
-            save_vendors(df)
-            return "Vendor successfully deleted."
-    except Exception as e:
-        return f"Error: {str(e)}"
+    action = "deactivate" if is_linked else "delete"
+    success = vendor_service.delete_or_deactivate_vendor(vendor_id, action)
+    update_vendor_statistics()
+    if success:
+        return "Vendor is linked to historical events. Marked as Inactive instead of deleting." if is_linked else "Vendor successfully deleted."
+    return "Failed to perform operation."
 
 def update_vendor_statistics() -> None:
     """

@@ -7,23 +7,32 @@ class UsersRepository(BaseRepository):
     def find_by_username(self, username: str):
         if self.collection is None:
             return None
-        return self.collection.find_one({"username": username})
+        try:
+            return self.collection.find_one({"username": username})
+        except Exception:
+            return None
 
     def increment_failed_attempts(self, username: str, lock_until=None):
         if self.collection is None:
             return
-        update_data = {"$inc": {"failed_attempts": 1}}
-        if lock_until:
-            update_data["$set"] = {"locked_until": lock_until}
-        self.collection.update_one({"username": username}, update_data)
+        try:
+            update_data = {"$inc": {"failed_attempts": 1}}
+            if lock_until:
+                update_data["$set"] = {"locked_until": lock_until}
+            self.collection.update_one({"username": username}, update_data)
+        except Exception:
+            pass
 
     def reset_failed_attempts(self, username: str):
         if self.collection is None:
             return
-        self.collection.update_one(
-            {"username": username}, 
-            {"$set": {"failed_attempts": 0, "locked_until": None}}
-        )
+        try:
+            self.collection.update_one(
+                {"username": username}, 
+                {"$set": {"failed_attempts": 0, "locked_until": None}}
+            )
+        except Exception:
+            pass
 
 
 class PropertiesRepository(BaseRepository):

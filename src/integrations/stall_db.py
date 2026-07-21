@@ -19,23 +19,8 @@ import streamlit as st
 
 @st.cache_data
 def load_stalls() -> pd.DataFrame:
-    """
-    Loads stalls from data/stalls.csv. Returns empty dataframe with columns if missing.
-    """
-    if STALLS_CSV.exists():
-        try:
-            return pd.read_csv(STALLS_CSV)
-        except Exception:
-            pass
-            
-    cols = [
-        "Stall ID", "Event ID", "Event Name", "Date", "Property", "Vendor ID", 
-        "Stall Name", "Stall Category", "Rental Amount", "Stall Size", "Status", "Notes"
-    ]
-    df = pd.DataFrame(columns=cols)
-    STALLS_CSV.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(STALLS_CSV, index=False)
-    return df
+    from src.services import stall_service
+    return stall_service.get_stalls()
 
 def save_stalls(df: pd.DataFrame) -> None:
     st.cache_data.clear()

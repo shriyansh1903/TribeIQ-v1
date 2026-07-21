@@ -13,8 +13,11 @@ class BaseRepository:
     def insert(self, data: Dict[str, Any]) -> str:
         if self.collection is None:
             return ""
-        result = self.collection.insert_one(data)
-        return str(result.inserted_id)
+        try:
+            result = self.collection.insert_one(data)
+            return str(result.inserted_id)
+        except Exception:
+            return ""
 
     def find_by_id(self, doc_id: str) -> Optional[Dict[str, Any]]:
         if self.collection is None:
@@ -26,13 +29,19 @@ class BaseRepository:
                 return res
         except Exception:
             pass
-        return self.collection.find_one({"_id": doc_id})
+        try:
+            return self.collection.find_one({"_id": doc_id})
+        except Exception:
+            return None
 
     def find_all(self, query: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         if self.collection is None:
             return []
         query_filter = query or {}
-        return list(self.collection.find(query_filter))
+        try:
+            return list(self.collection.find(query_filter))
+        except Exception:
+            return []
 
     def update(self, doc_id: str, data: Dict[str, Any]) -> bool:
         if self.collection is None:
@@ -45,8 +54,11 @@ class BaseRepository:
         except Exception:
             pass
             
-        result = self.collection.update_one(criteria, {"$set": data})
-        return result.modified_count > 0
+        try:
+            result = self.collection.update_one(criteria, {"$set": data})
+            return result.modified_count > 0
+        except Exception:
+            return False
 
     def delete(self, doc_id: str) -> bool:
         if self.collection is None:
@@ -58,5 +70,8 @@ class BaseRepository:
         except Exception:
             pass
             
-        result = self.collection.delete_one(criteria)
-        return result.deleted_count > 0
+        try:
+            result = self.collection.delete_one(criteria)
+            return result.deleted_count > 0
+        except Exception:
+            return False

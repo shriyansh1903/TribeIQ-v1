@@ -76,14 +76,15 @@ import streamlit as st
 
 @st.cache_data
 def get_properties_df():
-    init_master_data_files()
-    return pd.read_csv(PROPERTIES_CSV).fillna("")
+    from src.services import property_service
+    return property_service.get_properties()
 
 def save_properties_df(df):
-    df.to_csv(PROPERTIES_CSV, index=False)
+    from src.services import property_service
+    st.cache_data.clear()
+    property_service.save_properties(df)
     # Dynamically update the in-memory capacities of other engines
     update_capacities_config()
-    st.cache_data.clear()
 
 @st.cache_data
 def get_event_categories_df():

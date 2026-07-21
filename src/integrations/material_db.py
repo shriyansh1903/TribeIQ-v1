@@ -26,24 +26,8 @@ import streamlit as st
 
 @st.cache_data
 def load_materials() -> pd.DataFrame:
-    """
-    Loads materials from data/materials.csv. Returns empty dataframe with columns if missing.
-    """
-    if MATERIALS_CSV.exists():
-        try:
-            return pd.read_csv(MATERIALS_CSV)
-        except Exception:
-            pass
-            
-    cols = [
-        "Material ID", "Event ID", "Event Name", "Date", "Property", "Material Name", 
-        "Category", "Quantity Required", "Unit", "Vendor ID", "Procurement Status", 
-        "Unit Cost", "Total Cost", "Notes"
-    ]
-    df = pd.DataFrame(columns=cols)
-    MATERIALS_CSV.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(MATERIALS_CSV, index=False)
-    return df
+    from src.services import material_service
+    return material_service.get_materials()
 
 def save_materials(df: pd.DataFrame) -> None:
     st.cache_data.clear()

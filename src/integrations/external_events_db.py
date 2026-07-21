@@ -185,61 +185,18 @@ def init_external_events_db():
 
 @st.cache_data
 def load_external_events():
-    init_external_events_db()
-    try:
-        df = pd.read_csv(EXTERNAL_EVENTS_CSV)
-        df = df.fillna("")
-        return df
-    except Exception:
-        return pd.DataFrame()
+    from src.services import external_event_service
+    return external_event_service.get_external_events()
 
 def save_external_event(event_dict):
-    init_external_events_db()
+    from src.services import external_event_service
     st.cache_data.clear()
-    
-    try:
-        df = pd.read_csv(EXTERNAL_EVENTS_CSV)
-    except Exception:
-        df = pd.DataFrame()
-        
-    event_id = event_dict.get("Event ID")
-    if not event_id:
-        event_id = f"EXT-{uuid.uuid4().hex[:6].upper()}"
-        event_dict["Event ID"] = event_id
-        
-    event_dict["Last Updated"] = datetime.datetime.now().isoformat()
-    
-    if df.empty:
-        new_df = pd.DataFrame([event_dict])
-        new_df.to_csv(EXTERNAL_EVENTS_CSV, index=False)
-        return event_id
-        
-    match_mask = df["Event ID"] == event_id
-    if match_mask.any():
-        idx = df[match_mask].index[0]
-        for col in df.columns:
-            if col in event_dict:
-                df.at[idx, col] = event_dict[col]
-    else:
-        new_row_df = pd.DataFrame([event_dict])
-        df = pd.concat([df, new_row_df], ignore_index=True)
-        
-    df.to_csv(EXTERNAL_EVENTS_CSV, index=False)
-    return event_id
+    return external_event_service.save_external_event(event_dict)
 
 def delete_external_event(event_id):
-    init_external_events_db()
+    from src.services import external_event_service
     st.cache_data.clear()
-    
-    try:
-        df = pd.read_csv(EXTERNAL_EVENTS_CSV)
-        if not df.empty:
-            df = df[df["Event ID"] != event_id]
-            df.to_csv(EXTERNAL_EVENTS_CSV, index=False)
-            return True
-    except Exception:
-        pass
-    return False
+    return external_event_service.delete_external_event(event_id)
 
 def get_nearby_external_events(property_name, start_date=None, end_date=None, radius_km=None):
     """Retrieve external events that affect a property based on city and Haversine distance."""
