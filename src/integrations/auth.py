@@ -2,6 +2,15 @@ import os
 import time
 import requests
 from typing import Optional, Dict, Any
+from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+    _project_root = Path(__file__).resolve().parents[2]
+    load_dotenv(_project_root / ".env")
+    load_dotenv(_project_root / ".env.development", override=True)
+except ImportError:
+    pass
 
 class WardenAuth:
     """
@@ -17,7 +26,14 @@ class WardenAuth:
         # In-memory token cache
         self._token: Optional[str] = None
         self._expires_at: float = 0.0
-        self.mock_mode = not (self.client_id and self.client_secret)
+        # Check if keys are missing or placeholder strings
+        is_placeholder = (
+            not self.client_id or 
+            not self.client_secret or 
+            "your_warden" in str(self.client_id).lower() or 
+            "your_warden" in str(self.client_secret).lower()
+        )
+        self.mock_mode = is_placeholder
 
     def get_headers(self) -> Dict[str, str]:
         """

@@ -113,3 +113,91 @@
 2026-07-21 11:04:55,629 - TribeIQPlatform - WARNING - Failed login attempt: Incorrect password for user 'test_user_auth'.
 2026-07-21 11:04:56,028 - TribeIQPlatform - WARNING - Failed login attempt: Incorrect password for user 'test_user_auth'.
 2026-07-21 11:04:56,398 - TribeIQPlatform - WARNING - Account locked: User 'test_user_auth' reached max failed attempts.
+2026-07-21 11:25:35,023 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 11:25:35,141 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 11:25:35,533 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 11:25:54,212 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 11:25:54,215 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 11:25:54,707 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 11:26:04,953 - TribeIQPlatform - WARNING - Failed login attempt: User 'Admin' not found.
+2026-07-21 11:28:22,819 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 11:28:22,829 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 11:28:23,252 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 11:28:38,513 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 11:28:38,513 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 11:28:38,862 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 11:30:30,738 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 11:30:30,893 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 11:30:31,238 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 11:30:31,626 - TribeIQPlatform - ERROR - Error verifying password: Invalid salt
+2026-07-21 11:30:31,626 - TribeIQPlatform - ERROR - Error verifying password: Invalid salt
+2026-07-21 11:30:31,626 - TribeIQPlatform - ERROR - Error verifying password: Invalid salt
+2026-07-21 11:30:31,629 - TribeIQPlatform - ERROR - Error verifying password: Invalid salt
+2026-07-21 11:30:31,629 - TribeIQPlatform - ERROR - Error verifying password: Invalid salt
+2026-07-21 11:30:31,629 - TribeIQPlatform - ERROR - Error verifying password: Invalid salt
+2026-07-21 11:30:31,629 - TribeIQPlatform - ERROR - Error verifying password: Invalid salt
+2026-07-21 11:30:31,629 - TribeIQPlatform - ERROR - Error verifying password: Invalid salt
+2026-07-21 11:30:44,386 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 11:30:44,535 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 11:30:44,857 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 11:30:45,480 - TribeIQPlatform - INFO - Password reset success for user_id: 6a5e16a9c208c45595c37c6d
+2026-07-21 11:30:53,955 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 11:30:54,100 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 11:30:54,411 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 11:30:55,045 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-21 11:36:58,328 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-21 11:43:29,994 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 11:43:30,094 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 11:43:30,415 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:01:42,082 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:01:42,422 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:01:42,805 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:02:26,408 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:02:26,543 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:02:27,023 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:02:37,368 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-21 12:05:21,964 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:05:22,046 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:05:22,461 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:05:53,285 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:05:53,371 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:05:53,768 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:12:41,498 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:12:59,626 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:12:59,630 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:13:00,987 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:18:35,870 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:18:36,936 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:18:38,036 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:20:44,853 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:20:46,049 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:20:47,215 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:42:41,446 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:42:41,739 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:42:44,523 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:42:55,369 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-21 12:43:04,736 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:43:04,739 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:43:07,053 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:43:12,027 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:43:12,047 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:43:14,224 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:46:08,277 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-21 12:48:23,726 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:48:24,767 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:48:25,782 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:49:19,597 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-21 12:49:54,927 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:49:55,126 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:49:56,184 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:50:10,548 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-21 12:51:30,856 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:51:32,134 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:51:33,403 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:55:38,813 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:55:39,993 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:55:41,235 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:57:11,770 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-21 12:57:12,083 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-21 12:57:14,534 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-21 12:57:22,800 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.

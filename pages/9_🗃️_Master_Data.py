@@ -16,31 +16,16 @@ from src.auth.session_manager import require_login
 require_login("Master Data")
 
 # Imports
-try:
-    from src.integrations.master_data_db import (
-        get_properties_df, save_properties_df,
-        get_event_categories_df, save_event_categories_df,
-        get_property_types_df, save_property_types_df,
-        get_vendor_categories_df, save_vendor_categories_df,
-        get_material_categories_df, save_material_categories_df,
-        update_capacities_config, EVENTS_CSV
-    )
-except ImportError:
-    from integrations.master_data_db import (
-        get_properties_df, save_properties_df,
-        get_event_categories_df, save_event_categories_df,
-        get_property_types_df, save_property_types_df,
-        get_vendor_categories_df, save_vendor_categories_df,
-        get_material_categories_df, save_material_categories_df,
-        update_capacities_config, EVENTS_CSV
-    )
-
+from src.integrations.master_data_db import (
+    get_properties_df, save_properties_df,
+    get_event_categories_df, save_event_categories_df,
+    get_property_types_df, save_property_types_df,
+    get_vendor_categories_df, save_vendor_categories_df,
+    get_material_categories_df, save_material_categories_df,
+    update_capacities_config, EVENTS_CSV
+)
 from ui.styles import load_css
-
-try:
-    from src.utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
-except ImportError:
-    from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
+from src.utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 def _safe_lookup(df, id_col, id_val, display_col):
     """Safely look up a display value from a DataFrame row, returning id_val on failure."""
@@ -882,10 +867,7 @@ with tab_ext:
     st.write("### 🌐 External Events Context Registry")
     st.write("Manage external events (festivals, conferences, college fests) that occur near properties to provide planning awareness.")
     
-    try:
-        from src.integrations.external_events_db import load_external_events, save_external_event, delete_external_event
-    except ImportError:
-        from integrations.external_events_db import load_external_events, save_external_event, delete_external_event
+    from src.integrations.external_events_db import load_external_events, save_external_event, delete_external_event
     df_ext = load_external_events()
     
     # 1. Table & Export
