@@ -8,14 +8,6 @@ from src.repositories import (
     ExternalEventsRepository, SettingsRepository
 )
 
-# Legacy imports for fallback
-import src.integrations.master_data_db as legacy_master_db
-import src.integrations.calendar_db as legacy_calendar_db
-import src.integrations.vendor_db as legacy_vendor_db
-import src.integrations.material_db as legacy_material_db
-import src.integrations.stall_db as legacy_stall_db
-import src.integrations.external_events_db as legacy_external_db
-
 class PropertyService:
     def __init__(self):
         self.repo = PropertiesRepository()
@@ -32,6 +24,7 @@ class PropertyService:
             except Exception as e:
                 logger.error(f"Error fetching properties from MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.master_data_db as legacy_master_db
         return legacy_master_db.get_properties_df()
 
     def save_properties(self, df: pd.DataFrame) -> bool:
@@ -46,6 +39,7 @@ class PropertyService:
             except Exception as e:
                 logger.error(f"Error saving properties to MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.master_data_db as legacy_master_db
         return legacy_master_db.save_properties_df(df)
 
 class ResidentService:
@@ -83,6 +77,7 @@ class CalendarEventService:
             except Exception as e:
                 logger.error(f"Error fetching calendar events from MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.calendar_db as legacy_calendar_db
         return legacy_calendar_db.load_calendar_events_csv()
 
     def save_calendar_event(self, event_data: Dict[str, Any]) -> bool:
@@ -99,6 +94,7 @@ class CalendarEventService:
             except Exception as e:
                 logger.error(f"Error saving calendar event to MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.calendar_db as legacy_calendar_db
         return legacy_calendar_db.save_calendar_event(event_data)
 
     def delete_calendar_event(self, event_id: str) -> bool:
@@ -109,6 +105,7 @@ class CalendarEventService:
             except Exception as e:
                 logger.error(f"Error deleting calendar event from MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.calendar_db as legacy_calendar_db
         return legacy_calendar_db.delete_calendar_event(event_id)
 
 class VendorService:
@@ -127,6 +124,7 @@ class VendorService:
             except Exception as e:
                 logger.error(f"Error fetching vendors from MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.vendor_db as legacy_vendor_db
         return legacy_vendor_db.load_vendors_csv()
 
     def add_vendor(self, vendor_data: Dict[str, Any]) -> bool:
@@ -137,6 +135,7 @@ class VendorService:
             except Exception as e:
                 logger.error(f"Error adding vendor to MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.vendor_db as legacy_vendor_db
         return legacy_vendor_db.add_vendor(vendor_data)
 
     def edit_vendor(self, vendor_id: str, vendor_data: Dict[str, Any]) -> bool:
@@ -147,6 +146,7 @@ class VendorService:
             except Exception as e:
                 logger.error(f"Error updating vendor in MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.vendor_db as legacy_vendor_db
         return legacy_vendor_db.edit_vendor(vendor_id, vendor_data)
 
     def delete_or_deactivate_vendor(self, vendor_id: str, action: str = "deactivate") -> bool:
@@ -160,6 +160,7 @@ class VendorService:
             except Exception as e:
                 logger.error(f"Error deleting/deactivating vendor in MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.vendor_db as legacy_vendor_db
         return legacy_vendor_db.delete_or_deactivate_vendor(vendor_id, action)
 
 class MaterialService:
@@ -178,6 +179,7 @@ class MaterialService:
             except Exception as e:
                 logger.error(f"Error fetching materials from MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.material_db as legacy_material_db
         return legacy_material_db.load_materials_csv()
 
 class StallService:
@@ -196,6 +198,7 @@ class StallService:
             except Exception as e:
                 logger.error(f"Error fetching stalls from MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.stall_db as legacy_stall_db
         return legacy_stall_db.load_stalls_csv()
 
 class ExternalEventService:
@@ -214,6 +217,7 @@ class ExternalEventService:
             except Exception as e:
                 logger.error(f"Error fetching external events from MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.external_events_db as legacy_external_db
         return legacy_external_db.load_external_events_csv()
 
     def save_external_event(self, event_data: Dict[str, Any]) -> str:
@@ -235,6 +239,7 @@ class ExternalEventService:
             except Exception as e:
                 logger.error(f"Error saving external event to MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.external_events_db as legacy_external_db
         return legacy_external_db.save_external_event(event_data)
 
     def delete_external_event(self, event_id: str) -> bool:
@@ -245,6 +250,7 @@ class ExternalEventService:
             except Exception as e:
                 logger.error(f"Error deleting external event from MongoDB: {str(e)}")
         # Fallback
+        import src.integrations.external_events_db as legacy_external_db
         return legacy_external_db.delete_external_event(event_id)
 
 # Singleton instances of child services
