@@ -177,27 +177,31 @@ try:
             if not v_name or not category_to_save:
                 st.error("Vendor Name and Category are required.")
             else:
-                new_vendor = {
-                    "Vendor Name": v_name,
-                    "Vendor Category": category_to_save,
-                    "Contact Person": v_contact,
-                    "Phone Number": v_phone,
-                    "Email Address": v_email,
-                    "GST Number": v_gst_num,
-                    "Address": v_address,
-                    "Description": v_desc,
-                    "Active / Inactive Status": v_status,
-                    "Base Amount": v_base,
-                    "GST Percentage": v_gst_pct,
-                    "GST Amount": gst_amt,
-                    "Final Cost": final_cost
-                }
-                if add_vendor(new_vendor):
-                    st.success(f"Vendor '{v_name}' registered successfully!")
-                    st.cache_data.clear()
-                    st.rerun()
+            new_v_id = f"VND{len(vendors_df)+1:03d}"
+            new_vendor = {
+                "Vendor ID": new_v_id,
+                "Vendor Name": v_name,
+                "Vendor Category": category_to_save,
+                "Contact Person": v_contact,
+                "Phone Number": v_phone,
+                "Email Address": v_email,
+                "GST Number": v_gst_num,
+                "Address": v_address,
+                "Description": v_desc,
+                "Active / Inactive Status": v_status,
+                "Base Amount": v_base,
+                "GST Percentage": v_gst_pct,
+                "GST Amount": gst_amt,
+                "Final Cost": final_cost
+            }
+            if add_vendor(new_vendor):
+                st.success(f"Vendor '{v_name}' registered successfully with ID {new_v_id}!")
+                st.cache_data.clear()
+                st.rerun()
 except Exception as e:
     st.warning("⚠ Unable to load this form.")
+    with st.expander("Details"):
+        st.write(str(e))
 
 # ===========================================================
 # SECTION 8: Quick Actions & Management (Error Boundary)
@@ -207,41 +211,50 @@ if not vendors_df.empty:
     st.write("### 🛠️ Manage Selected Vendor Profile")
     
     try:
-        vendor_options = [f"{row[name_col]} [{row[id_col]}]" for _, row in vendors_df.iterrows() if name_col in row and id_col in row]
-        selected_vendor_lbl = st.selectbox("Choose Vendor", options=vendor_options)
-        selected_vendor_id = selected_vendor_lbl.split("[")[-1].rstrip("]")
-        
-        sub_v = vendors_df[vendors_df[id_col] == selected_vendor_id]
-        if sub_v.empty:
-            st.info("The selected vendor record was not found in the database.")
-            st.stop()
-        row_data = sub_v.iloc[0]
-        
-        col_e1, col_e2 = st.columns(2)
-        with col_e1:
-            st.write(f"#### Profile: {row_data[name_col]}")
-            st.markdown(f"* **Category:** {row_data[cat_col]}")
-            st.markdown(f"* **Contact:** {row_data[cp_col]} ({row_data.get('Phone Number', 'N/A')})")
-            st.markdown(f"* **Email:** {row_data.get('Email Address', 'N/A')}")
-            st.markdown(f"* **GST Number:** {row_data.get('GST Number', 'N/A')}")
-            st.markdown(f"* **Base Amount:** ₹{float(row_data.get(base_col, 0.0)):,.2f}")
-            st.markdown(f"* **Status:** {row_data[status_col]}")
-            
-        with col_e2:
-            st.write("**Quick Actions:**")
-            if st.button("Deactivate Vendor Record" if row_data[status_col] == "Active" else "Reactivate Vendor Record", use_container_width=True):
-                new_stat = "Inactive" if row_data[status_col] == "Active" else "Active"
-                updated = row_data.to_dict()
-                updated[status_col] = new_stat
-                if edit_vendor(selected_vendor_id, updated):
-                    st.success("Vendor status toggled successfully!")
-                    st.cache_data.clear()
-                    st.rerun()
+        vendor_options = []
+        vendor_map = {}
+        for idx, row in vendors_df.iterrows():
+            v_name = str(row[name_col]) if name_col in row and pd.notna(row[name_col]) else "Unnamed Vendor"
+            v_id = str(row[id_col]) if id_col in row and pd.notna(row[id_col]) else f"VND{idx+1:03d}"
+            lbl = f"{v_name} [{v_id}]"
+            vendor_options.append(lbl)
+            vendor_map[lbl] = (v_id, row)
+
+        if not vendor_options:
+            st.info("No vendor profiles recorded in database.")
+        else:
+            selected_vendor_lbl = st.selectbox("Choose Vendor", options=vendor_options)
+            if selected_vendor_lbl and selected_vendor_lbl in vendor_map:
+                selected_vendor_id, row_data = vendor_map[selected_vendor_lbl]
+                
+                col_e1, col_e2 = st.columns(2)
+                with col_e1:
+                    st.write(f"#### Profile: {row_data.get(name_col, 'N/A')}")
+                    st.markdown(f"* **Category:** {row_data.get(cat_col, 'N/A')}")
+                    st.markdown(f"* **Contact:** {row_data.get(cp_col, 'N/A')} ({row_data.get('Phone Number', 'N/A')})")
+                    st.markdown(f"* **Email:** {row_data.get('Email Address', 'N/A')}")
+                    st.markdown(f"* **GST Number:** {row_data.get('GST Number', 'N/A')}")
+                    st.markdown(f"* **Base Amount:** ₹{float(row_data.get(base_col, 0.0)):,.2f}")
+                    st.markdown(f"* **Status:** {row_data.get(status_col, 'Active')}")
                     
-            if st.button("🗑️ Delete Vendor Permanently", use_container_width=True):
-                if delete_or_deactivate_vendor(selected_vendor_id):
-                    st.warning("Vendor record removed from database.")
-                    st.cache_data.clear()
-                    st.rerun()
+                with col_e2:
+                    st.write("**Quick Actions:**")
+                    current_stat = row_data.get(status_col, "Active")
+                    if st.button("Deactivate Vendor Record" if current_stat == "Active" else "Reactivate Vendor Record", use_container_width=True):
+                        new_stat = "Inactive" if current_stat == "Active" else "Active"
+                        updated = row_data.to_dict()
+                        updated[status_col] = new_stat
+                        if edit_vendor(selected_vendor_id, updated):
+                            st.success("Vendor status toggled successfully!")
+                            st.cache_data.clear()
+                            st.rerun()
+                            
+                    if st.button("🗑️ Delete Vendor Permanently", use_container_width=True):
+                        if delete_or_deactivate_vendor(selected_vendor_id):
+                            st.warning("Vendor record removed from database.")
+                            st.cache_data.clear()
+                            st.rerun()
     except Exception as e:
         st.warning("⚠ Unable to load this widget.")
+        with st.expander("Details"):
+            st.write(str(e))
