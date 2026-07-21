@@ -123,6 +123,16 @@ pages = [
 ]
 
 with st.sidebar:
+    # Authenticated User Badge
+    user_info = st.session_state.get("user")
+    if user_info:
+        st.markdown("---")
+        display_name = user_info.get("display_name") or user_info.get("username", "User")
+        role = user_info.get("role", "Admin")
+        st.markdown(f"**👤 {display_name}**")
+        st.caption(f"Role: `{role}`")
+        
+    st.markdown("---")
     st.markdown("### System Controls")
     if st.button("🔄 Refresh System", use_container_width=True):
         st.cache_data.clear()
@@ -134,6 +144,11 @@ with st.sidebar:
             st.session_state["tribeiq_dated_result_source"] = ""
         st.toast("System cache and state refreshed!")
         st.rerun()
+
+    if user_info:
+        if st.button("🚪 Sign Out", use_container_width=True, key="sidebar_logout_btn"):
+            from src.auth.session_manager import logout
+            logout()
 
 nav = st.navigation(pages)
 nav.run()

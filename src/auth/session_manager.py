@@ -116,12 +116,15 @@ def require_login(page_name: str):
     init_session()
     check_session_expiry()
 
-    if not st.session_state.authenticated:
+    if not st.session_state.authenticated or not st.session_state.user:
+        st.session_state.authenticated = False
+        st.session_state.user = None
         render_login_form()
         st.stop()
 
     # User is authenticated. Verify permission access matrix.
-    user_role = st.session_state.user.get("role", "Read Only")
+    user = st.session_state.user or {}
+    user_role = user.get("role", "Read Only")
     allowed_pages = ROLE_PERMISSIONS.get(user_role, ["Dashboard", "Community Calendar", "Settings"])
     
     if page_name not in allowed_pages:
