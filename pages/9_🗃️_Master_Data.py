@@ -4,6 +4,12 @@ import streamlit as st
 import pandas as pd
 import datetime
 
+st.set_page_config(
+    page_title="TribeIQ - Master Data Management",
+    page_icon="🗃️",
+    layout="wide"
+)
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = PROJECT_ROOT / "src"
 
@@ -37,13 +43,8 @@ def _safe_lookup(df, id_col, id_val, display_col):
         pass
     return str(id_val)
 
-st.set_page_config(
-    page_title="TribeIQ - Master Data Management",
-    page_icon="🗃️",
-    layout="wide"
-)
-
 load_css()
+
 
 # Load all dataframes to count records
 df_prop = get_properties_df()

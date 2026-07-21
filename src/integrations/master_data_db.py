@@ -74,17 +74,35 @@ def init_master_data_files():
 
 import streamlit as st
 
+def get_properties_df_csv():
+    init_master_data_files()
+    if PROPERTIES_CSV.exists():
+        try:
+            return pd.read_csv(PROPERTIES_CSV).fillna("")
+        except Exception:
+            pass
+    return pd.DataFrame()
+
+def save_properties_df_csv(df):
+    init_master_data_files()
+    df.to_csv(PROPERTIES_CSV, index=False)
+
 @st.cache_data
 def get_properties_df():
     from src.services import property_service
-    return property_service.get_properties()
+    df = property_service.get_properties()
+    if df is None or df.empty:
+        df = get_properties_df_csv()
+    return df
 
 def save_properties_df(df):
     from src.services import property_service
     st.cache_data.clear()
     property_service.save_properties(df)
+    save_properties_df_csv(df)
     # Dynamically update the in-memory capacities of other engines
     update_capacities_config()
+
 
 @st.cache_data
 def get_event_categories_df():

@@ -4,6 +4,13 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+st.set_page_config(
+    page_title="TribeIQ - Vendor Management",
+    page_icon="🏪",
+    layout="wide"
+)
+
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = PROJECT_ROOT / "src"
 

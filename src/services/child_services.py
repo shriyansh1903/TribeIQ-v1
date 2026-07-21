@@ -25,7 +25,7 @@ class PropertyService:
                 logger.error(f"Error fetching properties from MongoDB: {str(e)}")
         # Fallback
         import src.integrations.master_data_db as legacy_master_db
-        return legacy_master_db.get_properties_df()
+        return legacy_master_db.get_properties_df_csv()
 
     def save_properties(self, df: pd.DataFrame) -> bool:
         if db_manager.ping_check():
@@ -40,7 +40,9 @@ class PropertyService:
                 logger.error(f"Error saving properties to MongoDB: {str(e)}")
         # Fallback
         import src.integrations.master_data_db as legacy_master_db
-        return legacy_master_db.save_properties_df(df)
+        legacy_master_db.save_properties_df_csv(df)
+        return True
+
 
 class ResidentService:
     def __init__(self):

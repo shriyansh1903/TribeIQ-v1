@@ -5,6 +5,13 @@ import pandas as pd
 import streamlit as st
 import datetime
 
+st.set_page_config(
+    page_title="TribeIQ - Recommendations",
+    page_icon="🎯",
+    layout="wide"
+)
+
+
 # ===========================================================
 # Project Paths
 # ===========================================================
