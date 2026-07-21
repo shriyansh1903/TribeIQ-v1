@@ -342,19 +342,20 @@ def prepare_event_history(
             errors="coerce",
         )
 
-        valid_population = (
-            active_population > 0
+        valid_evidence = (
+            (active_population > 0)
+            & (actual_attendance > 0)
         )
 
         prepared.loc[
-            valid_population,
+            valid_evidence,
             "_turnout_rate",
         ] = (
             actual_attendance[
-                valid_population
+                valid_evidence
             ]
             / active_population[
-                valid_population
+                valid_evidence
             ]
         )
 
@@ -367,9 +368,12 @@ def prepare_event_history(
             errors="coerce",
         )
 
-        missing_turnout = prepared[
-            "_turnout_rate"
-        ].isna()
+        missing_turnout = (
+            prepared[
+                "_turnout_rate"
+            ].isna()
+            & (attendance_percent > 0)
+        )
 
         prepared.loc[
             missing_turnout,
@@ -394,6 +398,7 @@ def prepare_event_history(
         prepared[
             "_turnout_rate"
         ].notna()
+        & (prepared["_turnout_rate"] > 0)
     ].copy()
 
     prepared[
