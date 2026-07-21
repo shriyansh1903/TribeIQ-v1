@@ -20,10 +20,16 @@ from src.auth.session_manager import require_login
 require_login("Dashboard")
 
 # Backend Imports
-from ui_data_bridge import get_session_property, get_session_result, load_application_data
-from intelligence.occupancy_forecaster import get_current_occupancy_all_properties
-from ui.styles import load_css
-from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
+try:
+    from src.ui_data_bridge import get_session_property, get_session_result, load_application_data
+    from src.intelligence.occupancy_forecaster import get_current_occupancy_all_properties
+    from src.ui.styles import load_css
+    from src.utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
+except ImportError:
+    from ui_data_bridge import get_session_property, get_session_result, load_application_data
+    from intelligence.occupancy_forecaster import get_current_occupancy_all_properties
+    from ui.styles import load_css
+    from utils.schema_utils import safe_get_column, safe_status_column, safe_numeric_column, safe_column_exists
 
 # Load CSS Theme
 load_css()
@@ -46,25 +52,37 @@ except Exception:
 
 # Fetch extra db metrics
 try:
-    from integrations.vendor_db import load_vendors
+    try:
+        from src.integrations.vendor_db import load_vendors
+    except ImportError:
+        from integrations.vendor_db import load_vendors
     df_vendors = load_vendors()
 except Exception:
     df_vendors = pd.DataFrame()
 
 try:
-    from integrations.stall_db import load_stalls
+    try:
+        from src.integrations.stall_db import load_stalls
+    except ImportError:
+        from integrations.stall_db import load_stalls
     df_stalls = load_stalls()
 except Exception:
     df_stalls = pd.DataFrame()
 
 try:
-    from integrations.material_db import load_materials
+    try:
+        from src.integrations.material_db import load_materials
+    except ImportError:
+        from integrations.material_db import load_materials
     df_materials = load_materials()
 except Exception:
     df_materials = pd.DataFrame()
 
 try:
-    from integrations.calendar_db import load_calendar_events
+    try:
+        from src.integrations.calendar_db import load_calendar_events
+    except ImportError:
+        from integrations.calendar_db import load_calendar_events
     df_calendar = load_calendar_events()
 except Exception:
     df_calendar = pd.DataFrame()
@@ -340,7 +358,10 @@ st.write("---")
 st.write("### 🌐 External Events Intelligence Dashboard")
 
 try:
-    from integrations.external_events_db import load_external_events, get_property_info, get_nearby_external_events
+    try:
+        from src.integrations.external_events_db import load_external_events, get_property_info, get_nearby_external_events
+    except ImportError:
+        from integrations.external_events_db import load_external_events, get_property_info, get_nearby_external_events
     
     # Select active property for external insights
     default_prop = get_session_property(st.session_state) or "Tribe Moro"
