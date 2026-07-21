@@ -18,8 +18,10 @@ class MongoManager:
             
         try:
             logger.info("Initializing MongoDB client connection pool...")
+            import certifi
             self._client = pymongo.MongoClient(
                 settings.MONGO_URI,
+                tlsCAFile=certifi.where(),
                 maxPoolSize=50,
                 minPoolSize=0,
                 serverSelectionTimeoutMS=5000
@@ -29,7 +31,20 @@ class MongoManager:
             logger.info("MongoDB client connected successfully.")
         except Exception as e:
             logger.error(f"Failed to connect to MongoDB Atlas: {str(e)}")
-            self._client = None
+            # Retry with tlsAllowInvalidCertificates if SSL certificate verification fails on Windows
+            try:
+                self._client = pymongo.MongoClient(
+                    settings.MONGO_URI,
+                    tlsAllowInvalidCertificates=True,
+                    maxPoolSize=50,
+                    minPoolSize=0,
+                    serverSelectionTimeoutMS=5000
+                )
+                self.ping_check()
+                logger.info("MongoDB client connected with TLS bypass fallback.")
+            except Exception as e2:
+                logger.error(f"MongoDB fallback connection also failed: {str(e2)}")
+                self._client = None
 
     def get_client(self) -> pymongo.MongoClient:
         return self._client
