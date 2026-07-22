@@ -24,7 +24,7 @@ class EventbriteService(ExternalEventProvider):
         If the organization list is empty, falls back to using the User ID as the default organization context.
         """
         org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", None)
-        if org_id and org_id != "MOCK_ORG" and str(org_id).strip() != "":
+        if org_id and org_id != "MOCK_ORG" and str(org_id).strip().isdigit():
             return str(org_id).strip()
             
         if self._cached_org_id:
