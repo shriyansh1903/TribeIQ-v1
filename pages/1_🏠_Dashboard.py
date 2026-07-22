@@ -215,7 +215,9 @@ try:
             })
         df_occ_summary = pd.DataFrame(occ_rows)
         if not df_occ_summary.empty:
-            df_occ_summary["Current Occupancy %"] = df_occ_summary["Current Occupancy %"].fillna(0.0)
+            import numpy as np
+            df_occ_summary["Current Occupancy %"] = pd.to_numeric(df_occ_summary["Current Occupancy %"], errors='coerce').fillna(0.0)
+            df_occ_summary["Current Occupancy %"] = df_occ_summary["Current Occupancy %"].replace([np.inf, -np.inf], 0.0)
             col_chart, col_data = st.columns([2, 1])
             with col_chart:
                 st.bar_chart(df_occ_summary.set_index("Property")[["Current Occupancy %"]])
