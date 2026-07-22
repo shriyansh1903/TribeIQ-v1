@@ -55,14 +55,16 @@ async def run_async_tests():
         return Request(scope, receive=mock_receive)
 
     # Test Case 3a: Valid secret path routing request
+    from src.config import settings
+    secret = getattr(settings, "EVENTBRITE_WEBHOOK_SECRET", "tribeiq_secret")
     valid_payload = b'{"api_url": "https://www.eventbriteapi.com/v3/events/100000000000/", "config": {"action": "event.published"}}'
-    req_valid = make_mock_request("tribeiq_secret", valid_payload)
+    req_valid = make_mock_request(secret, valid_payload)
     resp_valid = await handle_webhook_starlette(req_valid)
     assert resp_valid.status_code == 200, f"Expected 200, got {resp_valid.status_code}"
     print(" [OK] Valid secret path request returned HTTP 200.")
 
     # Test Case 3b: Invalid secret path routing request (Authentication check)
-    req_invalid = make_mock_request("wrong_secret_token", valid_payload)
+    req_invalid = make_mock_request(secret + "_invalid", valid_payload)
     resp_invalid = await handle_webhook_starlette(req_invalid)
     assert resp_invalid.status_code == 401, f"Expected 401, got {resp_invalid.status_code}"
     print(" [OK] Invalid secret path request correctly returned HTTP 401 Unauthorized.")
