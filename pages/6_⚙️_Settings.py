@@ -341,6 +341,90 @@ with m_col5:
     if st.button("Export Logs", use_container_width=True):
         st.toast("System logs exported to downloads.")
 
+
+# ===========================================================
+# SECTION 7.5: Eventbrite Integration
+# ===========================================================
+st.write("---")
+st.markdown("### 🔌 Eventbrite Integration Settings")
+from src.integrations.eventbrite.service import eventbrite_service
+from src.integrations.eventbrite.webhook import _server
+from src.config import settings
+
+eb_status_cols = st.columns(4)
+with eb_status_cols[0]:
+    with st.container(border=True):
+        st.markdown("**Eventbrite API**")
+        eb_token = getattr(settings, "EVENTBRITE_PRIVATE_TOKEN", "MOCK_TOKEN")
+        eb_api_status = "🟢 Connected" if eb_token != "MOCK_TOKEN" else "🟡 Standby (Mock)"
+        st.markdown(f"API Connection: {eb_api_status}")
+        st.markdown(f"Org ID: `{getattr(settings, 'EVENTBRITE_ORGANIZATION_ID', 'N/A')}`")
+
+with eb_status_cols[1]:
+    with st.container(border=True):
+        st.markdown("**Webhook Receiver**")
+        rcv_status = "🟢 Running" if _server is not None else "🔴 Stopped"
+        st.markdown(f"Status: {rcv_status}")
+        st.markdown(f"Endpoint: `/webhook`")
+
+with eb_status_cols[2]:
+    with st.container(border=True):
+        st.markdown("**Synchronizations**")
+        from src.integrations.eventbrite.repository import EventbriteEventRepository
+        eb_repo = EventbriteEventRepository()
+        ev_count = 0
+        try:
+            ev_count = eb_repo.collection.count_documents({}) if eb_repo.collection is not None else 0
+        except Exception:
+            pass
+        st.markdown(f"Synced Events: **{ev_count}**")
+        
+with eb_status_cols[3]:
+    with st.container(border=True):
+        st.markdown("**Operations**")
+        if st.button("🔄 Sync Events", key="eb_sync_btn", use_container_width=True):
+            res = eventbrite_service.sync_all_events()
+            st.toast(f"Eventbrite Sync complete. Synced: {res.get('synced_count')} events.")
+            st.rerun()
+
+# Webhooks management
+st.markdown("#### Webhook Subscriptions Management")
+wh_cols = st.columns(2)
+with wh_cols[0]:
+    with st.form("register_eb_webhook"):
+        st.write("**Register Eventbrite Webhook**")
+        webhook_target = st.text_input("Webhook Receiver Domain Endpoint (URL)", value="https://domain.ngrok-free.app/webhook")
+        register_submit = st.form_submit_button("🔌 Register Webhook")
+        if register_submit:
+            if not webhook_target:
+                st.error("Please enter a valid webhook target URL.")
+            else:
+                try:
+                    eventbrite_service.register_webhook(webhook_target)
+                    st.success("Webhook registered successfully!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to register webhook: {str(e)}")
+
+with wh_cols[1]:
+    st.write("**Active Webhook Registrations**")
+    try:
+        webhooks_list = eventbrite_service.list_webhooks()
+    except Exception:
+        webhooks_list = []
+        
+    if not webhooks_list:
+        st.info("No registered webhooks found.")
+    else:
+        for wh in webhooks_list:
+            wh_id = wh.get("id")
+            wh_actions = wh.get("actions", "All")
+            st.write(f"- ID: `{wh_id}` | Actions: `{wh_actions}`")
+            if st.button(f"🗑️ Delete {wh_id[:8]}...", key=f"del_wh_{wh_id}"):
+                if eventbrite_service.delete_webhook(wh_id):
+                    st.toast("Webhook deleted successfully.")
+                    st.rerun()
+
 st.write("---")
 
 # ===========================================================

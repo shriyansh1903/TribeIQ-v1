@@ -1,3 +1,14 @@
 [2026-07-16 12:27:41] [INFO] Synchronization process started.
 [2026-07-16 12:27:41] [INFO] Created backup of Residents.csv at Residents_2026-07-16_1227.csv
 [2026-07-16 12:27:41] [INFO] Sync complete. New data written. Residents: 374, Bookings: 374. Duration: 0.23 s.
+[2026-07-21 13:28:18] [INFO] Synchronization process started.
+[2026-07-21 13:28:21] [INFO] Created backup of Residents.csv at Residents_2026-07-21_1328.csv
+[2026-07-21 13:28:21] [ERROR] Sync failed: No module named 'cleaner'. Attempting rollback...
+[2026-07-21 13:28:21] [INFO] Rollback successful. Restored previous Residents.csv.
+[2026-07-21 13:28:30] [INFO] Synchronization process started.
+[2026-07-21 13:28:32] [INFO] Created backup of Residents.csv at Residents_2026-07-21_1328.csv
+[2026-07-21 13:28:32] [ERROR] Sync failed: No module named 'cleaner'. Attempting rollback...
+[2026-07-21 13:28:32] [INFO] Rollback successful. Restored previous Residents.csv.
+[2026-07-21 13:29:07] [INFO] Synchronization process started.
+[2026-07-21 13:29:09] [INFO] Created backup of Residents.csv at Residents_2026-07-21_1329.csv
+[2026-07-21 13:29:11] [INFO] Sync complete. New data written. Residents: 374, Bookings: 374. Duration: 4.36 s.

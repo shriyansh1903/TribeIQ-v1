@@ -1,0 +1,152 @@
+import datetime
+from typing import Dict, Any, List
+from src.config import settings, logger
+from src.integrations.eventbrite.client import EventbriteClient
+from src.integrations.eventbrite.repository import EventbriteEventRepository, EventbriteWebhookRepository
+from src.integrations.eventbrite.handlers import EventbriteWebhookHandlers
+from src.integrations.provider import ExternalEventProvider, provider_registry
+
+class EventbriteService(ExternalEventProvider):
+    def __init__(self):
+        self.client = EventbriteClient()
+        self.event_repo = EventbriteEventRepository()
+        self.webhook_repo = EventbriteWebhookRepository()
+        self.handlers = EventbriteWebhookHandlers()
+
+    @property
+    def name(self) -> str:
+        return "eventbrite"
+
+    def register_webhook(self, endpoint_url: str, actions: List[str] = None) -> Dict[str, Any]:
+        """
+        Registers a webhook endpoint with the Eventbrite REST API.
+        """
+        logger.info(f"Registering webhook endpoint {endpoint_url} on Eventbrite...")
+        org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", "MOCK_ORG")
+        secret = getattr(settings, "EVENTBRITE_WEBHOOK_SECRET", "tribeiq_secret")
+        
+        # Append secret path routing parameter
+        base_endpoint = endpoint_url.rstrip("/")
+        full_endpoint = f"{base_endpoint}/{secret}"
+        actions = actions or ["event.published", "event.updated", "event.unpublished", "order.placed", "attendee.updated"]
+        
+        payload = {
+            "endpoint_url": full_endpoint,
+            "actions": ",".join(actions),
+            "event_filter": "all"
+        }
+        
+        # Mock connection fallback if token is default
+        if self.client.token == "MOCK_TOKEN" or org_id == "MOCK_ORG":
+            logger.info("Operating in Mock / Standby Mode. Registering mock webhook.")
+            mock_id = "mock_web_123"
+            doc = {
+                "id": mock_id,
+                "endpoint_url": full_endpoint,
+                "actions": actions,
+                "status": "Active",
+                "registered_at": datetime.datetime.utcnow().isoformat() if "datetime" in globals() else None
+            }
+            # Save to MongoDB
+            try:
+                self.webhook_repo.collection.update_one({"id": mock_id}, {"$set": doc}, upsert=True)
+            except Exception:
+                pass
+            return {"id": mock_id, "status": "Active", "actions": actions}
+
+        try:
+            # Post registration to Eventbrite API
+            path = f"/organizations/{org_id}/webhooks/"
+            response = self.client.post(path, payload)
+            webhook_id = response.get("id")
+            
+            # Save webhook state
+            doc = {
+                "id": webhook_id,
+                "endpoint_url": full_endpoint,
+                "actions": actions,
+                "status": "Active",
+                "registered_at": datetime.datetime.utcnow().isoformat() if "datetime" in globals() else None
+            }
+            self.webhook_repo.collection.update_one({"id": webhook_id}, {"$set": doc}, upsert=True)
+            return response
+        except Exception as e:
+            logger.error(f"Failed to register webhook: {str(e)}")
+            raise e
+
+    def list_webhooks(self) -> List[Dict[str, Any]]:
+        """
+        Lists registered webhooks from local DB or Eventbrite organization.
+        """
+        org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", "MOCK_ORG")
+        if self.client.token == "MOCK_TOKEN" or org_id == "MOCK_ORG":
+            try:
+                return list(self.webhook_repo.collection.find({}))
+            except Exception:
+                return []
+
+        try:
+            path = f"/organizations/{org_id}/webhooks/"
+            res = self.client.get(path)
+            return res.get("webhooks", [])
+        except Exception as e:
+            logger.error(f"Failed to list webhooks: {str(e)}")
+            try:
+                return list(self.webhook_repo.collection.find({}))
+            except Exception:
+                return []
+
+    def delete_webhook(self, webhook_id: str) -> bool:
+        """
+        Deletes a registered webhook from Eventbrite.
+        """
+        logger.info(f"Deleting Eventbrite webhook ID: {webhook_id}")
+        org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", "MOCK_ORG")
+        
+        # Local state cleanup
+        try:
+            self.webhook_repo.collection.delete_one({"id": webhook_id})
+        except Exception:
+            pass
+
+        if self.client.token == "MOCK_TOKEN" or org_id == "MOCK_ORG":
+            return True
+
+        try:
+            self.client.delete(f"/webhooks/{webhook_id}/")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to delete webhook: {str(e)}")
+            return False
+
+    def sync_all_events(self) -> Dict[str, Any]:
+        """
+        Performs manual sync of all published events from Eventbrite organization.
+        """
+        logger.info("Executing manual synchronization of Eventbrite events...")
+        org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", "MOCK_ORG")
+        
+        if self.client.token == "MOCK_TOKEN" or org_id == "MOCK_ORG":
+            logger.info("Eventbrite Token missing or organization not set. Manual sync operating in standby.")
+            return {"status": "Standby", "synced_count": 0}
+
+        try:
+            path = f"/organizations/{org_id}/events/"
+            res = self.client.get(path)
+            events = res.get("events", [])
+            
+            synced_count = 0
+            for ev in events:
+                # Trigger handlers to published format
+                api_url = f"https://www.eventbriteapi.com/v3/events/{ev.get('id')}/"
+                self.handlers.handle_event_published(api_url)
+                synced_count += 1
+                
+            return {"status": "Completed", "synced_count": synced_count}
+        except Exception as e:
+            logger.error(f"Failed to sync all events: {str(e)}")
+            return {"status": "Error", "message": str(e), "synced_count": 0}
+            
+# Singleton service instance
+eventbrite_service = EventbriteService()
+provider_registry.register(eventbrite_service)

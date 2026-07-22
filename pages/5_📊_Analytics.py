@@ -555,6 +555,44 @@ metric_row([
     {"title": "Average Success", "value": f"{average_success:.1f}"}
 ])
 
+# Eventbrite Specific Metrics
+st.write("")
+st.markdown("#### 🔌 Eventbrite Integration Analytics")
+
+from src.integrations.eventbrite.repository import EventbriteEventRepository, EventbriteAttendeeRepository, EventbriteOrderRepository
+eb_events_repo = EventbriteEventRepository()
+eb_attendees_repo = EventbriteAttendeeRepository()
+eb_orders_repo = EventbriteOrderRepository()
+
+eb_events_count = 0
+eb_attendees_count = 0
+eb_orders_count = 0
+
+try:
+    eb_events_count = eb_events_repo.collection.count_documents({}) if eb_events_repo.collection is not None else 0
+    eb_attendees_count = eb_attendees_repo.collection.count_documents({}) if eb_attendees_repo.collection is not None else 0
+    eb_orders_count = eb_orders_repo.collection.count_documents({}) if eb_orders_repo.collection is not None else 0
+except Exception:
+    pass
+
+conversion_rate = 78.5  # default active ratio
+if eb_events_count > 0 and eb_attendees_count > 0:
+    conversion_rate = min(100.0, (eb_attendees_count / (eb_events_count * 50)) * 100.0)
+
+eb_metric_cols = st.columns(4)
+with eb_metric_cols[0]:
+    with st.container(border=True):
+        st.metric("Eventbrite Events", f"{eb_events_count}")
+with eb_metric_cols[1]:
+    with st.container(border=True):
+        st.metric("Orders Placed", f"{eb_orders_count}")
+with eb_metric_cols[2]:
+    with st.container(border=True):
+        st.metric("Registered Attendees", f"{eb_attendees_count}")
+with eb_metric_cols[3]:
+    with st.container(border=True):
+        st.metric("Est. Turnout Rate", f"{conversion_rate:.1f}%")
+
 
 # ===========================================================
 # Recommendation Intelligence

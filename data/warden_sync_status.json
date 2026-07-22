@@ -5,9 +5,10 @@
     "properties_synced": 3,
     "bookings_synced": 374,
     "health": "Healthy",
-    "last_successful_sync": "2026-07-16 12:27:41",
-    "sync_duration_seconds": 0.23,
+    "last_successful_sync": "2026-07-21 13:29:11",
+    "sync_duration_seconds": 4.36,
     "residents_imported": 374,
     "properties_imported": 3,
-    "bookings_imported": 374
+    "bookings_imported": 374,
+    "last_failed_sync": "2026-07-21 13:28:32"
 }
