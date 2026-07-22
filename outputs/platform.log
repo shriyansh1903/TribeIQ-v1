@@ -461,3 +461,97 @@
 2026-07-22 15:48:59,131 - TribeIQPlatform - INFO - MongoDB client connected successfully.
 2026-07-22 15:49:13,095 - TribeIQPlatform - INFO - Loaded development environment configurations.
 2026-07-22 15:49:13,101 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 15:49:15,667 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 15:49:15,991 - TribeIQPlatform - INFO - Registering webhook endpoint https://domain.ngrok-free.app/webhook on Eventbrite...
+2026-07-22 15:49:15,995 - TribeIQPlatform - INFO - Operating in Mock / Standby Mode. Registering mock webhook.
+2026-07-22 15:49:33,895 - TribeIQPlatform - INFO - Registering webhook endpoint https://domain.ngrok-free.app/webhook on Eventbrite...
+2026-07-22 15:49:33,895 - TribeIQPlatform - INFO - Operating in Mock / Standby Mode. Registering mock webhook.
+2026-07-22 15:50:03,813 - TribeIQPlatform - INFO - Registering webhook endpoint https://tribeiq-v1.onrender.com/webhook/TribeIQ_Eventbrite_3314109991 on Eventbrite...
+2026-07-22 15:50:03,820 - TribeIQPlatform - INFO - Operating in Mock / Standby Mode. Registering mock webhook.
+2026-07-22 15:50:11,924 - TribeIQPlatform - INFO - Registering webhook endpoint https://tribeiq-v1.onrender.com/webhook/TribeIQ_Eventbrite_3314109991 on Eventbrite...
+2026-07-22 15:50:11,930 - TribeIQPlatform - INFO - Operating in Mock / Standby Mode. Registering mock webhook.
+2026-07-22 16:00:24,800 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 16:00:24,971 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 16:00:26,375 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 16:00:51,117 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-22 16:00:56,199 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:00:57,066 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:00:57,068 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:00:57,500 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:00:57,503 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:00:57,503 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:00:58,273 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:00:58,279 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:00:59,116 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:00:59,118 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:00:59,118 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:00:59,496 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:00:59,549 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:00:59,987 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:00:59,993 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:00:59,993 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:00,406 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:10,188 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:10,947 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:11,021 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:11,022 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:11,583 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:11,591 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:11,614 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:11,772 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:11,781 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:11,781 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:12,422 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:12,433 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:12,434 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:12,436 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:12,436 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:12,538 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:12,541 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:12,829 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:12,832 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:12,840 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:12,840 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:12,842 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:12,953 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:12,955 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:12,956 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:13,240 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:13,243 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:13,252 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:13,254 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:13,256 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:13,354 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:13,755 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:13,766 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:13,767 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:13,767 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:14,300 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:14,333 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:14,706 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:14,706 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:14,715 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:15,192 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:15,211 - TribeIQPlatform - INFO - Deleting Eventbrite webhook ID: WB-64E948CE
+2026-07-22 16:01:15,216 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:15,702 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:15,704 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:15,705 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:16,116 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:16,434 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:16,814 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:16,816 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:17,238 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:17,240 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:17,241 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:17,639 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:17,650 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:18,055 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:18,055 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:18,055 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:18,469 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:18,510 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/organizations/ | Payload: null
+2026-07-22 16:01:19,392 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/organizations/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 16:01:19,395 - TribeIQPlatform - ERROR - Error querying organizations: The OAuth token you provided was invalid.
+2026-07-22 16:01:19,396 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:01:19,839 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/users/me/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}

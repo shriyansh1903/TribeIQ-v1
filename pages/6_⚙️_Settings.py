@@ -351,7 +351,7 @@ from src.integrations.eventbrite.service import eventbrite_service
 from src.integrations.eventbrite.webhook import is_webhook_reachable
 from src.utils.background_job import background_job_service
 from src.database import db_manager
-from src.config import settings
+from src.config import settings, logger
 
 # 1. MongoDB Connected
 mongo_ok = db_manager.ping_check()
