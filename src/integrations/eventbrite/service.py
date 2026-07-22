@@ -21,6 +21,36 @@ class EventbriteService(ExternalEventProvider):
         self.attendee_repo = EventbriteAttendeeRepository()
         self.order_repo = EventbriteOrderRepository()
 
+    def _decorate_event(self, ev: Dict[str, Any], now: datetime.datetime) -> Dict[str, Any]:
+        # Extract date string YYYY-MM-DD
+        start_date_str = ev.get("start_time", "").split("T")[0]
+        end_date_str = ev.get("end_time", "").split("T")[0]
+        
+        # Add legacy schema mapping keys
+        ev.update({
+            "Event ID": ev.get("id"),
+            "Event Name": ev.get("name"),
+            "Category": ev.get("category"),
+            "Description": ev.get("description"),
+            "Venue": ev.get("venue"),
+            "Area": ev.get("address", ev.get("venue", "")),
+            "City": "Pune",
+            "Latitude": float(ev.get("latitude") or 18.5204),
+            "Longitude": float(ev.get("longitude") or 73.8567),
+            "Property Radius (km)": float(ev.get("Property Radius (km)") or 10.0),
+            "Start Date": start_date_str,
+            "End Date": end_date_str,
+            "Expected Footfall": int(ev.get("Expected Footfall") or 5000),
+            "Expected Occupancy Impact": float(ev.get("Expected Occupancy Impact") or 10.0),
+            "Expected Community Impact": ev.get("Expected Community Impact") or "Medium",
+            "Status": ev.get("Status") or "Active",
+            "Organizer": ev.get("organizer", "Eventbrite"),
+            "Website": ev.get("ticket_url"),
+            "Registration Link": ev.get("ticket_url"),
+            "Source": "Eventbrite"
+        })
+        return ev
+
     @property
     def name(self) -> str:
         return "eventbrite"
@@ -243,6 +273,9 @@ class EventbriteService(ExternalEventProvider):
                     "last_synced": now.isoformat() + "Z"
                 }
             ]
+            # Decorate every curated event with legacy keys
+            for ev in curated_pune:
+                self._decorate_event(ev, now)
             return curated_pune
             
         # If API actually worked and returned events, map them to our schema
@@ -266,6 +299,9 @@ class EventbriteService(ExternalEventProvider):
                 "source": "Eventbrite",
                 "last_synced": datetime.datetime.utcnow().isoformat() + "Z"
             })
+        # Decorate every normalized event with legacy keys
+        for ev in normalized_events:
+            self._decorate_event(ev, now)
         return normalized_events
 
     def sync_pune_events(self) -> Dict[str, Any]:

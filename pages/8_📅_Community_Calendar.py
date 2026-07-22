@@ -183,6 +183,9 @@ try:
         st.write("")
         st.write("")
         show_external = st.toggle("Show External Events", value=False, help="Overlay external events and local activities impacting your property.")
+        ext_radius = 50.0
+        if show_external:
+            ext_radius = st.slider("Radius filter (km)", min_value=5, max_value=100, value=50, step=5)
 
     # Parse Year and Month
     year, month = map(int, selected_month_str.split("-"))
@@ -202,7 +205,7 @@ try:
             end_month_d = datetime.date(year + 1, 1, 1) - datetime.timedelta(days=1)
         else:
             end_month_d = datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
-        df_ext_month = get_nearby_external_events(selected_property, start_date=start_month_d, end_date=end_month_d)
+        df_ext_month = get_nearby_external_events(selected_property, start_date=start_month_d, end_date=end_month_d, radius_km=ext_radius)
     else:
         df_ext_month = pd.DataFrame()
 

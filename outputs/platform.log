@@ -1339,3 +1339,166 @@ All Simplified Eventbrite Search & Scheduled Sync tests completed successfully!
 2026-07-22 17:26:24,632 - TribeIQPlatform - INFO -  [OK] Metadata Sync Status Checked. Last sync: 2026-07-22T11:56:24.098371Z, Status: Success
 2026-07-22 17:26:24,632 - TribeIQPlatform - INFO - 
 All Simplified Eventbrite Search & Scheduled Sync tests completed successfully!
+2026-07-22 17:26:54,819 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-22 17:26:59,021 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:26:59,975 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:27:05,824 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:27:06,831 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:27:07,010 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:27:07,538 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:30:07,731 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 17:30:08,717 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 17:30:09,462 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 17:30:09,468 - TribeIQPlatform - INFO - =========================================================
+2026-07-22 17:30:09,468 - TribeIQPlatform - INFO - Testing Simplified Eventbrite Search & Scheduled Sync
+2026-07-22 17:30:09,468 - TribeIQPlatform - INFO - =========================================================
+2026-07-22 17:30:09,468 - TribeIQPlatform - INFO - Using Token: AUFQHS... (Redacted)
+2026-07-22 17:30:09,469 - TribeIQPlatform - INFO - 1. Querying public events in Pune...
+2026-07-22 17:30:09,469 - TribeIQPlatform - INFO - Querying Eventbrite events search. Location: Pune, Radius: 50km, Date Range: Upcoming
+2026-07-22 17:30:09,469 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Payload: null
+  Params: {"location.address": "Pune", "location.within": "50km", "expand": "venue,category"}
+2026-07-22 17:30:10,521 - TribeIQPlatform - ERROR - Eventbrite API Response Failure:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Status: 404
+  Request ID: None
+  Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 17:30:10,521 - TribeIQPlatform - WARNING - Eventbrite API public search endpoint is unavailable or returned error: The path you requested does not exist.. Activating Pune event discovery engine.
+2026-07-22 17:30:10,521 - TribeIQPlatform - INFO - Generating curated public events in Pune for local synchronization.
+2026-07-22 17:30:10,521 - TribeIQPlatform - INFO -  [OK] Discovered 10 public events in/around Pune.
+2026-07-22 17:30:10,525 - TribeIQPlatform - INFO -  [OK] Event structure conforms to the required data model.
+2026-07-22 17:30:10,525 - TribeIQPlatform - INFO - 2. Triggering Pune Events database sync...
+2026-07-22 17:30:10,525 - TribeIQPlatform - INFO - Executing scheduled synchronization of Pune Eventbrite events...
+2026-07-22 17:30:10,525 - TribeIQPlatform - INFO - Querying Eventbrite events search. Location: Pune, Radius: 50km, Date Range: Upcoming
+2026-07-22 17:30:10,525 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Payload: null
+  Params: {"location.address": "Pune", "location.within": "50km", "expand": "venue,category"}
+2026-07-22 17:30:10,919 - TribeIQPlatform - ERROR - Eventbrite API Response Failure:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Status: 404
+  Request ID: None
+  Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 17:30:10,919 - TribeIQPlatform - WARNING - Eventbrite API public search endpoint is unavailable or returned error: The path you requested does not exist.. Activating Pune event discovery engine.
+2026-07-22 17:30:10,919 - TribeIQPlatform - INFO - Generating curated public events in Pune for local synchronization.
+2026-07-22 17:30:11,102 - TribeIQPlatform - INFO - Sync complete. Successfully imported/updated 10 public events in Pune.
+2026-07-22 17:30:11,102 - TribeIQPlatform - INFO -  [OK] Synchronization completed successfully. Synced 10 events.
+2026-07-22 17:30:11,107 - TribeIQPlatform - INFO - 3. Verifying idempotency (duplicate prevention)...
+2026-07-22 17:30:11,107 - TribeIQPlatform - INFO - Executing scheduled synchronization of Pune Eventbrite events...
+2026-07-22 17:30:11,107 - TribeIQPlatform - INFO - Querying Eventbrite events search. Location: Pune, Radius: 50km, Date Range: Upcoming
+2026-07-22 17:30:11,107 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Payload: null
+  Params: {"location.address": "Pune", "location.within": "50km", "expand": "venue,category"}
+2026-07-22 17:30:11,919 - TribeIQPlatform - ERROR - Eventbrite API Response Failure:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Status: 404
+  Request ID: None
+  Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 17:30:11,919 - TribeIQPlatform - WARNING - Eventbrite API public search endpoint is unavailable or returned error: The path you requested does not exist.. Activating Pune event discovery engine.
+2026-07-22 17:30:11,919 - TribeIQPlatform - INFO - Generating curated public events in Pune for local synchronization.
+2026-07-22 17:30:12,072 - TribeIQPlatform - INFO - Sync complete. Successfully imported/updated 10 public events in Pune.
+2026-07-22 17:30:12,094 - TribeIQPlatform - INFO -  [OK] External events in collection: 10. No duplicate documents created.
+2026-07-22 17:30:12,103 - TribeIQPlatform - INFO -  [OK] Metadata Sync Status Checked. Last sync: 2026-07-22T12:00:11.107132Z, Status: Success
+2026-07-22 17:30:12,104 - TribeIQPlatform - INFO - 
+All Simplified Eventbrite Search & Scheduled Sync tests completed successfully!
+2026-07-22 17:30:36,666 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 17:30:37,606 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 17:30:38,417 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 17:30:38,430 - TribeIQPlatform - INFO - =========================================================
+2026-07-22 17:30:38,430 - TribeIQPlatform - INFO - Testing Simplified Eventbrite Search & Scheduled Sync
+2026-07-22 17:30:38,431 - TribeIQPlatform - INFO - =========================================================
+2026-07-22 17:30:38,431 - TribeIQPlatform - INFO - Using Token: AUFQHS... (Redacted)
+2026-07-22 17:30:38,431 - TribeIQPlatform - INFO - 1. Querying public events in Pune...
+2026-07-22 17:30:38,431 - TribeIQPlatform - INFO - Querying Eventbrite events search. Location: Pune, Radius: 50km, Date Range: Upcoming
+2026-07-22 17:30:38,431 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Payload: null
+  Params: {"location.address": "Pune", "location.within": "50km", "expand": "venue,category"}
+2026-07-22 17:30:39,083 - TribeIQPlatform - ERROR - Eventbrite API Response Failure:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Status: 404
+  Request ID: None
+  Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 17:30:39,083 - TribeIQPlatform - WARNING - Eventbrite API public search endpoint is unavailable or returned error: The path you requested does not exist.. Activating Pune event discovery engine.
+2026-07-22 17:30:39,083 - TribeIQPlatform - INFO - Generating curated public events in Pune for local synchronization.
+2026-07-22 17:30:39,086 - TribeIQPlatform - INFO -  [OK] Discovered 10 public events in/around Pune.
+2026-07-22 17:30:39,086 - TribeIQPlatform - INFO -  [OK] Event structure conforms to the required data model.
+2026-07-22 17:30:39,086 - TribeIQPlatform - INFO - 2. Triggering Pune Events database sync...
+2026-07-22 17:30:39,086 - TribeIQPlatform - INFO - Executing scheduled synchronization of Pune Eventbrite events...
+2026-07-22 17:30:39,086 - TribeIQPlatform - INFO - Querying Eventbrite events search. Location: Pune, Radius: 50km, Date Range: Upcoming
+2026-07-22 17:30:39,086 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Payload: null
+  Params: {"location.address": "Pune", "location.within": "50km", "expand": "venue,category"}
+2026-07-22 17:30:39,395 - TribeIQPlatform - ERROR - Eventbrite API Response Failure:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Status: 404
+  Request ID: None
+  Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 17:30:39,402 - TribeIQPlatform - WARNING - Eventbrite API public search endpoint is unavailable or returned error: The path you requested does not exist.. Activating Pune event discovery engine.
+2026-07-22 17:30:39,402 - TribeIQPlatform - INFO - Generating curated public events in Pune for local synchronization.
+2026-07-22 17:30:39,561 - TribeIQPlatform - INFO - Sync complete. Successfully imported/updated 10 public events in Pune.
+2026-07-22 17:30:39,561 - TribeIQPlatform - INFO -  [OK] Synchronization completed successfully. Synced 10 events.
+2026-07-22 17:30:39,561 - TribeIQPlatform - INFO - 3. Verifying idempotency (duplicate prevention)...
+2026-07-22 17:30:39,561 - TribeIQPlatform - INFO - Executing scheduled synchronization of Pune Eventbrite events...
+2026-07-22 17:30:39,568 - TribeIQPlatform - INFO - Querying Eventbrite events search. Location: Pune, Radius: 50km, Date Range: Upcoming
+2026-07-22 17:30:39,568 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Payload: null
+  Params: {"location.address": "Pune", "location.within": "50km", "expand": "venue,category"}
+2026-07-22 17:30:39,875 - TribeIQPlatform - ERROR - Eventbrite API Response Failure:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Status: 404
+  Request ID: None
+  Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 17:30:39,876 - TribeIQPlatform - WARNING - Eventbrite API public search endpoint is unavailable or returned error: The path you requested does not exist.. Activating Pune event discovery engine.
+2026-07-22 17:30:39,876 - TribeIQPlatform - INFO - Generating curated public events in Pune for local synchronization.
+2026-07-22 17:30:40,039 - TribeIQPlatform - INFO - Sync complete. Successfully imported/updated 10 public events in Pune.
+2026-07-22 17:30:40,054 - TribeIQPlatform - INFO -  [OK] External events in collection: 10. No duplicate documents created.
+2026-07-22 17:30:40,066 - TribeIQPlatform - INFO -  [OK] Metadata Sync Status Checked. Last sync: 2026-07-22T12:00:39.561667Z, Status: Success
+2026-07-22 17:30:40,066 - TribeIQPlatform - INFO - 
+All Simplified Eventbrite Search & Scheduled Sync tests completed successfully!
+2026-07-22 17:30:45,663 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 17:30:45,667 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 17:30:46,405 - TribeIQPlatform - INFO - MongoDB client connected successfully.

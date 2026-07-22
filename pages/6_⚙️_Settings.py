@@ -411,6 +411,7 @@ with btn_cols[0]:
         with st.spinner("Synchronising Pune Events..."):
             res = eventbrite_service.sync_pune_events()
             if res.get("status") == "Success":
+                st.cache_data.clear()
                 st.toast(f"Eventbrite Sync complete. Synced: {res.get('synced_count')} events.")
             else:
                 st.error(f"Sync failed: {res.get('error')}")
