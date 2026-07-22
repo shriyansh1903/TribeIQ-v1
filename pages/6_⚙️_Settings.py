@@ -374,9 +374,11 @@ last_sync_time = sync_status.get("last_sync_time", "Never")
 sync_state = sync_status.get("status", "Idle")
 
 imported_count = 0
-if mongo_ok and db_manager.db is not None:
+if mongo_ok:
     try:
-        imported_count = db_manager.db["external_events"].count_documents({})
+        coll = db_manager.get_collection("external_events")
+        if coll is not None:
+            imported_count = coll.count_documents({})
     except Exception:
         imported_count = sync_status.get("imported_count", 0)
 
