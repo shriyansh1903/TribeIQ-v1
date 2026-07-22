@@ -11,13 +11,14 @@ EXTERNAL_EVENTS_CSV = PROJECT_ROOT / "data" / "external_events.csv"
 
 # Coordinates mapping for properties
 PROPERTY_COORDS = {
-    "Tribe Moro": {"lat": 28.6139, "lon": 77.2090, "city": "Delhi"},
-    "Tribe Vara": {"lat": 12.9716, "lon": 77.5946, "city": "Bengaluru"},
+    "Tribe Moro": {"lat": 18.5204, "lon": 73.8567, "city": "Pune"},
+    "Tribe Vara": {"lat": 18.5204, "lon": 73.8567, "city": "Pune"},
+    "Tribe Wamba": {"lat": 18.5204, "lon": 73.8567, "city": "Pune"},
     "Tribe Student Housing": {"lat": 18.5204, "lon": 73.8567, "city": "Pune"},
-    "Tribe Luxury Co-Living": {"lat": 12.9716, "lon": 77.5946, "city": "Bengaluru"},
+    "Tribe Luxury Co-Living": {"lat": 18.5204, "lon": 73.8567, "city": "Pune"},
 }
 
-DEFAULT_COORDS = {"lat": 12.9716, "lon": 77.5946, "city": "Bengaluru"}
+DEFAULT_COORDS = {"lat": 18.5204, "lon": 73.8567, "city": "Pune"}
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """Calculate distance in kilometers between two lat/lon coordinates."""
