@@ -158,13 +158,6 @@ with st.sidebar:
 nav = st.navigation(pages)
 nav.run()
 
-# Mount Eventbrite webhook receiver natively under /webhook path
-from starlette.routing import Mount
-from src.integrations.eventbrite.webhook import webhook_api
-
 app = st.App(
-    script_path=__file__,
-    routes=[
-        Mount("/webhook", app=webhook_api),
-    ]
+    script_path=__file__
 )

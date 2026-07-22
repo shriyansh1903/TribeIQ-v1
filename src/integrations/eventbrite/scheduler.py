@@ -4,7 +4,7 @@ from src.config import logger
 from src.integrations.eventbrite.service import eventbrite_service
 
 class EventbriteScheduler:
-    def __init__(self, interval_seconds: int = 3600):
+    def __init__(self, interval_seconds: int = 21600):
         self.interval_seconds = interval_seconds
         self.running = False
         self.thread = None

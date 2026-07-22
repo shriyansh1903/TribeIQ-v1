@@ -61,8 +61,6 @@ class Settings:
         
         # Eventbrite Settings Centralization
         self.EVENTBRITE_PRIVATE_TOKEN = os.getenv("EVENTBRITE_PRIVATE_TOKEN", "MOCK_TOKEN")
-        self.EVENTBRITE_ORGANIZATION_ID = os.getenv("EVENTBRITE_ORGANIZATION_ID", "MOCK_ORG")
-        self.EVENTBRITE_WEBHOOK_SECRET = os.getenv("EVENTBRITE_WEBHOOK_SECRET", "tribeiq_secret")
         self.EVENTBRITE_API_BASE_URL = os.getenv("EVENTBRITE_API_BASE_URL", "https://www.eventbriteapi.com/v3")
 
 # Singleton instance

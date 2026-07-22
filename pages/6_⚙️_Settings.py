@@ -357,20 +357,11 @@ from src.config import settings, logger
 mongo_ok = db_manager.ping_check()
 mongo_status = "🟢 Connected" if mongo_ok else "🔴 Disconnected"
 
-# 2. Background Queue Ready
-queue_ok = background_job_service is not None
-queue_status = "🟢 Ready (Thread Pool)" if queue_ok else "🔴 Stopped"
-
-# 3. Webhook Endpoint Reachable
-wh_reachable = is_webhook_reachable()
-wh_status = "🟢 Reachable (Mounted)" if wh_reachable else "🔴 Unreachable"
-
-# 4. API Connected
+# 2. API Connected
 token = getattr(settings, "EVENTBRITE_PRIVATE_TOKEN", "MOCK_TOKEN")
 api_ok = False
 if token != "MOCK_TOKEN" and token:
     try:
-        # Quick sanity check against Eventbrite API
         res = eventbrite_service.client.get("/users/me/")
         if "error" not in res:
             api_ok = True
@@ -378,94 +369,55 @@ if token != "MOCK_TOKEN" and token:
         pass
 api_status = "🟢 Connected" if api_ok else ("🟡 Standby (Mock)" if token == "MOCK_TOKEN" else "🔴 Error / Unauthorized")
 
-# 5. Organization Detected
-org_id = eventbrite_service.get_organization_id()
-org_ok = org_id != "No Eventbrite Organization Found" and org_id != "MOCK_ORG"
-org_status = f"🟢 Detected (`{org_id}`)" if org_ok else f"🟡 {org_id}"
+# 3. Sync Status
+sync_status = eventbrite_service.get_sync_status()
+last_sync_time = sync_status.get("last_sync_time", "Never")
+sync_state = sync_status.get("status", "Idle")
 
-# 6. Registration Status (Active webhooks subscription)
-try:
-    webhooks_list = eventbrite_service.list_webhooks()
-    reg_count = len(webhooks_list)
-    reg_status = f"🟢 Active ({reg_count} webhook{'s' if reg_count != 1 else ''})" if reg_count > 0 else "🟡 None Registered"
-except Exception:
-    webhooks_list = []
-    reg_status = "🔴 Connection Error"
+imported_count = 0
+if mongo_ok and db_manager.db is not None:
+    try:
+        imported_count = db_manager.db["external_events"].count_documents({})
+    except Exception:
+        imported_count = sync_status.get("imported_count", 0)
 
-# Now display them in a 3-column container layout
+# Display in a 3-column layout
 eb_status_cols = st.columns(3)
 
 with eb_status_cols[0]:
     with st.container(border=True):
-        st.markdown("**Webhook Server & Queue**")
-        st.markdown(f"Webhook Endpoint Reachable: {wh_status}")
-        st.markdown(f"Background Queue Ready: {queue_status}")
+        st.markdown("**API & Database**")
+        st.markdown(f"Eventbrite API Connection: {api_status}")
+        st.markdown(f"MongoDB Status: {mongo_status}")
 
 with eb_status_cols[1]:
     with st.container(border=True):
-        st.markdown("**Eventbrite API & Org**")
-        st.markdown(f"API Connected: {api_status}")
-        st.markdown(f"Organization Detected: {org_status}")
+        st.markdown("**Synchronisation**")
+        st.markdown(f"Sync Status: `{sync_state}`")
+        st.markdown(f"Last Sync Time: `{last_sync_time}`")
 
 with eb_status_cols[2]:
     with st.container(border=True):
-        st.markdown("**Data Stores & Subs**")
-        st.markdown(f"MongoDB Connected: {mongo_status}")
-        st.markdown(f"Registration Status: {reg_status}")
+        st.markdown("**Data Summary**")
+        st.markdown(f"External Events Imported: **{imported_count}**")
+        st.markdown(f"Source Context: `Eventbrite Pune Search`")
 
-# Operations button block
+# Operations buttons
 st.write("")
-if st.button("🔄 Sync Events", key="eb_sync_btn", use_container_width=True):
-    res = eventbrite_service.sync_all_events()
-    st.toast(f"Eventbrite Sync complete. Synced: {res.get('synced_count')} events.")
-    st.rerun()
+btn_cols = st.columns(2)
+with btn_cols[0]:
+    if st.button("🔄 Sync Now", key="eb_sync_btn", use_container_width=True):
+        with st.spinner("Synchronising Pune Events..."):
+            res = eventbrite_service.sync_pune_events()
+            if res.get("status") == "Success":
+                st.toast(f"Eventbrite Sync complete. Synced: {res.get('synced_count')} events.")
+            else:
+                st.error(f"Sync failed: {res.get('error')}")
+            st.rerun()
 
-# Webhooks management
-st.markdown("#### Webhook Subscriptions Management")
-wh_cols = st.columns(2)
-    with st.container(border=True):
-        st.write("🔑 **Manual Webhook Configuration Guide**")
-        st.info(
-            "Due to Eventbrite API restrictions on personal/member accounts without organization admin keys, "
-            "programmatic webhook registration is unavailable. Please register the webhook manually in your portal."
-        )
-        
-        # Calculate webhook url
-        secret_path = getattr(settings, "EVENTBRITE_WEBHOOK_SECRET", "tribeiq_secret")
-        recommended_url = f"https://tribeiq-v1.onrender.com/webhook/{secret_path}"
-        
-        st.markdown("**1. Target Webhook Payload URL:**")
-        st.code(recommended_url, language="text")
-        
-        st.markdown(
-            "**2. Setup Steps:**\n"
-            "1. Log in to your **Eventbrite Developer Account**.\n"
-            "2. Go to **Account Settings** -> **Developer Links** -> **Webhooks**.\n"
-            "3. Click **Add Webhook**.\n"
-            "4. Paste the **Payload URL** above.\n"
-            "5. Check actions: `event.published`, `event.updated`, `event.unpublished`, `order.placed`, `attendee.updated`.\n"
-            "6. Click **Save**."
-        )
-
-with wh_cols[1]:
-    st.write("**Active Webhook Registrations**")
-    try:
-        webhooks_list = eventbrite_service.list_webhooks()
-    except Exception as e:
-        logger.error(f"Settings UI Webhook listing exception: {str(e)}", exc_info=True)
-        webhooks_list = []
-        
-    if not webhooks_list:
-        st.info("No registered webhooks found.")
-    else:
-        for wh in webhooks_list:
-            wh_id = wh.get("id")
-            wh_actions = wh.get("actions", "All")
-            st.write(f"- ID: `{wh_id}` | Actions: `{wh_actions}`")
-            if st.button(f"🗑️ Delete {wh_id[:8]}...", key=f"del_wh_{wh_id}"):
-                if eventbrite_service.delete_webhook(wh_id):
-                    st.toast("Webhook deleted successfully.")
-                    st.rerun()
+with btn_cols[1]:
+    if st.button("🔁 Refresh Events", key="eb_refresh_btn", use_container_width=True):
+        st.rerun()
 
 st.write("---")
 
