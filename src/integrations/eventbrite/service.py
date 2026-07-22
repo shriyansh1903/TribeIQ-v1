@@ -12,17 +12,44 @@ class EventbriteService(ExternalEventProvider):
         self.event_repo = EventbriteEventRepository()
         self.webhook_repo = EventbriteWebhookRepository()
         self.handlers = EventbriteWebhookHandlers()
+        self._cached_org_id = None
 
     @property
     def name(self) -> str:
         return "eventbrite"
+
+    def get_organization_id(self) -> str:
+        """
+        Dynamically detects and caches the Eventbrite Organization ID if not configured.
+        """
+        org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", None)
+        if org_id and org_id != "MOCK_ORG" and str(org_id).strip() != "":
+            return str(org_id).strip()
+            
+        if self._cached_org_id:
+            return self._cached_org_id
+            
+        if self.client.token == "MOCK_TOKEN" or not self.client.token:
+            return "No Eventbrite Organization Found"
+            
+        try:
+            res = self.client.get("/users/me/organizations/")
+            organizations = res.get("organizations", [])
+            if organizations:
+                self._cached_org_id = str(organizations[0].get("id"))
+                logger.info(f"Discovered Eventbrite Organization ID dynamically: {self._cached_org_id}")
+                return self._cached_org_id
+        except Exception as e:
+            logger.error(f"Failed to dynamically discover Eventbrite organization ID: {str(e)}")
+            
+        return "No Eventbrite Organization Found"
 
     def register_webhook(self, endpoint_url: str, actions: List[str] = None) -> Dict[str, Any]:
         """
         Registers a webhook endpoint with the Eventbrite REST API.
         """
         logger.info(f"Registering webhook endpoint {endpoint_url} on Eventbrite...")
-        org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", "MOCK_ORG")
+        org_id = self.get_organization_id()
         secret = getattr(settings, "EVENTBRITE_WEBHOOK_SECRET", "tribeiq_secret")
         
         # Append secret path routing parameter
@@ -36,8 +63,8 @@ class EventbriteService(ExternalEventProvider):
             "event_filter": "all"
         }
         
-        # Mock connection fallback if token is default
-        if self.client.token == "MOCK_TOKEN" or org_id == "MOCK_ORG":
+        # Mock connection fallback if token is default or no organization is resolved
+        if self.client.token == "MOCK_TOKEN" or org_id == "No Eventbrite Organization Found" or org_id == "MOCK_ORG":
             logger.info("Operating in Mock / Standby Mode. Registering mock webhook.")
             mock_id = "mock_web_123"
             doc = {
@@ -78,8 +105,8 @@ class EventbriteService(ExternalEventProvider):
         """
         Lists registered webhooks from local DB or Eventbrite organization.
         """
-        org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", "MOCK_ORG")
-        if self.client.token == "MOCK_TOKEN" or org_id == "MOCK_ORG":
+        org_id = self.get_organization_id()
+        if self.client.token == "MOCK_TOKEN" or org_id == "No Eventbrite Organization Found" or org_id == "MOCK_ORG":
             try:
                 return list(self.webhook_repo.collection.find({}))
             except Exception:
@@ -101,7 +128,7 @@ class EventbriteService(ExternalEventProvider):
         Deletes a registered webhook from Eventbrite.
         """
         logger.info(f"Deleting Eventbrite webhook ID: {webhook_id}")
-        org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", "MOCK_ORG")
+        org_id = self.get_organization_id()
         
         # Local state cleanup
         try:
@@ -109,7 +136,7 @@ class EventbriteService(ExternalEventProvider):
         except Exception:
             pass
 
-        if self.client.token == "MOCK_TOKEN" or org_id == "MOCK_ORG":
+        if self.client.token == "MOCK_TOKEN" or org_id == "No Eventbrite Organization Found" or org_id == "MOCK_ORG":
             return True
 
         try:
@@ -124,9 +151,9 @@ class EventbriteService(ExternalEventProvider):
         Performs manual sync of all published events from Eventbrite organization.
         """
         logger.info("Executing manual synchronization of Eventbrite events...")
-        org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", "MOCK_ORG")
+        org_id = self.get_organization_id()
         
-        if self.client.token == "MOCK_TOKEN" or org_id == "MOCK_ORG":
+        if self.client.token == "MOCK_TOKEN" or org_id == "No Eventbrite Organization Found" or org_id == "MOCK_ORG":
             logger.info("Eventbrite Token missing or organization not set. Manual sync operating in standby.")
             return {"status": "Standby", "synced_count": 0}
 

@@ -348,44 +348,77 @@ with m_col5:
 st.write("---")
 st.markdown("### 🔌 Eventbrite Integration Settings")
 from src.integrations.eventbrite.service import eventbrite_service
-from src.integrations.eventbrite.webhook import _server
+from src.integrations.eventbrite.webhook import is_webhook_reachable
+from src.utils.background_job import background_job_service
+from src.database import db_manager
 from src.config import settings
 
-eb_status_cols = st.columns(4)
+# 1. MongoDB Connected
+mongo_ok = db_manager.ping_check()
+mongo_status = "🟢 Connected" if mongo_ok else "🔴 Disconnected"
+
+# 2. Background Queue Ready
+queue_ok = background_job_service is not None
+queue_status = "🟢 Ready (Thread Pool)" if queue_ok else "🔴 Stopped"
+
+# 3. Webhook Endpoint Reachable
+wh_reachable = is_webhook_reachable()
+wh_status = "🟢 Reachable (Mounted)" if wh_reachable else "🔴 Unreachable"
+
+# 4. API Connected
+token = getattr(settings, "EVENTBRITE_PRIVATE_TOKEN", "MOCK_TOKEN")
+api_ok = False
+if token != "MOCK_TOKEN" and token:
+    try:
+        # Quick sanity check against Eventbrite API
+        res = eventbrite_service.client.get("/users/me/")
+        if "error" not in res:
+            api_ok = True
+    except Exception:
+        pass
+api_status = "🟢 Connected" if api_ok else ("🟡 Standby (Mock)" if token == "MOCK_TOKEN" else "🔴 Error / Unauthorized")
+
+# 5. Organization Detected
+org_id = eventbrite_service.get_organization_id()
+org_ok = org_id != "No Eventbrite Organization Found" and org_id != "MOCK_ORG"
+org_status = f"🟢 Detected (`{org_id}`)" if org_ok else f"🟡 {org_id}"
+
+# 6. Registration Status (Active webhooks subscription)
+try:
+    webhooks_list = eventbrite_service.list_webhooks()
+    reg_count = len(webhooks_list)
+    reg_status = f"🟢 Active ({reg_count} webhook{'s' if reg_count != 1 else ''})" if reg_count > 0 else "🟡 None Registered"
+except Exception:
+    webhooks_list = []
+    reg_status = "🔴 Connection Error"
+
+# Now display them in a 3-column container layout
+eb_status_cols = st.columns(3)
+
 with eb_status_cols[0]:
     with st.container(border=True):
-        st.markdown("**Eventbrite API**")
-        eb_token = getattr(settings, "EVENTBRITE_PRIVATE_TOKEN", "MOCK_TOKEN")
-        eb_api_status = "🟢 Connected" if eb_token != "MOCK_TOKEN" else "🟡 Standby (Mock)"
-        st.markdown(f"API Connection: {eb_api_status}")
-        st.markdown(f"Org ID: `{getattr(settings, 'EVENTBRITE_ORGANIZATION_ID', 'N/A')}`")
+        st.markdown("**Webhook Server & Queue**")
+        st.markdown(f"Webhook Endpoint Reachable: {wh_status}")
+        st.markdown(f"Background Queue Ready: {queue_status}")
 
 with eb_status_cols[1]:
     with st.container(border=True):
-        st.markdown("**Webhook Receiver**")
-        rcv_status = "🟢 Running" if _server is not None else "🔴 Stopped"
-        st.markdown(f"Status: {rcv_status}")
-        st.markdown(f"Endpoint: `/webhook`")
+        st.markdown("**Eventbrite API & Org**")
+        st.markdown(f"API Connected: {api_status}")
+        st.markdown(f"Organization Detected: {org_status}")
 
 with eb_status_cols[2]:
     with st.container(border=True):
-        st.markdown("**Synchronizations**")
-        from src.integrations.eventbrite.repository import EventbriteEventRepository
-        eb_repo = EventbriteEventRepository()
-        ev_count = 0
-        try:
-            ev_count = eb_repo.collection.count_documents({}) if eb_repo.collection is not None else 0
-        except Exception:
-            pass
-        st.markdown(f"Synced Events: **{ev_count}**")
-        
-with eb_status_cols[3]:
-    with st.container(border=True):
-        st.markdown("**Operations**")
-        if st.button("🔄 Sync Events", key="eb_sync_btn", use_container_width=True):
-            res = eventbrite_service.sync_all_events()
-            st.toast(f"Eventbrite Sync complete. Synced: {res.get('synced_count')} events.")
-            st.rerun()
+        st.markdown("**Data Stores & Subs**")
+        st.markdown(f"MongoDB Connected: {mongo_status}")
+        st.markdown(f"Registration Status: {reg_status}")
+
+# Operations button block
+st.write("")
+if st.button("🔄 Sync Events", key="eb_sync_btn", use_container_width=True):
+    res = eventbrite_service.sync_all_events()
+    st.toast(f"Eventbrite Sync complete. Synced: {res.get('synced_count')} events.")
+    st.rerun()
 
 # Webhooks management
 st.markdown("#### Webhook Subscriptions Management")

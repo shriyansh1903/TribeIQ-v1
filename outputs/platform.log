@@ -380,3 +380,35 @@
 2026-07-22 13:22:58,323 - TribeIQPlatform - INFO - Loaded development environment configurations.
 2026-07-22 13:23:01,879 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
 2026-07-22 13:23:03,653 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 13:38:37,393 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 13:38:37,586 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 13:38:38,413 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 13:38:44,960 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-22 13:39:01,857 - TribeIQPlatform - INFO - Registering webhook endpoint https://domain.ngrok-free.app/webhook on Eventbrite...
+2026-07-22 13:39:01,857 - TribeIQPlatform - INFO - Operating in Mock / Standby Mode. Registering mock webhook.
+2026-07-22 13:41:22,233 - TribeIQPlatform - INFO - Registering webhook endpoint https://domain.ngrok-free.app/webhook on Eventbrite...
+2026-07-22 13:41:22,233 - TribeIQPlatform - INFO - Operating in Mock / Standby Mode. Registering mock webhook.
+2026-07-22 13:41:29,941 - TribeIQPlatform - INFO - Registering webhook endpoint https://tribeiq-v1.onrender.com/webhook/TribeIQ_Eventbrite_3314109991 on Eventbrite...
+2026-07-22 13:41:29,942 - TribeIQPlatform - INFO - Operating in Mock / Standby Mode. Registering mock webhook.
+2026-07-22 14:46:18,016 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 14:46:18,168 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 14:46:19,283 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 14:48:41,137 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 14:48:41,271 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 14:48:42,715 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 14:48:43,811 - TribeIQPlatform - INFO - [TR-EFF1C1DB] Webhook Received: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 14:48:43,836 - TribeIQPlatform - INFO - [TR-EFF1C1DB] Processing started for webhook WB-64E948CE: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 14:48:43,843 - TribeIQPlatform - INFO - [TR-EFF1C1DB] Enqueued webhook job in background service (Webhook ID: WB-64E948CE)
+2026-07-22 14:48:43,845 - TribeIQPlatform - WARNING - [TR-09B6F6C4] Unauthorized webhook request: secret path mismatch.
+2026-07-22 14:48:43,857 - TribeIQPlatform - INFO - Dispatching action 'event.published' to handler...
+2026-07-22 14:48:43,858 - TribeIQPlatform - INFO - Handling event.published from URL: https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 14:48:44,003 - TribeIQPlatform - INFO - [TR-A49BD6D6] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 14:48:44,025 - TribeIQPlatform - WARNING - [TR-A49BD6D6] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 14:48:44,037 - TribeIQPlatform - INFO - [TR-113ADD54] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 14:48:44,047 - TribeIQPlatform - WARNING - [TR-113ADD54] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 14:48:44,586 - TribeIQPlatform - ERROR - Eventbrite HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 14:48:44,588 - TribeIQPlatform - ERROR - Failed to fetch event data from Eventbrite: {'error': 'Unauthorized', 'status_code': 401}
+2026-07-22 14:48:44,619 - TribeIQPlatform - INFO - [TR-EFF1C1DB] Processing completed. Webhook WB-64E948CE successfully processed in 0.7516s.
+2026-07-22 14:49:14,381 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 14:49:16,073 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 14:49:17,304 - TribeIQPlatform - INFO - MongoDB client connected successfully.
