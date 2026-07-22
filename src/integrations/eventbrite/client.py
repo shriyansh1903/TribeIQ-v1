@@ -29,7 +29,20 @@ class EventbriteClient:
                 if key in safe_data:
                     safe_data[key] = "[REDACTED]"
         
-        logger.info(f"Outgoing Eventbrite API Request: {method} {url} | Payload: {json.dumps(safe_data)}")
+        safe_params = None
+        if params:
+            safe_params = params.copy()
+            for key in ["secret", "token", "password"]:
+                if key in safe_params:
+                    safe_params[key] = "[REDACTED]"
+        
+        logger.info(
+            f"Outgoing Eventbrite API Request:\n"
+            f"  URL: {url}\n"
+            f"  Method: {method}\n"
+            f"  Payload: {json.dumps(safe_data)}\n"
+            f"  Params: {json.dumps(safe_params)}"
+        )
         
         retry_count = 0
         backoff = 1.0
@@ -56,15 +69,39 @@ class EventbriteClient:
 
                 # Raise for standard errors
                 response.raise_for_status()
+                
+                request_id = response.headers.get("x-eventbrite-request-id") or response.headers.get("x-request-id") or response.headers.get("X-Request-ID")
+                logger.info(
+                    f"Eventbrite API Response Success:\n"
+                    f"  URL: {url}\n"
+                    f"  Method: {method}\n"
+                    f"  Status: {response.status_code}\n"
+                    f"  Request ID: {request_id}\n"
+                    f"  Body: {response.text}"
+                )
+                
                 return response.json()
 
             except requests.exceptions.HTTPError as e:
+                request_id = None
+                try:
+                    request_id = response.headers.get("x-eventbrite-request-id") or response.headers.get("x-request-id") or response.headers.get("X-Request-ID")
+                except Exception:
+                    pass
                 err_text = ""
                 try:
                     err_text = response.text
                 except Exception:
                     pass
-                logger.error(f"Eventbrite API HTTP Error: {str(e)} | Response Body: {err_text}")
+                
+                logger.error(
+                    f"Eventbrite API Response Failure:\n"
+                    f"  URL: {url}\n"
+                    f"  Method: {method}\n"
+                    f"  Status: {response.status_code if 'response' in locals() else 'N/A'}\n"
+                    f"  Request ID: {request_id}\n"
+                    f"  Body: {err_text}"
+                )
                 
                 # Parse JSON error response
                 err_json = {}

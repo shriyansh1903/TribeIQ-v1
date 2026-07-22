@@ -423,22 +423,29 @@ if st.button("🔄 Sync Events", key="eb_sync_btn", use_container_width=True):
 # Webhooks management
 st.markdown("#### Webhook Subscriptions Management")
 wh_cols = st.columns(2)
-with wh_cols[0]:
-    with st.form("register_eb_webhook"):
-        st.write("**Register Eventbrite Webhook**")
-        webhook_target = st.text_input("Webhook Receiver Domain Endpoint (URL)", value="https://domain.ngrok-free.app/webhook")
-        register_submit = st.form_submit_button("🔌 Register Webhook")
-        if register_submit:
-            if not webhook_target:
-                st.error("Please enter a valid webhook target URL.")
-            else:
-                try:
-                    eventbrite_service.register_webhook(webhook_target)
-                    st.success("Webhook registered successfully!")
-                    st.rerun()
-                except Exception as e:
-                    logger.error(f"Settings UI Webhook registration exception: {str(e)}", exc_info=True)
-                    st.error(f"Failed to register webhook: {str(e)}")
+    with st.container(border=True):
+        st.write("🔑 **Manual Webhook Configuration Guide**")
+        st.info(
+            "Due to Eventbrite API restrictions on personal/member accounts without organization admin keys, "
+            "programmatic webhook registration is unavailable. Please register the webhook manually in your portal."
+        )
+        
+        # Calculate webhook url
+        secret_path = getattr(settings, "EVENTBRITE_WEBHOOK_SECRET", "tribeiq_secret")
+        recommended_url = f"https://tribeiq-v1.onrender.com/webhook/{secret_path}"
+        
+        st.markdown("**1. Target Webhook Payload URL:**")
+        st.code(recommended_url, language="text")
+        
+        st.markdown(
+            "**2. Setup Steps:**\n"
+            "1. Log in to your **Eventbrite Developer Account**.\n"
+            "2. Go to **Account Settings** -> **Developer Links** -> **Webhooks**.\n"
+            "3. Click **Add Webhook**.\n"
+            "4. Paste the **Payload URL** above.\n"
+            "5. Check actions: `event.published`, `event.updated`, `event.unpublished`, `order.placed`, `attendee.updated`.\n"
+            "6. Click **Save**."
+        )
 
 with wh_cols[1]:
     st.write("**Active Webhook Registrations**")

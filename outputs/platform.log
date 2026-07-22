@@ -695,3 +695,147 @@ Exception: Eventbrite API Error: The path you requested does not exist. - The pa
 2026-07-22 16:14:18,596 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/events/100000000000/ | Response Body: {"status_code":404,"error_description":"The event you requested does not exist.","error":"NOT_FOUND"}
 2026-07-22 16:14:18,601 - TribeIQPlatform - ERROR - Failed to fetch event data from Eventbrite: {'error': 'The event you requested does not exist.', 'status_code': 404, 'details': {'status_code': 404, 'error_description': 'The event you requested does not exist.', 'error': 'NOT_FOUND'}}
 2026-07-22 16:14:18,618 - TribeIQPlatform - INFO - [TR-E2430B0E] Processing completed. Webhook WB-AFDCADB8 successfully processed in 0.8163s.
+2026-07-22 16:15:09,345 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-22 16:15:12,825 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:15:13,766 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Payload: null
+2026-07-22 16:15:14,173 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Response Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:15:14,173 - TribeIQPlatform - WARNING - Failed to list webhooks from API: The path you requested does not exist.. Falling back to local database.
+2026-07-22 16:15:14,209 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Payload: null
+2026-07-22 16:15:14,984 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Response Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:15:14,995 - TribeIQPlatform - WARNING - Failed to list webhooks from API: The path you requested does not exist.. Falling back to local database.
+2026-07-22 16:15:26,730 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:15:27,688 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Payload: null
+2026-07-22 16:15:28,054 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Response Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:15:28,057 - TribeIQPlatform - WARNING - Failed to list webhooks from API: The path you requested does not exist.. Falling back to local database.
+2026-07-22 16:15:28,096 - TribeIQPlatform - INFO - Registering webhook endpoint https://tribeiq-v1.onrender.com/webhook/TribeIQ_Eventbrite_3314109991 on Eventbrite...
+2026-07-22 16:15:28,099 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: POST https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Payload: {"endpoint_url": "https://tribeiq-v1.onrender.com/webhook/TribeIQ_Eventbrite_3314109991/TribeIQ_Eventbrite_3314109991", "actions": "event.published,event.updated,event.unpublished,order.placed,attendee.updated", "event_filter": "all"}
+2026-07-22 16:15:28,507 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Response Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:15:28,512 - TribeIQPlatform - ERROR - Eventbrite webhook registration failed: The path you requested does not exist. - The path you requested does not exist.
+2026-07-22 16:15:28,513 - TribeIQPlatform - ERROR - Failed to register webhook: Eventbrite API Error: The path you requested does not exist. - The path you requested does not exist.
+2026-07-22 16:15:28,513 - TribeIQPlatform - ERROR - Settings UI Webhook registration exception: Eventbrite API Error: The path you requested does not exist. - The path you requested does not exist.
+Traceback (most recent call last):
+  File "C:\Users\shriy\EngageIQ\pages\6_⚙️_Settings.py", line 436, in <module>
+    eventbrite_service.register_webhook(webhook_target)
+  File "C:\Users\shriy\EngageIQ\src\integrations\eventbrite\service.py", line 131, in register_webhook
+    raise e
+  File "C:\Users\shriy\EngageIQ\src\integrations\eventbrite\service.py", line 115, in register_webhook
+    raise Exception(f"Eventbrite API Error: {full_error}")
+Exception: Eventbrite API Error: The path you requested does not exist. - The path you requested does not exist.
+2026-07-22 16:15:28,524 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Payload: null
+2026-07-22 16:15:29,295 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Response Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:15:29,301 - TribeIQPlatform - WARNING - Failed to list webhooks from API: The path you requested does not exist.. Falling back to local database.
+2026-07-22 16:15:31,875 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:15:32,403 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Payload: null
+2026-07-22 16:15:32,807 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Response Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:15:32,813 - TribeIQPlatform - WARNING - Failed to list webhooks from API: The path you requested does not exist.. Falling back to local database.
+2026-07-22 16:15:32,842 - TribeIQPlatform - INFO - Executing manual synchronization of Eventbrite events...
+2026-07-22 16:15:32,848 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/organizations/TribeStays/events/ | Payload: null
+2026-07-22 16:15:33,209 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/organizations/TribeStays/events/ | Response Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:15:33,530 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/users/me/ | Payload: null
+2026-07-22 16:15:34,041 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Payload: null
+2026-07-22 16:15:34,445 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Response Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:15:34,451 - TribeIQPlatform - WARNING - Failed to list webhooks from API: The path you requested does not exist.. Falling back to local database.
+2026-07-22 16:15:34,488 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Payload: null
+2026-07-22 16:15:35,370 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 404 Client Error: NOT FOUND for url: https://www.eventbriteapi.com/v3/organizations/TribeStays/webhooks/ | Response Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:15:35,373 - TribeIQPlatform - WARNING - Failed to list webhooks from API: The path you requested does not exist.. Falling back to local database.
+2026-07-22 16:18:25,026 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 16:18:25,165 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 16:18:26,295 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 16:18:27,768 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/organizations/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 16:18:28,626 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/organizations/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"organizations":[],"pagination":{"object_count":0,"continuation":"AGWl1yH1A07cll8yOe7tJwmM-sTzub1M4q06vyfi133dS_Q8_NXPx4vsIOYzPVF96WMVvuQlf5U_","page_count":0,"page_size":50,"has_more_items":false,"page_number":1}}
+2026-07-22 16:18:28,633 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 16:18:29,558 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 16:18:29,560 - TribeIQPlatform - INFO - Fallback: Discovered Eventbrite User ID dynamically for Org context: 3008811286098
+2026-07-22 16:18:29,560 - TribeIQPlatform - INFO - [TR-35CECDD8] Webhook Received: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:29,586 - TribeIQPlatform - INFO - [TR-35CECDD8] Processing started for webhook WB-44860BF7: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:29,586 - TribeIQPlatform - INFO - [TR-35CECDD8] Enqueued webhook job in background service (Webhook ID: WB-44860BF7)
+2026-07-22 16:18:29,586 - TribeIQPlatform - WARNING - [TR-A5D3E2F2] Unauthorized webhook request: secret path mismatch.
+2026-07-22 16:18:29,593 - TribeIQPlatform - INFO - Dispatching action 'event.published' to handler...
+2026-07-22 16:18:29,593 - TribeIQPlatform - INFO - Handling event.published from URL: https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:29,593 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/events/100000000000/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 16:18:29,760 - TribeIQPlatform - INFO - [TR-30AA4803] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:29,771 - TribeIQPlatform - WARNING - [TR-30AA4803] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 16:18:29,798 - TribeIQPlatform - INFO - [TR-EB3DB00A] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:29,806 - TribeIQPlatform - WARNING - [TR-EB3DB00A] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 16:18:30,481 - TribeIQPlatform - ERROR - Eventbrite API Response Failure:
+  URL: https://www.eventbriteapi.com/v3/events/100000000000/
+  Method: GET
+  Status: 404
+  Request ID: None
+  Body: {"status_code":404,"error_description":"The event you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:18:30,481 - TribeIQPlatform - ERROR - Failed to fetch event data from Eventbrite: {'error': 'The event you requested does not exist.', 'status_code': 404, 'details': {'status_code': 404, 'error_description': 'The event you requested does not exist.', 'error': 'NOT_FOUND'}}
+2026-07-22 16:18:30,527 - TribeIQPlatform - INFO - [TR-35CECDD8] Processing completed. Webhook WB-44860BF7 successfully processed in 0.8945s.
+2026-07-22 16:18:54,815 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 16:18:54,948 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 16:18:56,404 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 16:18:57,599 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/organizations/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 16:18:58,537 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/organizations/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"organizations":[],"pagination":{"object_count":0,"continuation":"AGWl1yGlnbMpA6k1d7c5QLJ8FQT-UT6Ug4zKENKgfdeSOA5rJSl0-ozhv4UTbLcSKOFeSjnRCAWN","page_count":0,"page_size":50,"has_more_items":false,"page_number":1}}
+2026-07-22 16:18:58,539 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 16:18:59,558 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 16:18:59,561 - TribeIQPlatform - INFO - Fallback: Discovered Eventbrite User ID dynamically for Org context: 3008811286098
+2026-07-22 16:18:59,563 - TribeIQPlatform - INFO - [TR-97FE858B] Webhook Received: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:59,578 - TribeIQPlatform - INFO - [TR-97FE858B] Processing started for webhook WB-160B8454: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:59,578 - TribeIQPlatform - INFO - [TR-97FE858B] Enqueued webhook job in background service (Webhook ID: WB-160B8454)
+2026-07-22 16:18:59,579 - TribeIQPlatform - WARNING - [TR-DE64C136] Unauthorized webhook request: secret path mismatch.
+2026-07-22 16:18:59,588 - TribeIQPlatform - INFO - Dispatching action 'event.published' to handler...
+2026-07-22 16:18:59,588 - TribeIQPlatform - INFO - Handling event.published from URL: https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:59,588 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/events/100000000000/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 16:18:59,682 - TribeIQPlatform - INFO - [TR-76978E16] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:59,691 - TribeIQPlatform - WARNING - [TR-76978E16] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 16:18:59,702 - TribeIQPlatform - INFO - [TR-AB2DB451] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 16:18:59,717 - TribeIQPlatform - WARNING - [TR-AB2DB451] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 16:19:00,070 - TribeIQPlatform - ERROR - Eventbrite API Response Failure:
+  URL: https://www.eventbriteapi.com/v3/events/100000000000/
+  Method: GET
+  Status: 404
+  Request ID: None
+  Body: {"status_code":404,"error_description":"The event you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 16:19:00,072 - TribeIQPlatform - ERROR - Failed to fetch event data from Eventbrite: {'error': 'The event you requested does not exist.', 'status_code': 404, 'details': {'status_code': 404, 'error_description': 'The event you requested does not exist.', 'error': 'NOT_FOUND'}}
+2026-07-22 16:19:00,103 - TribeIQPlatform - INFO - [TR-97FE858B] Processing completed. Webhook WB-160B8454 successfully processed in 0.4965s.
+2026-07-22 16:19:09,048 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 16:19:10,704 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 16:19:11,960 - TribeIQPlatform - INFO - MongoDB client connected successfully.
