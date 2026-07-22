@@ -534,9 +534,29 @@ def build_reranking_context(
         )
     ]
 
+    # Load nearby external events
+    try:
+        from src.integrations.external_events_db import get_nearby_external_events
+        today_d = date.today()
+        end_d = today_d + datetime.timedelta(days=45) if "datetime" in globals() else today_d
+        df_ext = get_nearby_external_events(property_name, start_date=today_d, end_date=end_d)
+        nearby_list = df_ext.to_dict(orient="records") if not df_ext.empty else []
+    except Exception:
+        # Fallback if datetime is not imported
+        try:
+            import datetime as dt
+            today_d = date.today()
+            end_d = today_d + dt.timedelta(days=45)
+            df_ext = get_nearby_external_events(property_name, start_date=today_d, end_date=end_d)
+            nearby_list = df_ext.to_dict(orient="records") if not df_ext.empty else []
+        except Exception:
+            nearby_list = []
+
     return make_json_safe({
         "task":
             "Rerank the supplied candidates using only the provided evidence.",
+        "nearby_external_events":
+            nearby_list,
         "property":
             build_property_context(
                 property_name,

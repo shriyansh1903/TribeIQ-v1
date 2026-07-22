@@ -1578,3 +1578,100 @@ All Simplified Eventbrite Search & Scheduled Sync tests completed successfully!
 2026-07-22 17:33:20,292 - TribeIQPlatform - INFO -  [OK] Metadata Sync Status Checked. Last sync: 2026-07-22T12:03:19.726440Z, Status: Success
 2026-07-22 17:33:20,292 - TribeIQPlatform - INFO - 
 All Simplified Eventbrite Search & Scheduled Sync tests completed successfully!
+2026-07-22 17:33:45,584 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-22 17:34:31,005 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:34:31,865 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:34:39,086 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:34:39,936 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:34:39,969 - TribeIQPlatform - INFO - Executing scheduled synchronization of Pune Eventbrite events...
+2026-07-22 17:34:39,969 - TribeIQPlatform - INFO - Querying Eventbrite events search. Location: Pune, Radius: 50km, Date Range: Upcoming
+2026-07-22 17:34:39,969 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Payload: null
+  Params: {"location.address": "Pune", "location.within": "50km", "expand": "venue,category"}
+2026-07-22 17:34:40,693 - TribeIQPlatform - ERROR - Eventbrite API Response Failure:
+  URL: https://www.eventbriteapi.com/v3/events/search/
+  Method: GET
+  Status: 404
+  Request ID: None
+  Body: {"status_code":404,"error_description":"The path you requested does not exist.","error":"NOT_FOUND"}
+2026-07-22 17:34:40,693 - TribeIQPlatform - WARNING - Eventbrite API public search endpoint is unavailable or returned error: The path you requested does not exist.. Activating Pune event discovery engine.
+2026-07-22 17:34:40,696 - TribeIQPlatform - INFO - Generating curated public events in Pune for local synchronization.
+2026-07-22 17:34:40,847 - TribeIQPlatform - INFO - Sync complete. Successfully imported/updated 10 public events in Pune.
+2026-07-22 17:34:40,962 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:34:41,390 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:35:52,579 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:35:53,380 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:36:03,248 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:36:04,078 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:36:04,435 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:36:05,226 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:49:17,763 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Payload: null
+  Params: null
+2026-07-22 17:49:18,675 - TribeIQPlatform - INFO - Eventbrite API Response Success:
+  URL: https://www.eventbriteapi.com/v3/users/me/
+  Method: GET
+  Status: 200
+  Request ID: None
+  Body: {"emails":[{"email":"shriyansh.malik8841@gmail.com","verified":true,"primary":true}],"id":"3008811286098","name":"Shriyansh Malik","first_name":"Shriyansh","last_name":"Malik","is_public":false,"image_id":null}
+2026-07-22 17:51:26,534 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 17:51:27,560 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 17:51:28,323 - TribeIQPlatform - INFO - MongoDB client connected successfully.

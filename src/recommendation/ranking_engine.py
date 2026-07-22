@@ -658,6 +658,26 @@ def apply_external_events_boosts(candidates: List[Dict[str, Any]], property_name
                     "Healthy Brunch": 12.0,
                     "Community Run": 15.0,
                 })
+            elif "food" in cat_lower or "drink" in cat_lower:
+                boosts.update({
+                    "Food Pop-up": 15.0,
+                    "Culinary Workshop": 15.0,
+                    "Healthy Brunch": 12.0,
+                    "Wine & Cheese": 12.0,
+                })
+            elif "culture" in cat_lower or "heritage" in cat_lower:
+                boosts.update({
+                    "Heritage Walk": 15.0,
+                    "Art & Craft": 12.0,
+                    "Open Mic": 10.0,
+                    "Community Mixer": 10.0,
+                })
+            elif "education" in cat_lower or "book" in cat_lower:
+                boosts.update({
+                    "Book Club": 15.0,
+                    "Skill Workshop": 15.0,
+                    "Career Networking": 12.0,
+                })
                 
         if not boosts:
             boosts = {

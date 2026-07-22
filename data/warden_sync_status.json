@@ -10,5 +10,6 @@
     "residents_imported": 374,
     "properties_imported": 3,
     "bookings_imported": 374,
-    "last_failed_sync": "2026-07-21 13:28:32"
+    "last_failed_sync": "2026-07-21 13:28:32",
+    "auto_sync_on_startup": true
 }
