@@ -1,5 +1,6 @@
 import time
 import requests
+import json
 from typing import Dict, Any, Optional
 from src.config import settings, logger
 
@@ -19,6 +20,17 @@ class EventbriteClient:
 
     def _request(self, method: str, path: str, data: Optional[Dict[str, Any]] = None, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         url = path if path.startswith("http") else f"{self.base_url}/{path.lstrip('/')}"
+        
+        # Log request payload (excluding sensitive credentials/secrets)
+        safe_data = None
+        if data:
+            safe_data = data.copy()
+            for key in ["secret", "token", "password"]:
+                if key in safe_data:
+                    safe_data[key] = "[REDACTED]"
+        
+        logger.info(f"Outgoing Eventbrite API Request: {method} {url} | Payload: {json.dumps(safe_data)}")
+        
         retry_count = 0
         backoff = 1.0
 
@@ -47,15 +59,29 @@ class EventbriteClient:
                 return response.json()
 
             except requests.exceptions.HTTPError as e:
-                logger.error(f"Eventbrite HTTP Error: {str(e)}")
-                if response.status_code == 404:
-                    return {"error": "Not Found", "status_code": 404}
-                if response.status_code in [401, 403]:
-                    return {"error": "Unauthorized", "status_code": response.status_code}
+                err_text = ""
+                try:
+                    err_text = response.text
+                except Exception:
+                    pass
+                logger.error(f"Eventbrite API HTTP Error: {str(e)} | Response Body: {err_text}")
                 
-                retry_count += 1
-                time.sleep(backoff)
-                backoff *= 2
+                # Parse JSON error response
+                err_json = {}
+                try:
+                    err_json = response.json()
+                except Exception:
+                    pass
+                
+                error_msg = err_json.get("error_description") or err_json.get("error") or str(e)
+                
+                # Return descriptive error dictionary
+                return {
+                    "error": error_msg,
+                    "status_code": response.status_code,
+                    "details": err_json
+                }
+
             except requests.exceptions.RequestException as e:
                 logger.error(f"Eventbrite Network Request Error: {str(e)}")
                 retry_count += 1

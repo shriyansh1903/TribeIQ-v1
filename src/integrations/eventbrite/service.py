@@ -20,7 +20,8 @@ class EventbriteService(ExternalEventProvider):
 
     def get_organization_id(self) -> str:
         """
-        Dynamically detects and caches the Eventbrite Organization ID if not configured.
+        Dynamically detects and caches the Eventbrite Organization ID.
+        If the organization list is empty, falls back to using the User ID as the default organization context.
         """
         org_id = getattr(settings, "EVENTBRITE_ORGANIZATION_ID", None)
         if org_id and org_id != "MOCK_ORG" and str(org_id).strip() != "":
@@ -34,13 +35,26 @@ class EventbriteService(ExternalEventProvider):
             
         try:
             res = self.client.get("/users/me/organizations/")
-            organizations = res.get("organizations", [])
-            if organizations:
-                self._cached_org_id = str(organizations[0].get("id"))
-                logger.info(f"Discovered Eventbrite Organization ID dynamically: {self._cached_org_id}")
-                return self._cached_org_id
+            if isinstance(res, dict) and "error" in res:
+                logger.error(f"Error querying organizations: {res.get('error')}")
+            else:
+                organizations = res.get("organizations", [])
+                if organizations:
+                    self._cached_org_id = str(organizations[0].get("id"))
+                    logger.info(f"Discovered Eventbrite Organization ID dynamically: {self._cached_org_id}")
+                    return self._cached_org_id
+
+            # Fallback: Query user details and use User ID as Organization ID context
+            user_res = self.client.get("/users/me/")
+            if isinstance(user_res, dict) and "error" not in user_res:
+                user_id = user_res.get("id")
+                if user_id:
+                    self._cached_org_id = str(user_id)
+                    logger.info(f"Fallback: Discovered Eventbrite User ID dynamically for Org context: {self._cached_org_id}")
+                    return self._cached_org_id
+
         except Exception as e:
-            logger.error(f"Failed to dynamically discover Eventbrite organization ID: {str(e)}")
+            logger.error(f"Failed to dynamically discover Eventbrite organization/user context: {str(e)}")
             
         return "No Eventbrite Organization Found"
 
@@ -49,6 +63,13 @@ class EventbriteService(ExternalEventProvider):
         Registers a webhook endpoint with the Eventbrite REST API.
         """
         logger.info(f"Registering webhook endpoint {endpoint_url} on Eventbrite...")
+        
+        # URL Validation
+        from urllib.parse import urlparse
+        parsed = urlparse(endpoint_url)
+        if not parsed.scheme or not parsed.netloc:
+            raise ValueError(f"Invalid Webhook Target URL: '{endpoint_url}'. Scheme (http/https) and domain name are required.")
+
         org_id = self.get_organization_id()
         secret = getattr(settings, "EVENTBRITE_WEBHOOK_SECRET", "tribeiq_secret")
         
@@ -85,6 +106,14 @@ class EventbriteService(ExternalEventProvider):
             # Post registration to Eventbrite API
             path = f"/organizations/{org_id}/webhooks/"
             response = self.client.post(path, payload)
+            
+            if "error" in response:
+                error_msg = response.get("error")
+                error_desc = response.get("details", {}).get("error_description")
+                full_error = f"{error_msg} - {error_desc}" if error_desc else error_msg
+                logger.error(f"Eventbrite webhook registration failed: {full_error}")
+                raise Exception(f"Eventbrite API Error: {full_error}")
+                
             webhook_id = response.get("id")
             
             # Save webhook state
@@ -115,6 +144,10 @@ class EventbriteService(ExternalEventProvider):
         try:
             path = f"/organizations/{org_id}/webhooks/"
             res = self.client.get(path)
+            if isinstance(res, dict) and "error" in res:
+                # Fallback to local DB webhooks if the GET API endpoint is deprecated/failed
+                logger.warning(f"Failed to list webhooks from API: {res.get('error')}. Falling back to local database.")
+                return list(self.webhook_repo.collection.find({}))
             return res.get("webhooks", [])
         except Exception as e:
             logger.error(f"Failed to list webhooks: {str(e)}")
@@ -140,11 +173,13 @@ class EventbriteService(ExternalEventProvider):
             return True
 
         try:
-            self.client.delete(f"/webhooks/{webhook_id}/")
+            res = self.client.delete(f"/webhooks/{webhook_id}/")
+            if isinstance(res, dict) and "error" in res:
+                logger.warning(f"Eventbrite API webhook delete returned error: {res.get('error')}. Local deletion completed.")
             return True
         except Exception as e:
-            logger.error(f"Failed to delete webhook: {str(e)}")
-            return False
+            logger.error(f"Failed to delete webhook from Eventbrite API: {str(e)}")
+            return True
 
     def sync_all_events(self) -> Dict[str, Any]:
         """

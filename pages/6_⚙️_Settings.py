@@ -437,13 +437,15 @@ with wh_cols[0]:
                     st.success("Webhook registered successfully!")
                     st.rerun()
                 except Exception as e:
+                    logger.error(f"Settings UI Webhook registration exception: {str(e)}", exc_info=True)
                     st.error(f"Failed to register webhook: {str(e)}")
 
 with wh_cols[1]:
     st.write("**Active Webhook Registrations**")
     try:
         webhooks_list = eventbrite_service.list_webhooks()
-    except Exception:
+    except Exception as e:
+        logger.error(f"Settings UI Webhook listing exception: {str(e)}", exc_info=True)
         webhooks_list = []
         
     if not webhooks_list:

@@ -412,3 +412,40 @@
 2026-07-22 14:49:14,381 - TribeIQPlatform - INFO - Loaded development environment configurations.
 2026-07-22 14:49:16,073 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
 2026-07-22 14:49:17,304 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 15:36:09,568 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 15:36:09,713 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 15:36:10,979 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 15:36:12,334 - TribeIQPlatform - INFO - [TR-96F7D65B] Webhook Received: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:36:12,381 - TribeIQPlatform - INFO - [TR-96F7D65B] Processing started for webhook WB-017B4FDF: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:36:12,385 - TribeIQPlatform - INFO - [TR-96F7D65B] Enqueued webhook job in background service (Webhook ID: WB-017B4FDF)
+2026-07-22 15:36:12,387 - TribeIQPlatform - WARNING - [TR-4B10BBA2] Unauthorized webhook request: secret path mismatch.
+2026-07-22 15:36:12,403 - TribeIQPlatform - INFO - Dispatching action 'event.published' to handler...
+2026-07-22 15:36:12,403 - TribeIQPlatform - INFO - Handling event.published from URL: https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:36:12,405 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/events/100000000000/ | Payload: null
+2026-07-22 15:36:12,557 - TribeIQPlatform - INFO - [TR-6EA6BF5F] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:36:12,578 - TribeIQPlatform - WARNING - [TR-6EA6BF5F] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 15:36:12,591 - TribeIQPlatform - INFO - [TR-04FB6197] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:36:12,600 - TribeIQPlatform - WARNING - [TR-04FB6197] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 15:36:12,747 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/events/100000000000/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 15:36:12,748 - TribeIQPlatform - ERROR - Failed to fetch event data from Eventbrite: {'error': 'The OAuth token you provided was invalid.', 'status_code': 401, 'details': {'status_code': 401, 'error_description': 'The OAuth token you provided was invalid.', 'error': 'INVALID_AUTH'}}
+2026-07-22 15:36:12,835 - TribeIQPlatform - INFO - [TR-96F7D65B] Processing completed. Webhook WB-017B4FDF successfully processed in 0.3664s.
+2026-07-22 15:36:23,312 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 15:36:25,079 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 15:36:26,242 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 15:46:35,638 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 15:46:35,783 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 15:46:37,005 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 15:46:38,665 - TribeIQPlatform - INFO - [TR-83904CE4] Webhook Received: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:46:38,694 - TribeIQPlatform - INFO - [TR-83904CE4] Processing started for webhook WB-504EC509: event.published on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:46:38,697 - TribeIQPlatform - INFO - [TR-83904CE4] Enqueued webhook job in background service (Webhook ID: WB-504EC509)
+2026-07-22 15:46:38,698 - TribeIQPlatform - WARNING - [TR-3EF90379] Unauthorized webhook request: secret path mismatch.
+2026-07-22 15:46:38,708 - TribeIQPlatform - INFO - Dispatching action 'event.published' to handler...
+2026-07-22 15:46:38,708 - TribeIQPlatform - INFO - Handling event.published from URL: https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:46:38,708 - TribeIQPlatform - INFO - Outgoing Eventbrite API Request: GET https://www.eventbriteapi.com/v3/events/100000000000/ | Payload: null
+2026-07-22 15:46:38,865 - TribeIQPlatform - INFO - [TR-6C5575F8] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:46:38,875 - TribeIQPlatform - WARNING - [TR-6C5575F8] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 15:46:38,885 - TribeIQPlatform - INFO - [TR-65980516] Processing started for webhook test_dup_webhook: event.updated on https://www.eventbriteapi.com/v3/events/100000000000/
+2026-07-22 15:46:38,896 - TribeIQPlatform - WARNING - [TR-65980516] Aborting duplicate webhook event processing. Webhook ID 'test_dup_webhook' already processed.
+2026-07-22 15:46:39,445 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/events/100000000000/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
+2026-07-22 15:46:39,448 - TribeIQPlatform - ERROR - Failed to fetch event data from Eventbrite: {'error': 'The OAuth token you provided was invalid.', 'status_code': 401, 'details': {'status_code': 401, 'error_description': 'The OAuth token you provided was invalid.', 'error': 'INVALID_AUTH'}}
+2026-07-22 15:46:39,474 - TribeIQPlatform - INFO - [TR-83904CE4] Processing completed. Webhook WB-504EC509 successfully processed in 0.7555s.
