@@ -449,3 +449,15 @@
 2026-07-22 15:46:39,445 - TribeIQPlatform - ERROR - Eventbrite API HTTP Error: 401 Client Error: UNAUTHORIZED for url: https://www.eventbriteapi.com/v3/events/100000000000/ | Response Body: {"status_code":401,"error_description":"The OAuth token you provided was invalid.","error":"INVALID_AUTH"}
 2026-07-22 15:46:39,448 - TribeIQPlatform - ERROR - Failed to fetch event data from Eventbrite: {'error': 'The OAuth token you provided was invalid.', 'status_code': 401, 'details': {'status_code': 401, 'error_description': 'The OAuth token you provided was invalid.', 'error': 'INVALID_AUTH'}}
 2026-07-22 15:46:39,474 - TribeIQPlatform - INFO - [TR-83904CE4] Processing completed. Webhook WB-504EC509 successfully processed in 0.7555s.
+2026-07-22 15:48:15,926 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 15:48:16,272 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 15:48:18,013 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 15:48:45,372 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 15:48:45,383 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 15:48:47,837 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 15:48:50,947 - TribeIQPlatform - INFO - Successful login: User 'admin' logged in.
+2026-07-22 15:48:56,524 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 15:48:56,530 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
+2026-07-22 15:48:59,131 - TribeIQPlatform - INFO - MongoDB client connected successfully.
+2026-07-22 15:49:13,095 - TribeIQPlatform - INFO - Loaded development environment configurations.
+2026-07-22 15:49:13,101 - TribeIQPlatform - INFO - Initializing MongoDB client connection pool...
