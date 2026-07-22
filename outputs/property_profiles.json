@@ -6,8 +6,8 @@
         "Community Stage": "Growing",
         "Average Age": 25.02,
         "Median Age": 25.0,
-        "Average Tenure": 60.85,
-        "Median Tenure": 29.0,
+        "Average Tenure": 61.85,
+        "Median Tenure": 30.0,
         "Gender Distribution": {
             "Male": 83.87,
             "Female": 16.13
@@ -23,8 +23,8 @@
             "Unknown": 17.74
         },
         "Tenure Distribution": {
-            "New": 54.84,
-            "1-3 Months": 22.58,
+            "New": 51.61,
+            "1-3 Months": 25.81,
             "3-6 Months": 16.13,
             "6-12 Months": 6.45
         },
@@ -56,10 +56,10 @@
         "Resident Count": 143,
         "Community Size": "Medium",
         "Community Stage": "Growing",
-        "Average Age": 21.41,
+        "Average Age": 21.42,
         "Median Age": 20.0,
-        "Average Tenure": 98.1,
-        "Median Tenure": 44.0,
+        "Average Tenure": 99.1,
+        "Median Tenure": 45.0,
         "Gender Distribution": {
             "Male": 61.54,
             "Female": 38.46
@@ -112,10 +112,10 @@
         "Resident Count": 124,
         "Community Size": "Medium",
         "Community Stage": "Balanced",
-        "Average Age": 21.93,
+        "Average Age": 21.94,
         "Median Age": 21.0,
-        "Average Tenure": 167.35,
-        "Median Tenure": 91.5,
+        "Average Tenure": 168.35,
+        "Median Tenure": 92.5,
         "Gender Distribution": {
             "Male": 57.26,
             "Female": 42.74
@@ -133,8 +133,8 @@
         },
         "Tenure Distribution": {
             "6-12 Months": 33.87,
-            "New": 26.61,
-            "1-3 Months": 23.39,
+            "New": 25.0,
+            "1-3 Months": 25.0,
             "3-6 Months": 10.48,
             "1+ Years": 5.65
         },

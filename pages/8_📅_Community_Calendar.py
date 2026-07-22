@@ -129,6 +129,20 @@ try:
 except Exception:
     df_residents = pd.DataFrame()
 
+# Group residents by property to get their capacities
+prop_capacities = {}
+try:
+    if not df_residents.empty:
+        # Determine property column name
+        prop_c = "Property"
+        for col in ["Property", "Property Name", "property"]:
+            if col in df_residents.columns:
+                prop_c = col
+                break
+        prop_capacities = df_residents.groupby(prop_c).size().to_dict()
+except Exception:
+    pass
+
 # Load planned events
 df_calendar = load_calendar_events()
 
@@ -288,7 +302,14 @@ try:
                         ev_prop = row[cal_prop_col] if cal_prop_col in row else ""
                         
                         turnout_val = row.get("Predicted Attendance")
-                        ev_turnout = f"{float(turnout_val):.0f}%" if turnout_val and str(turnout_val) != "" else "N/A"
+                        p_name = row.get(cal_prop_col) or "Tribe Student Housing"
+                        p_capacity = prop_capacities.get(p_name, 120)
+                        try:
+                            att_count = int(float(turnout_val))
+                            turnout_pct = min(95.0, max(5.0, (att_count / p_capacity) * 100.0))
+                            ev_turnout = f"{att_count} ({turnout_pct:.0f}%)"
+                        except Exception:
+                            ev_turnout = "N/A"
                         
                         cards_html += f"""
 <div class='calendar-card {badge_class}'>
@@ -432,7 +453,14 @@ try:
                 
                 # Predict Turnout / Metrics
                 pred_att = evt_row.get("Predicted Attendance")
-                pred_att_str = f"{float(pred_att):.0f}%" if pred_att and str(pred_att) != "" else "N/A"
+                p_name = evt_row.get(cal_prop_col) or "Tribe Student Housing"
+                p_capacity = prop_capacities.get(p_name, 120)
+                try:
+                    att_count = int(float(pred_att))
+                    turnout_pct = min(95.0, max(5.0, (att_count / p_capacity) * 100.0))
+                    pred_att_str = f"{att_count} ({turnout_pct:.0f}% Turnout)"
+                except Exception:
+                    pred_att_str = "N/A"
                 st.metric("Predicted Turnout", pred_att_str)
                 occ_val = evt_row.get("Expected Occupancy")
                 occ_str = f"{float(occ_val):.1f}%" if occ_val and str(occ_val) != "" else "N/A"
