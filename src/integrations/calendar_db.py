@@ -67,12 +67,13 @@ def save_calendar_event_csv(event_dict):
         df = pd.DataFrame()
 
     event_id = event_dict.get("Event ID")
+    event_id = str(event_dict.get("Event ID", "")).strip()
     if not event_id:
         event_id = f"EVT-{uuid.uuid4().hex[:6].upper()}"
         event_dict["Event ID"] = event_id
 
-    if not df.empty and "Event ID" in df.columns and event_id in df["Event ID"].values:
-        idx = df[df["Event ID"] == event_id].index[0]
+    if not df.empty and "Event ID" in df.columns and str(event_id) in df["Event ID"].astype(str).values:
+        idx = df[df["Event ID"].astype(str) == str(event_id)].index[0]
         for col in df.columns:
             if col in event_dict:
                 df.at[idx, col] = event_dict[col]
@@ -90,7 +91,7 @@ def delete_calendar_event_csv(event_id):
         try:
             df = pd.read_csv(CALENDAR_CSV)
             if "Event ID" in df.columns:
-                df = df[df["Event ID"] != event_id]
+                df = df[df["Event ID"].astype(str) != str(event_id)]
                 df.to_csv(CALENDAR_CSV, index=False)
                 return True
         except Exception:
@@ -131,9 +132,13 @@ def save_calendar_event(event_dict):
     return event_id
 
 def delete_calendar_event(event_id):
-    from src.services import calendar_service
+    from src.services import calendar_service, master_planner_service
     st.cache_data.clear()
     delete_calendar_event_csv(event_id)
+    try:
+        master_planner_service.delete_workspace_by_event_id(str(event_id))
+    except Exception:
+        pass
     return calendar_service.delete_calendar_event(event_id)
 
 def sync_approved_event_to_history(event_dict):

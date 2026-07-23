@@ -439,7 +439,9 @@ else:
             ev_date = str(row.get(date_col, ""))
             ev_status = str(row.get(status_col, ""))
             
-            if ev_status == "Completed":
+            if ev_status == "Cancelled":
+                continue
+            elif ev_status == "Completed":
                 completed_events.append(ev_dict)
             elif ev_date == today_str or ev_status == "In Progress":
                 ongoing_events.append(ev_dict)
@@ -479,6 +481,11 @@ else:
                 with c_ev5:
                     if st.button("🚀 Open Workspace", key=f"open_ws_{ev_id}_{idx}", use_container_width=True):
                         st.session_state["selected_planner_event_id"] = str(ev_id)
+                        st.rerun()
+                    if st.button("🗑️ Delete Event", key=f"del_ev_{ev_id}_{idx}", use_container_width=True):
+                        from src.integrations.calendar_db import delete_calendar_event
+                        delete_calendar_event(str(ev_id))
+                        st.success(f"Deleted event '{ev_name}'")
                         st.rerun()
             st.divider()
 

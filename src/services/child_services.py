@@ -71,35 +71,32 @@ class CalendarEventService:
         if db_manager.ping_check():
             try:
                 import src.integrations.calendar_db as legacy_calendar_db
-                csv_df = legacy_calendar_db.load_calendar_events_csv()
                 docs = self.repo.find_all()
                 df = pd.DataFrame()
-                if docs and len(docs) >= len(csv_df):
+                if docs:
                     df = pd.DataFrame(docs)
                 else:
+                    csv_df = legacy_calendar_db.load_calendar_events_csv()
                     if not csv_df.empty:
-                        existing_ids = {str(d.get("Event ID")) for d in docs if "Event ID" in d} if docs else set()
-                        missing_records = [row for row in csv_df.to_dict(orient="records") if str(row.get("Event ID")) not in existing_ids]
-                        if missing_records:
-                            self.repo.collection.insert_many(missing_records)
+                        csv_records = [r for r in csv_df.to_dict(orient="records") if str(r.get("Event ID", "")).strip()]
+                        if csv_records:
+                            self.repo.collection.insert_many(csv_records)
                         all_docs = self.repo.find_all()
-                        if all_docs:
-                            df = pd.DataFrame(all_docs)
-                        else:
-                            df = csv_df.copy()
+                        df = pd.DataFrame(all_docs) if all_docs else csv_df.copy()
                     else:
-                        df = csv_df.copy()
+                        df = pd.DataFrame()
 
-                if "_id" in df.columns:
+                if not df.empty and "_id" in df.columns:
                     df = df.drop(columns=["_id"])
 
                 # Guarantee 'Event ID' column exists and has no empty values
-                if "Event ID" not in df.columns:
-                    df["Event ID"] = [f"EVT-{idx+1:04d}" for idx in range(len(df))]
-                else:
-                    for idx, row in df.iterrows():
-                        if pd.isna(row["Event ID"]) or not str(row["Event ID"]).strip():
-                            df.at[idx, "Event ID"] = f"EVT-{idx+1:04d}"
+                if not df.empty:
+                    if "Event ID" not in df.columns:
+                        df["Event ID"] = [f"EVT-{idx+1:04d}" for idx in range(len(df))]
+                    else:
+                        for idx, row in df.iterrows():
+                            if pd.isna(row["Event ID"]) or not str(row["Event ID"]).strip():
+                                df.at[idx, "Event ID"] = f"EVT-{idx+1:04d}"
                 return df
             except Exception as e:
                 logger.error(f"Error fetching calendar events from MongoDB: {str(e)}")
@@ -132,16 +129,17 @@ class CalendarEventService:
         return legacy_calendar_db.save_calendar_event_csv(event_data)
 
     def delete_calendar_event(self, event_id: str) -> bool:
+        event_id_str = str(event_id).strip()
+        import src.integrations.calendar_db as legacy_calendar_db
+        legacy_calendar_db.delete_calendar_event_csv(event_id_str)
         if db_manager.ping_check():
             try:
-                if event_id:
-                    self.repo.collection.delete_one({"Event ID": str(event_id)})
+                if event_id_str:
+                    self.repo.collection.delete_one({"Event ID": event_id_str})
                     return True
             except Exception as e:
                 logger.error(f"Error deleting calendar event from MongoDB: {str(e)}")
-        # Fallback
-        import src.integrations.calendar_db as legacy_calendar_db
-        return legacy_calendar_db.delete_calendar_event_csv(event_id)
+        return True
 
 class VendorService:
     def __init__(self):

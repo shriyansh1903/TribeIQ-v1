@@ -181,6 +181,31 @@ class MasterPlannerService:
 
         return new_ws
 
+    def delete_workspace_by_event_id(self, event_id: str) -> bool:
+        """Deletes workspace, associated tasks, and run-of-show items for an event ID."""
+        event_id = str(event_id).strip()
+        try:
+            if db_manager.ping_check():
+                ws = self.workspace_repo.find_by_event_id(event_id)
+                if ws:
+                    ws_id = ws.get("workspace_id")
+                    self.workspace_repo.collection.delete_one({"event_id": event_id})
+                    if ws_id:
+                        self.task_repo.collection.delete_many({"workspace_id": ws_id})
+                        self.ros_repo.collection.delete_many({"workspace_id": ws_id})
+
+            if WORKSPACES_CSV_PATH.exists():
+                try:
+                    df = pd.read_csv(WORKSPACES_CSV_PATH)
+                    if not df.empty and "event_id" in df.columns:
+                        df = df[df["event_id"].astype(str) != event_id]
+                        df.to_csv(WORKSPACES_CSV_PATH, index=False)
+                except Exception:
+                    pass
+            return True
+        except Exception as e:
+            logger.error(f"Error deleting workspace for event_id {event_id}: {e}")
+            return False
 
     def update_workspace_metadata(self, workspace_id: str, updates: Optional[Dict[str, Any]] = None):
         """Recalculates completion % & updates last_updated timestamp on task state changes."""
