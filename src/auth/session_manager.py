@@ -137,3 +137,10 @@ def require_login(page_name: str):
     # If role is Read Only, inject message advising user they have limited permission
     if user_role == "Read Only":
         st.caption("ℹ Read-Only Mode: Your user profile allows read-only visibility across this environment.")
+
+def get_current_user():
+    """Returns currently authenticated user dict from session state or None."""
+    if hasattr(st, "session_state") and "user" in st.session_state:
+        return st.session_state.user
+    return None
+
