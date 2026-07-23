@@ -38,6 +38,15 @@ except ImportError:
 # Load CSS Theme
 load_css()
 
+def safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        numeric = float(value)
+        if pd.isna(numeric):
+            return default
+        return numeric
+    except (TypeError, ValueError):
+        return default
+
 # Fetch Calendar & Master Data
 data = load_application_data() or {}
 try:
