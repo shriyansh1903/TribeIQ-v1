@@ -151,6 +151,9 @@ def is_event_catalogue(
         for column in dataframe.columns
     }
 
+    if "workspace id" in columns or "workspace_id" in columns:
+        return False
+
     has_event = bool(
         columns.intersection({
             "event name",
@@ -163,6 +166,15 @@ def is_event_catalogue(
         columns.intersection({
             "category",
             "event category"
+        })
+    )
+
+    has_target = bool(
+        columns.intersection({
+            "target interests",
+            "target occupation",
+            "target age band",
+            "primary objective"
         })
     )
 
@@ -181,6 +193,7 @@ def is_event_catalogue(
         has_event
         and has_category
         and not has_outcome
+        and (has_target or "event id" in columns)
     )
 
 
@@ -237,34 +250,31 @@ def load_event_data() -> Tuple[
     events = pd.DataFrame()
     history = pd.DataFrame()
 
-    csv_files = find_all_csv_files()
+    events_path = DATA_DIR / "events.csv"
+    if events_path.exists():
+        events = read_csv_safely(events_path)
 
-    for path in csv_files:
+    history_path = DATA_DIR / "event_history.csv"
+    if history_path.exists():
+        history = read_csv_safely(history_path)
 
-        dataframe = read_csv_safely(
-            path
-        )
+    if events.empty or history.empty:
+        csv_files = find_all_csv_files()
 
-        if dataframe.empty:
-            continue
+        for path in csv_files:
+            dataframe = read_csv_safely(path)
 
-        if (
-            events.empty
-            and is_event_catalogue(dataframe)
-        ):
-            events = dataframe.copy()
+            if dataframe.empty:
+                continue
 
-        if (
-            history.empty
-            and is_event_history(dataframe)
-        ):
-            history = dataframe.copy()
+            if events.empty and is_event_catalogue(dataframe):
+                events = dataframe.copy()
 
-        if (
-            not events.empty
-            and not history.empty
-        ):
-            break
+            if history.empty and is_event_history(dataframe):
+                history = dataframe.copy()
+
+            if not events.empty and not history.empty:
+                break
 
     return events, history
 

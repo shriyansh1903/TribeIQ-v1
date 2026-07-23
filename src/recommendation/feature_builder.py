@@ -133,70 +133,49 @@ def safe_mean(
 def to_token_set(value: Any) -> set:
 
     if value is None:
-
         return set()
+
+    raw_items = []
 
     if isinstance(value, dict):
+        raw_items = [str(k) for k in value.keys()]
 
-        return {
+    elif isinstance(value, (list, tuple, set)):
+        raw_items = [str(k) for k in value]
 
-            normalize_text(item)
+    else:
+        text = safe_text(value)
 
-            for item in value.keys()
+        if not text:
+            return set()
 
-            if normalize_text(item)
+        for sep in [",", ";", "|", "/", "&", "-"]:
+            text = text.replace(sep, ",")
 
-        }
+        raw_items = [t for t in text.split(",") if t]
 
-    if isinstance(value, (list, tuple, set)):
+    tokens = set()
 
-        return {
+    for item in raw_items:
+        norm = normalize_text(item)
 
-            normalize_text(item)
+        if norm:
+            tokens.add(norm)
+            words = [w.strip() for w in norm.split() if len(w.strip()) > 2]
 
-            for item in value
+            for w in words:
+                tokens.add(w)
 
-            if normalize_text(item)
+                if w.endswith('s') and len(w) > 3:
+                    tokens.add(w[:-1])
 
-        }
+                if w.endswith('es') and len(w) > 4:
+                    tokens.add(w[:-2])
 
-    text = safe_text(value)
+                if w.endswith('ing') and len(w) > 5:
+                    tokens.add(w[:-3])
 
-    if not text:
-
-        return set()
-
-    separators = [
-
-        ",",
-
-        ";",
-
-        "|",
-
-        "/"
-
-    ]
-
-    for separator in separators:
-
-        text = text.replace(
-
-            separator,
-
-            ","
-
-        )
-
-    return {
-
-        normalize_text(item)
-
-        for item in text.split(",")
-
-        if normalize_text(item)
-
-    }
+    return tokens
 
 
 def overlap_score(
@@ -209,26 +188,21 @@ def overlap_score(
     right_set = to_token_set(right)
 
     if not right_set:
-
         return 50.0
 
     if not left_set:
-
         return 0.0
 
     overlap = left_set.intersection(
-
         right_set
-
     )
 
-    return (
+    if not overlap:
+        return 0.0
 
-        len(overlap)
+    ratio = len(overlap) / float(min(len(left_set), len(right_set)) + 1e-5)
 
-        / len(right_set)
-
-    ) * 100.0
+    return min(100.0, max(0.0, ratio * 100.0))
 
 
 # ===========================================================

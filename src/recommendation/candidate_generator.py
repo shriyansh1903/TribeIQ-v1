@@ -424,6 +424,7 @@ def generate_candidates(
     candidates = []
 
     seen_event_ids = set()
+    seen_event_names = set()
 
     for index, event in enumerate(events):
 
@@ -436,16 +437,20 @@ def generate_candidates(
         )
 
         if candidate is None:
-
             continue
 
-        event_id = candidate["event_id"]
+        event_id = str(candidate.get("event_id", "")).strip().lower()
+        event_name = str(candidate.get("event_name", "")).strip().lower()
 
-        if event_id in seen_event_ids:
+        # Exclude unit test events
+        if "unittest" in event_name or "evt-test" in event_id or "unittest" in event_id:
+            continue
 
+        if event_id in seen_event_ids or event_name in seen_event_names:
             continue
 
         seen_event_ids.add(event_id)
+        seen_event_names.add(event_name)
 
         candidates.append(candidate)
 
