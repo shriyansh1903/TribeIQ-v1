@@ -155,9 +155,9 @@ try:
     with p_col4:
         st.metric("🎯 Assigned Events", f"{len(assigned_event_ids)}")
         
-    # Interactive Actionable Tasks Manager
+    # Interactive Actionable Tasks Manager with Role & Assignment Permissions
     if actionable_tasks:
-        with st.expander("📝 View & Manage Actionable Tasks (Assign / Update Status)", expanded=False):
+        with st.expander("📝 View & Manage Actionable Tasks", expanded=False):
             registered_users = ["Unassigned"]
             try:
                 from src.repositories import UsersRepository
@@ -171,10 +171,13 @@ try:
 
             from src.services.master_planner_service import master_planner_service
 
+            is_admin = user_role in ["Admin", "SuperAdmin"]
+
             for idx, task in enumerate(actionable_tasks):
                 t_id = task.get("task_id")
                 curr_u = task.get("assigned_user", "Unassigned") or "Unassigned"
                 curr_s = task.get("status", "Pending") or "Pending"
+                is_assigned_to_me = (curr_u.strip().lower() == current_username.strip().lower()) or (curr_u.strip().lower() == "unassigned") or is_admin
                 
                 with st.container():
                     c_dt1, c_dt2, c_dt3, c_dt4 = st.columns([3, 2, 2, 2])
@@ -184,21 +187,29 @@ try:
                     with c_dt2:
                         st.caption(f"📅 Due: {task.get('due_date', 'N/A')}")
                     with c_dt3:
-                        u_opts = list(registered_users)
-                        if curr_u not in u_opts:
-                            u_opts.append(curr_u)
-                        u_idx = u_opts.index(curr_u)
-                        new_u = st.selectbox("Assign To", u_opts, index=u_idx, key=f"dash_task_u_{t_id}_{idx}")
-                        if new_u != curr_u:
-                            master_planner_service.update_task(t_id, {"assigned_user": new_u})
-                            st.rerun()
+                        if is_admin:
+                            u_opts = list(registered_users)
+                            if curr_u not in u_opts:
+                                u_opts.append(curr_u)
+                            u_idx = u_opts.index(curr_u)
+                            new_u = st.selectbox("Assign To", u_opts, index=u_idx, key=f"dash_task_u_{t_id}_{idx}")
+                            if new_u != curr_u:
+                                master_planner_service.update_task(t_id, {"assigned_user": new_u})
+                                st.rerun()
+                        else:
+                            st.write("👤 **Assigned To**")
+                            st.caption(f"`{curr_u}`")
                     with c_dt4:
-                        st_opts = ["Pending", "In Progress", "Completed"]
-                        s_idx = st_opts.index(curr_s) if curr_s in st_opts else 0
-                        new_s = st.selectbox("Status", st_opts, index=s_idx, key=f"dash_task_st_{t_id}_{idx}")
-                        if new_s != curr_s:
-                            master_planner_service.update_task(t_id, {"status": new_s})
-                            st.rerun()
+                        if is_assigned_to_me:
+                            st_opts = ["Pending", "In Progress", "Completed"]
+                            s_idx = st_opts.index(curr_s) if curr_s in st_opts else 0
+                            new_s = st.selectbox("Status", st_opts, index=s_idx, key=f"dash_task_st_{t_id}_{idx}")
+                            if new_s != curr_s:
+                                master_planner_service.update_task(t_id, {"status": new_s})
+                                st.rerun()
+                        else:
+                            st.write("📌 **Status**")
+                            st.caption(f"`{curr_s}`")
                 st.divider()
 
     # Community Managers additionally see Overall Event Progress & Overdue Tasks Summary
