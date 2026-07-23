@@ -406,6 +406,183 @@ if st.session_state["selected_planner_event_id"]:
                     else:
                         st.caption("No tasks assigned.")
 
+    # ---------------------------------------------------------
+    # VENDOR SELECTION & PROCUREMENT MANAGER
+    # ---------------------------------------------------------
+    st.write("---")
+    st.markdown("#### 🏪 Vendor Selection & Procurement Manager")
+    st.markdown("*Select vendors to contact and confirm chosen suppliers for this event workspace from registered Vendor Management profiles.*")
+
+    # Load Vendors from Vendor Management
+    try:
+        from src.integrations.vendor_db import load_vendors
+        df_all_vendors = load_vendors()
+    except Exception:
+        df_all_vendors = pd.DataFrame()
+
+    raw_to_contact = workspace.get("vendors_to_contact", "[]")
+    raw_chosen = workspace.get("chosen_vendors", "[]")
+    
+    try:
+        vendors_to_contact = json.loads(raw_to_contact) if isinstance(raw_to_contact, str) and raw_to_contact.startswith("[") else ([v.strip() for v in str(raw_to_contact).split(",") if v.strip()] if raw_to_contact else [])
+    except Exception:
+        vendors_to_contact = []
+
+    try:
+        chosen_vendors = json.loads(raw_chosen) if isinstance(raw_chosen, str) and raw_chosen.startswith("[") else ([v.strip() for v in str(raw_chosen).split(",") if v.strip()] if raw_chosen else [])
+    except Exception:
+        chosen_vendors = []
+
+    vendor_dict_map = {}
+    vendor_name_options = []
+    if not df_all_vendors.empty:
+        for _, vrow in df_all_vendors.iterrows():
+            v_name = str(vrow.get("Vendor Name", "")).strip()
+            v_cat = str(vrow.get("Vendor Category", "General")).strip()
+            v_contact = str(vrow.get("Contact Person", "N/A")).strip()
+            v_phone = str(vrow.get("Phone Number", "N/A")).strip()
+            v_email = str(vrow.get("Email Address", "N/A")).strip()
+            v_status = str(vrow.get("Active / Inactive Status", "Active")).strip()
+            v_cost = safe_float(vrow.get("Final Cost", 0.0))
+
+            if v_name:
+                vendor_dict_map[v_name] = {
+                    "name": v_name,
+                    "category": v_cat,
+                    "contact_person": v_contact,
+                    "phone": v_phone,
+                    "email": v_email,
+                    "status": v_status,
+                    "final_cost": v_cost
+                }
+                vendor_name_options.append(v_name)
+
+    if not vendor_name_options:
+        st.info("No registered vendors found in Vendor Management page. Navigate to 🏪 Vendor Management to add supplier profiles.")
+    else:
+        # Metrics Row
+        v_m1, v_m2, v_m3 = st.columns(3)
+        with v_m1:
+            st.metric("📞 Vendors to Contact", f"{len(vendors_to_contact)}")
+        with v_m2:
+            st.metric("✅ Chosen Vendors", f"{len(chosen_vendors)}")
+        with v_m3:
+            total_chosen_cost = sum(vendor_dict_map.get(vname, {}).get("final_cost", 0.0) for vname in chosen_vendors)
+            st.metric("💰 Total Procurement Cost", f"₹{total_chosen_cost:,.2f}")
+
+        st.write("")
+        col_v1, col_v2 = st.columns(2)
+
+        # ------------------- COLUMN 1: VENDORS TO CONTACT -------------------
+        with col_v1:
+            with st.container(border=True):
+                st.markdown("##### 📞 1. Vendors to Contact (Shortlist)")
+                st.caption("Select vendor managers from Vendor Management page to reach out for quotes & availability.")
+
+                avail_contact = [v for v in vendor_name_options if v not in vendors_to_contact and v not in chosen_vendors]
+                if avail_contact:
+                    sel_contact = st.selectbox(
+                        "Select Vendor Manager to Contact",
+                        options=avail_contact,
+                        key=f"sel_contact_v_{workspace_id}",
+                        format_func=lambda x: f"{x} — Contact: {vendor_dict_map.get(x, {}).get('contact_person')} ({vendor_dict_map.get(x, {}).get('category')})"
+                    )
+                    if st.button("➕ Add to Contact List", key=f"btn_add_contact_v_{workspace_id}", use_container_width=True):
+                        vendors_to_contact.append(sel_contact)
+                        master_planner_service.update_workspace_metadata(workspace_id, {
+                            "vendors_to_contact": json.dumps(vendors_to_contact),
+                            "chosen_vendors": json.dumps(chosen_vendors)
+                        })
+                        st.success(f"Added '{sel_contact}' to contact list!")
+                        st.rerun()
+
+                st.divider()
+                if vendors_to_contact:
+                    for c_idx, v_name in enumerate(vendors_to_contact):
+                        v_info = vendor_dict_map.get(v_name, {"contact_person": "N/A", "phone": "N/A", "email": "N/A", "category": "General"})
+                        with st.container(border=True):
+                            st.markdown(f"**🏢 {v_name}** (`{v_info['category']}`)")
+                            st.caption(f"👤 Manager: **{v_info['contact_person']}** | 📞 {v_info['phone']} | ✉️ {v_info['email']}")
+                            
+                            c_btn1, c_btn2 = st.columns(2)
+                            with c_btn1:
+                                if st.button("✅ Confirm as Chosen", key=f"btn_prom_{v_name}_{c_idx}", use_container_width=True):
+                                    vendors_to_contact.remove(v_name)
+                                    if v_name not in chosen_vendors:
+                                        chosen_vendors.append(v_name)
+                                    master_planner_service.update_workspace_metadata(workspace_id, {
+                                        "vendors_to_contact": json.dumps(vendors_to_contact),
+                                        "chosen_vendors": json.dumps(chosen_vendors)
+                                    })
+                                    st.success(f"Promoted '{v_name}' to Chosen Vendor!")
+                                    st.rerun()
+                            with c_btn2:
+                                if st.button("🗑️ Remove", key=f"btn_rem_cont_{v_name}_{c_idx}", use_container_width=True):
+                                    vendors_to_contact.remove(v_name)
+                                    master_planner_service.update_workspace_metadata(workspace_id, {
+                                        "vendors_to_contact": json.dumps(vendors_to_contact),
+                                        "chosen_vendors": json.dumps(chosen_vendors)
+                                    })
+                                    st.rerun()
+                else:
+                    st.info("No vendors added to contact shortlist yet.")
+
+        # ------------------- COLUMN 2: CHOSEN VENDORS -------------------
+        with col_v2:
+            with st.container(border=True):
+                st.markdown("##### ✅ 2. Chosen / Confirmed Vendors")
+                st.caption("Suppliers selected and contracted for execution of this event workspace.")
+
+                avail_chosen = [v for v in vendor_name_options if v not in chosen_vendors]
+                if avail_chosen:
+                    sel_chosen = st.selectbox(
+                        "Select Vendor Manager to Confirm",
+                        options=avail_chosen,
+                        key=f"sel_chosen_v_{workspace_id}",
+                        format_func=lambda x: f"{x} — Contact: {vendor_dict_map.get(x, {}).get('contact_person')} ({vendor_dict_map.get(x, {}).get('category')})"
+                    )
+                    if st.button("➕ Add Directly to Chosen Vendors", key=f"btn_add_chosen_v_{workspace_id}", use_container_width=True):
+                        if sel_chosen in vendors_to_contact:
+                            vendors_to_contact.remove(sel_chosen)
+                        chosen_vendors.append(sel_chosen)
+                        master_planner_service.update_workspace_metadata(workspace_id, {
+                            "vendors_to_contact": json.dumps(vendors_to_contact),
+                            "chosen_vendors": json.dumps(chosen_vendors)
+                        })
+                        st.success(f"Added '{sel_chosen}' directly to Chosen Vendors!")
+                        st.rerun()
+
+                st.divider()
+                if chosen_vendors:
+                    for ch_idx, v_name in enumerate(chosen_vendors):
+                        v_info = vendor_dict_map.get(v_name, {"contact_person": "N/A", "phone": "N/A", "email": "N/A", "category": "General", "final_cost": 0.0})
+                        with st.container(border=True):
+                            st.markdown(f"**🟢 {v_name}** (`{v_info['category']}`)")
+                            st.caption(f"👤 Manager: **{v_info['contact_person']}** | 📞 {v_info['phone']} | ✉️ {v_info['email']}")
+                            st.markdown(f"💰 Cost: **₹{v_info['final_cost']:,.2f}**")
+                            
+                            c_ch1, c_ch2 = st.columns(2)
+                            with c_ch1:
+                                if st.button("↩ Move to Contact List", key=f"btn_dem_{v_name}_{ch_idx}", use_container_width=True):
+                                    chosen_vendors.remove(v_name)
+                                    if v_name not in vendors_to_contact:
+                                        vendors_to_contact.append(v_name)
+                                    master_planner_service.update_workspace_metadata(workspace_id, {
+                                        "vendors_to_contact": json.dumps(vendors_to_contact),
+                                        "chosen_vendors": json.dumps(chosen_vendors)
+                                    })
+                                    st.rerun()
+                            with c_ch2:
+                                if st.button("🗑️ Remove", key=f"btn_rem_chos_{v_name}_{ch_idx}", use_container_width=True):
+                                    chosen_vendors.remove(v_name)
+                                    master_planner_service.update_workspace_metadata(workspace_id, {
+                                        "vendors_to_contact": json.dumps(vendors_to_contact),
+                                        "chosen_vendors": json.dumps(chosen_vendors)
+                                    })
+                                    st.rerun()
+                else:
+                    st.info("No chosen vendors confirmed yet.")
+
     # 3. DEPARTMENT WORKSTREAMS (Task 1: Dynamic Department Tabs)
     st.write("---")
     st.write("#### 3. 🏢 Department Workstreams")
