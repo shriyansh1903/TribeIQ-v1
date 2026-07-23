@@ -354,85 +354,33 @@ except Exception as e:
         st.write(str(e))
 
 # ===========================================================
-# SECTION 8.5: External Events Intelligence
+# SECTION 8.5: External Events List
 # ===========================================================
 st.write("---")
-st.write("### 🌐 External Events Intelligence Dashboard")
+st.write("### 🌐 External Events")
 
 try:
     try:
-        from src.integrations.external_events_db import load_external_events, get_property_info, get_nearby_external_events
+        from src.integrations.external_events_db import load_external_events
     except ImportError:
-        from integrations.external_events_db import load_external_events, get_property_info, get_nearby_external_events
+        from integrations.external_events_db import load_external_events
     
-    # Select active property for external insights
-    default_prop = get_session_property(st.session_state) or "Tribe Moro"
-    all_props = list(profiles.keys()) if profiles else ["Tribe Moro", "Tribe Vara", "Tribe Student Housing", "Tribe Luxury Co-Living"]
-    if default_prop not in all_props:
-        all_props = [default_prop] + all_props
-    
-    selected_ext_property = st.selectbox("Select Property for Local Insights", options=all_props, index=all_props.index(default_prop) if default_prop in all_props else 0, key="ext_dash_prop")
-    
-    # Fetch events for the property
-    ext_df = get_nearby_external_events(selected_ext_property)
+    ext_df = load_external_events()
     
     if ext_df.empty:
-        st.info("No active nearby external events found for the selected property region.")
+        st.info("No external events found.")
     else:
-        # Metrics
-        k_ext1, k_ext2, k_ext3, k_ext4 = st.columns(4)
-        total_nearby = len(ext_df)
-        high_impact = len(ext_df[ext_df["Expected Occupancy Impact"].astype(float) >= 10.0])
-        partnerships = len(ext_df[ext_df["Category"].isin(["College Festivals", "Tech Conferences", "Music Festivals"])])
-        
-        # Calculate expected crowd index
-        total_footfall = ext_df["Expected Footfall"].astype(float).sum()
-        crowd_index = min(100.0, max(10.0, total_footfall / 500.0))
-        
-        with k_ext1:
-            st.metric("Nearby Events", f"{total_nearby}")
-        with k_ext2:
-            st.metric("High Impact Events", f"{high_impact}")
-        with k_ext3:
-            st.metric("Crowd Density Index", f"{crowd_index:.0f}/100")
-        with k_ext4:
-            st.metric("Partnership Leads", f"{partnerships}")
-            
-        # Display categorized events in tabs
-        tab_fests, tab_conf, tab_college = st.tabs(["🎵 Music & Local Festivals", "💻 Upcoming Conferences", "🎓 College Cultural Fests"])
-        
-        with tab_fests:
-            fests = ext_df[ext_df["Category"].isin(["Music Festivals", "City Festivals", "Food Festivals", "Sports Events"])]
-            if fests.empty:
-                st.write("No upcoming festivals/sports events nearby.")
-            else:
-                for _, r in fests.iterrows():
-                    st.markdown(f"**{r['Event Name']}** ({r['Venue']})")
-                    st.caption(f"📅 Dates: {r['Start Date']} to {r['End Date']} | 📍 Distance: {r.get('Distance (km)', 0.0):.2f} km | 👥 Footfall: {int(r['Expected Footfall']):,}")
-                    st.info(f"💡 **AI Suggestion:** Occupancy impact: {r['Expected Occupancy Impact']:+.1f}%. Suggested action: Organize after-party or recovery breakfast.")
-                    
-        with tab_conf:
-            confs = ext_df[ext_df["Category"].isin(["Tech Conferences", "Corporate Events", "Exhibitions"])]
-            if confs.empty:
-                st.write("No upcoming professional conferences nearby.")
-            else:
-                for _, r in confs.iterrows():
-                    st.markdown(f"**{r['Event Name']}** ({r['Venue']})")
-                    st.caption(f"📅 Dates: {r['Start Date']} to {r['End Date']} | 📍 Distance: {r.get('Distance (km)', 0.0):.2f} km | 👥 Footfall: {int(r['Expected Footfall']):,}")
-                    st.info(f"💡 **AI Suggestion:** Occupancy impact: {r['Expected Occupancy Impact']:+.1f}%. Suggested action: Host a founder meetup or pitch night.")
-                    
-        with tab_college:
-            colleges = ext_df[ext_df["Category"].isin(["College Festivals", "University Cultural Fests"])]
-            if colleges.empty:
-                st.write("No upcoming college cultural fests nearby.")
-            else:
-                for _, r in colleges.iterrows():
-                    st.markdown(f"**{r['Event Name']}** ({r['Venue']})")
-                    st.caption(f"📅 Dates: {r['Start Date']} to {r['End Date']} | 📍 Distance: {r.get('Distance (km)', 0.0):.2f} km | 👥 Footfall: {int(r['Expected Footfall']):,}")
-                    st.info(f"💡 **AI Suggestion:** Occupancy impact: {r['Expected Occupancy Impact']:+.1f}%. Suggested action: Host an open mic, karaoke night, or mixer.")
+        for _, r in ext_df.iterrows():
+            st.markdown(f"**{r['Event Name']}** ({r.get('Venue', 'N/A')})")
+            distance_str = f" | 📍 Distance: {r['Distance (km)']:.2f} km" if "Distance (km)" in r and pd.notna(r["Distance (km)"]) else ""
+            footfall_str = f" | 👥 Footfall: {int(r['Expected Footfall']):,}" if "Expected Footfall" in r and pd.notna(r["Expected Footfall"]) else ""
+            st.caption(f"📅 Dates: {r.get('Start Date', 'N/A')} to {r.get('End Date', 'N/A')}{distance_str}{footfall_str}")
+            if "Expected Occupancy Impact" in r and pd.notna(r["Expected Occupancy Impact"]):
+                st.info(f"💡 Occupancy Impact: {r['Expected Occupancy Impact']:+.1f}%")
+            st.write("")
 
 except Exception as e:
-    st.warning("⚠ Unable to load External Events Dashboard widget.")
+    st.warning("⚠ Unable to load External Events widget.")
     with st.expander("Details"):
         st.write(str(e))
 
