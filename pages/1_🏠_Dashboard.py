@@ -162,7 +162,7 @@ try:
             st.dataframe(df_my_tasks, use_container_width=True, hide_index=True)
 
     # Community Managers additionally see Overall Event Progress & Overdue Tasks Summary
-    if user_role in ["SuperAdmin", "Community Manager", "Property Manager", "Warden"]:
+    if user_role in ["Admin", "SuperAdmin", "Community Manager", "Property Manager", "Warden"]:
         st.write("#### 📊 Community Manager Progress Summary")
         if not df_calendar.empty:
             date_col_cal = safe_get_column(df_calendar, ["Date", "Event Date"]) or "Date"

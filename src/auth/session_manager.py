@@ -8,17 +8,44 @@ ROLE_PERMISSIONS = {
     "Admin": [
         "Dashboard", "Resident Profiles", "Recommendations", "Log Event", 
         "Analytics", "Settings", "Vendor Management", "Community Calendar", 
-        "Master Data", "User Management"
+        "Master Data", "User Management", "Master Event Planner", "AI Community Copilot"
     ],
     "Community Manager": [
         "Dashboard", "Resident Profiles", "Recommendations", "Log Event", 
         "Analytics", "Settings", "Vendor Management", "Community Calendar", 
-        "Master Data"
+        "Master Data", "Master Event Planner", "AI Community Copilot"
     ],
     "Read Only": [
         "Dashboard", "Community Calendar", "Settings"
     ]
 }
+
+ALL_SYSTEM_PERMISSIONS = [
+    "Dashboard",
+    "Resident Profiles",
+    "Recommendations",
+    "Log Event",
+    "Analytics",
+    "Settings",
+    "Vendor Management",
+    "Community Calendar",
+    "Master Data",
+    "User Management",
+    "Master Event Planner",
+    "AI Community Copilot"
+]
+
+def get_user_effective_permissions(user: dict) -> list:
+    """Returns list of allowed page names for given user dict, evaluating custom permission overrides."""
+    if not user:
+        return []
+    user_role = user.get("role", "Read Only")
+    if user_role in ["Admin", "SuperAdmin"]:
+        return ALL_SYSTEM_PERMISSIONS.copy()
+    custom_perms = user.get("permissions")
+    if custom_perms is not None and isinstance(custom_perms, list):
+        return custom_perms
+    return ROLE_PERMISSIONS.get(user_role, ["Dashboard", "Community Calendar", "Settings"])
 
 def init_session():
     """Initializes session configuration state attributes."""
@@ -125,10 +152,15 @@ def require_login(page_name: str):
     # User is authenticated. Verify permission access matrix.
     user = st.session_state.user or {}
     user_role = user.get("role", "Read Only")
-    allowed_pages = ROLE_PERMISSIONS.get(user_role, ["Dashboard", "Community Calendar", "Settings"])
+
+    # Admin and SuperAdmin roles have complete access to all pages
+    if user_role in ["Admin", "SuperAdmin"]:
+        return
+
+    allowed_pages = get_user_effective_permissions(user)
     
     if page_name not in allowed_pages:
-        st.error(f"⛔ Access Denied: Your account role ({user_role}) does not have permission to access the '{page_name}' page.")
+        st.error(f"⛔ Access Denied: Your account role/permissions ({user_role}) do not allow access to the '{page_name}' page.")
         # Offer logout
         if st.button("Return to Login/Logout"):
             logout()

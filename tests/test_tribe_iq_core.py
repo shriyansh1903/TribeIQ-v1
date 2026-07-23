@@ -109,5 +109,18 @@ class TestTribeIQCoreEngine(unittest.TestCase):
         ctx = business_graph_service.get_event_context("EVT-TEST-999")
         self.assertEqual(ctx["event_id"], "EVT-TEST-999")
 
+    def test_user_permissions_management(self):
+        """Tests effective permission calculation for roles and custom permission overrides."""
+        from src.auth.session_manager import get_user_effective_permissions, ALL_SYSTEM_PERMISSIONS
+        
+        admin_user = {"role": "Admin"}
+        self.assertEqual(len(get_user_effective_permissions(admin_user)), len(ALL_SYSTEM_PERMISSIONS))
+
+        custom_user = {"role": "Community Manager", "permissions": ["Dashboard", "Analytics"]}
+        self.assertEqual(get_user_effective_permissions(custom_user), ["Dashboard", "Analytics"])
+
+        role_default_user = {"role": "Read Only"}
+        self.assertEqual(get_user_effective_permissions(role_default_user), ["Dashboard", "Community Calendar", "Settings"])
+
 if __name__ == "__main__":
     unittest.main()
