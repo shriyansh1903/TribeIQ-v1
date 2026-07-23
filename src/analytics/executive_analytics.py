@@ -43,7 +43,8 @@ class ExecutiveAnalyticsService:
     # DATA INGESTION & AGGREGATION HELPERS
     # ===========================================================
     def _load_history_df(self) -> pd.DataFrame:
-        """Loads historical event logs (MongoDB with CSV fallback)."""
+        """Loads historical event logs (MongoDB with CSV fallback), strictly excluding unlogged recommendation stubs."""
+        df = pd.DataFrame()
         if db_manager.ping_check():
             try:
                 docs = self.events_repo.find_all()
@@ -51,16 +52,19 @@ class ExecutiveAnalyticsService:
                     df = pd.DataFrame(docs)
                     if "_id" in df.columns:
                         df = df.drop(columns=["_id"])
-                    return df
             except Exception as e:
                 logger.error(f"Error loading events from Mongo: {e}")
 
-        if EVENT_HISTORY_CSV.exists():
+        if df.empty and EVENT_HISTORY_CSV.exists():
             try:
-                return pd.read_csv(EVENT_HISTORY_CSV)
+                df = pd.read_csv(EVENT_HISTORY_CSV)
             except Exception:
-                pass
-        return pd.DataFrame()
+                df = pd.DataFrame()
+
+        if not df.empty and "Notes" in df.columns:
+            df = df[~df["Notes"].astype(str).str.contains("Approved directly from Smart Recommendations", case=False, na=False)].copy()
+
+        return df
 
     def _load_calendar_df(self) -> pd.DataFrame:
         """Loads calendar events dataframe."""

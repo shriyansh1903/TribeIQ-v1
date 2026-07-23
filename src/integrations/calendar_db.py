@@ -125,10 +125,8 @@ def save_calendar_event(event_dict):
     event_dict["Event ID"] = event_id
     save_calendar_event_csv(event_dict)
     
-    # Sync with event_history.csv if Approved / Completed
-    if event_dict.get("Status") in ["Approved", "Completed"]:
-        sync_approved_event_to_history(event_dict)
-        
+    # Note: Recommendation and calendar approvals are NOT auto-synced to event_history.csv.
+    # Operational Analytics ONLY ingests events logged explicitly via Log Event page.
     return event_id
 
 def delete_calendar_event(event_id):

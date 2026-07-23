@@ -267,9 +267,12 @@ def load_history_data() -> pd.DataFrame:
 
     try:
 
-        return pd.read_csv(
+        df = pd.read_csv(
             history_path
         )
+        if not df.empty and "Notes" in df.columns:
+            df = df[~df["Notes"].astype(str).str.contains("Approved directly from Smart Recommendations", case=False, na=False)].copy()
+        return df
 
     except Exception:
 
