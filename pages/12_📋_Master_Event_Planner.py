@@ -15,8 +15,13 @@ if str(PROJECT_ROOT) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from src.auth.session_manager import require_login, get_current_user
+try:
+    from src.auth.session_manager import require_login, get_current_user
+except ImportError:
+    from auth.session_manager import require_login, get_current_user
+
 require_login("Master Event Planner")
+
 
 try:
     from src.ui_data_bridge import load_application_data
