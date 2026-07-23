@@ -155,11 +155,51 @@ try:
     with p_col4:
         st.metric("🎯 Assigned Events", f"{len(assigned_event_ids)}")
         
-    # Task List Preview (Actionable Work)
+    # Interactive Actionable Tasks Manager
     if actionable_tasks:
-        with st.expander("📝 View My Actionable Tasks (Pending & In Progress)", expanded=False):
-            df_my_tasks = pd.DataFrame(actionable_tasks)[["title", "department", "due_date", "priority", "status", "assigned_user"]]
-            st.dataframe(df_my_tasks, use_container_width=True, hide_index=True)
+        with st.expander("📝 View & Manage Actionable Tasks (Assign / Update Status)", expanded=False):
+            registered_users = ["Unassigned"]
+            try:
+                from src.repositories import UsersRepository
+                u_repo = UsersRepository()
+                for u in u_repo.find_all():
+                    uname = u.get("username") or u.get("display_name")
+                    if uname and uname not in registered_users:
+                        registered_users.append(uname)
+            except Exception:
+                pass
+
+            from src.services.master_planner_service import master_planner_service
+
+            for idx, task in enumerate(actionable_tasks):
+                t_id = task.get("task_id")
+                curr_u = task.get("assigned_user", "Unassigned") or "Unassigned"
+                curr_s = task.get("status", "Pending") or "Pending"
+                
+                with st.container():
+                    c_dt1, c_dt2, c_dt3, c_dt4 = st.columns([3, 2, 2, 2])
+                    with c_dt1:
+                        st.markdown(f"**{task.get('title')}**")
+                        st.caption(f"Dept: `{task.get('department', 'Operations')}` | Priority: `{task.get('priority', 'Medium')}`")
+                    with c_dt2:
+                        st.caption(f"📅 Due: {task.get('due_date', 'N/A')}")
+                    with c_dt3:
+                        u_opts = list(registered_users)
+                        if curr_u not in u_opts:
+                            u_opts.append(curr_u)
+                        u_idx = u_opts.index(curr_u)
+                        new_u = st.selectbox("Assign To", u_opts, index=u_idx, key=f"dash_task_u_{t_id}_{idx}")
+                        if new_u != curr_u:
+                            master_planner_service.update_task(t_id, {"assigned_user": new_u})
+                            st.rerun()
+                    with c_dt4:
+                        st_opts = ["Pending", "In Progress", "Completed"]
+                        s_idx = st_opts.index(curr_s) if curr_s in st_opts else 0
+                        new_s = st.selectbox("Status", st_opts, index=s_idx, key=f"dash_task_st_{t_id}_{idx}")
+                        if new_s != curr_s:
+                            master_planner_service.update_task(t_id, {"status": new_s})
+                            st.rerun()
+                st.divider()
 
     # Community Managers additionally see Overall Event Progress & Overdue Tasks Summary
     if user_role in ["Admin", "SuperAdmin", "Community Manager", "Property Manager", "Warden"]:

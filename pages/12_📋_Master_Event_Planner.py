@@ -304,6 +304,108 @@ if st.session_state["selected_planner_event_id"]:
     else:
         st.info("No tasks generated for this workspace yet.")
 
+    # ---------------------------------------------------------
+    # TASK ASSIGNMENT & USER ALLOCATION MANAGER
+    # ---------------------------------------------------------
+    st.write("---")
+    st.markdown("#### 👤 Task Assignment & User Allocation Manager")
+    st.markdown("*Assign workspace tasks to registered users, manage team workloads, and execute bulk assignments.*")
+    
+    if tasks:
+        # Quick Action Buttons
+        col_qa1, col_qa2, col_qa3 = st.columns(3)
+        with col_qa1:
+            if st.button("🙋‍♂️ Assign All Unassigned to Me", use_container_width=True, key="btn_assign_me"):
+                unassigned_count = 0
+                for t in tasks:
+                    if not t.get("assigned_user") or str(t.get("assigned_user")).strip().lower() in ["unassigned", "none", ""]:
+                        master_planner_service.update_task(t["task_id"], {"assigned_user": current_username})
+                        unassigned_count += 1
+                if unassigned_count > 0:
+                    st.success(f"Assigned {unassigned_count} unassigned tasks to '{current_username}'!")
+                    st.rerun()
+                else:
+                    st.info("No unassigned tasks found in this workspace.")
+
+        with col_qa2:
+            if st.button("⚖️ Auto-Distribute Tasks Evenly", use_container_width=True, key="btn_auto_distribute"):
+                assignable_users = [u for u in registered_users if u != "Unassigned"]
+                if not assignable_users:
+                    st.warning("No registered users available for distribution.")
+                else:
+                    unassigned_tasks = [t for t in tasks if not t.get("assigned_user") or str(t.get("assigned_user")).strip().lower() in ["unassigned", "none", ""]]
+                    if not unassigned_tasks:
+                        st.info("All workspace tasks are already assigned.")
+                    else:
+                        for u_i, t_item in enumerate(unassigned_tasks):
+                            assigned_target = assignable_users[u_i % len(assignable_users)]
+                            master_planner_service.update_task(t_item["task_id"], {"assigned_user": assigned_target})
+                        st.success(f"Distributed {len(unassigned_tasks)} tasks across {len(assignable_users)} team members!")
+                        st.rerun()
+
+        with col_qa3:
+            if st.button("🔄 Reset All Tasks to Unassigned", use_container_width=True, key="btn_reset_assignments"):
+                for t in tasks:
+                    master_planner_service.update_task(t["task_id"], {"assigned_user": "Unassigned"})
+                st.success("Reset all workspace task assignments to Unassigned.")
+                st.rerun()
+
+        # Bulk Assignment Form Panel
+        with st.expander("⚡ Bulk Task Assignment Tool", expanded=False):
+            with st.form("bulk_assignment_form"):
+                st.write("##### Select Tasks & Target Assignee")
+                target_user = st.selectbox("Target Assignee", [u for u in registered_users if u != "Unassigned"], key="bulk_target_user")
+                
+                # Checkbox list of tasks
+                task_options = {f"[{t.get('department', 'Ops')}] {t.get('title')} (Currently: {t.get('assigned_user', 'Unassigned')})": t["task_id"] for t in tasks}
+                selected_task_labels = st.multiselect("Select Workspace Tasks", list(task_options.keys()), key="bulk_selected_tasks")
+                
+                if st.form_submit_button("💾 Apply Bulk Assignment", type="primary", use_container_width=True):
+                    if not selected_task_labels:
+                        st.error("Please select at least one task to assign.")
+                    else:
+                        count_updated = 0
+                        for lbl in selected_task_labels:
+                            t_id_to_assign = task_options[lbl]
+                            master_planner_service.update_task(t_id_to_assign, {"assigned_user": target_user})
+                            count_updated += 1
+                        st.success(f"Assigned {count_updated} tasks to '{target_user}' successfully!")
+                        st.rerun()
+
+        # User Workload Cards Grid
+        st.markdown("##### 📊 Team Member Allocation & Workload")
+        user_tasks_map = {u: [] for u in registered_users}
+        for t in tasks:
+            u_assigned = t.get("assigned_user", "Unassigned") or "Unassigned"
+            if u_assigned not in user_tasks_map:
+                user_tasks_map[u_assigned] = []
+            user_tasks_map[u_assigned].append(t)
+
+        u_cols = st.columns(min(3, max(1, len(user_tasks_map))))
+        for u_idx, (u_name, u_task_list) in enumerate(user_tasks_map.items()):
+            col_target = u_cols[u_idx % len(u_cols)]
+            with col_target:
+                with st.container(border=True):
+                    st.markdown(f"**👤 {u_name}**")
+                    comp_count = sum(1 for t in u_task_list if str(t.get("status")).strip().lower() == "completed")
+                    st.caption(f"Assigned Tasks: **{len(u_task_list)}** | Completed: **{comp_count}**")
+                    
+                    if u_task_list:
+                        with st.expander(f"View Tasks ({len(u_task_list)})", expanded=False):
+                            for ut_idx, ut in enumerate(u_task_list):
+                                st.markdown(f"• **{ut.get('title')}** (`{ut.get('status', 'Pending')}`)")
+                                cur_t_id = ut.get("task_id")
+                                r_opts = list(registered_users)
+                                r_idx = r_opts.index(u_name) if u_name in r_opts else 0
+                                re_user = st.selectbox(
+                                    "Reassign To", r_opts, index=r_idx, key=f"reassign_{cur_t_id}_{u_idx}_{ut_idx}"
+                                )
+                                if re_user != u_name:
+                                    master_planner_service.update_task(cur_t_id, {"assigned_user": re_user})
+                                    st.rerun()
+                    else:
+                        st.caption("No tasks assigned.")
+
     # 3. DEPARTMENT WORKSTREAMS (Task 1: Dynamic Department Tabs)
     st.write("---")
     st.write("#### 3. 🏢 Department Workstreams")
