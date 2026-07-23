@@ -947,85 +947,52 @@ def get_catalogue_event_details(
         "category": "",
     }
 
-    if not isinstance(
-        events_dataframe,
-        pd.DataFrame,
-    ):
-        return details
+    target = normalize_event_name(event_name)
 
-    if events_dataframe.empty:
-        return details
-
-    if event_name_column is None:
-        return details
-
-    target = (
-        normalize_event_name(
-            event_name
+    # 1. Check Events Catalogue
+    if isinstance(events_dataframe, pd.DataFrame) and not events_dataframe.empty and event_name_column:
+        normalized_names = (
+            events_dataframe[event_name_column]
+            .astype(str)
+            .map(normalize_event_name)
         )
-    )
+        matching_rows = events_dataframe[normalized_names == target]
+        if not matching_rows.empty:
+            event_row = matching_rows.iloc[0]
+            for column in ("Event ID", "event_id", "ID", "id"):
+                if column in matching_rows.columns:
+                    details["event_id"] = safe_text(event_row.get(column))
+                    break
+            for column in ("Category", "category", "Event Category", "event_category"):
+                if column in matching_rows.columns:
+                    details["category"] = safe_text(event_row.get(column))
+                    break
+            if details["event_id"] or details["category"]:
+                return details
 
-    normalized_names = (
-        events_dataframe[
-            event_name_column
-        ]
-        .astype(str)
-        .map(
-            normalize_event_name
-        )
-    )
-
-    matching_rows = (
-        events_dataframe[
-            normalized_names
-            == target
-        ]
-    )
-
-    if matching_rows.empty:
-        return details
-
-    event_row = (
-        matching_rows.iloc[0]
-    )
-
-    for column in (
-        "Event ID",
-        "event_id",
-        "ID",
-        "id",
-    ):
-
-        if column in matching_rows.columns:
-
-            details[
-                "event_id"
-            ] = safe_text(
-                event_row.get(
-                    column
-                )
-            )
-
-            break
-
-    for column in (
-        "Category",
-        "category",
-        "Event Category",
-        "event_category",
-    ):
-
-        if column in matching_rows.columns:
-
-            details[
-                "category"
-            ] = safe_text(
-                event_row.get(
-                    column
-                )
-            )
-
-            break
+    # 2. Fallback Check Calendar Database
+    try:
+        from src.integrations.calendar_db import load_calendar_events
+        df_cal = load_calendar_events()
+        if not df_cal.empty:
+            cal_col = find_event_name_column(df_cal)
+            if cal_col:
+                norm_cal_names = df_cal[cal_col].astype(str).map(normalize_event_name)
+                matching_cal = df_cal[norm_cal_names == target]
+                if not matching_cal.empty:
+                    cal_row = matching_cal.iloc[0]
+                    for column in ("Event ID", "event_id", "ID", "id"):
+                        if column in matching_cal.columns:
+                            details["event_id"] = safe_text(cal_row.get(column))
+                            break
+                    for column in ("Category", "category", "Event Category", "event_category"):
+                        if column in matching_cal.columns:
+                            details["category"] = safe_text(cal_row.get(column))
+                            break
+                    if details["event_id"] or details["category"]:
+                        return details
+    except Exception:
+        pass
 
     return details
 
@@ -1323,7 +1290,7 @@ if recommended_property in property_names:
 
 
 # ===========================================================
-# Event Options
+# Event Options (Loaded from all Database sources)
 # ===========================================================
 
 event_name_column = (
@@ -1333,41 +1300,54 @@ event_name_column = (
 )
 
 catalogue_event_names = []
-
-if event_name_column is not None:
-
-    catalogue_event_names = sorted({
+if event_name_column is not None and not events_dataframe.empty:
+    catalogue_event_names = [
         safe_text(value)
-        for value
-        in events_dataframe[
-            event_name_column
-        ].dropna().tolist()
+        for value in events_dataframe[event_name_column].dropna().tolist()
         if safe_text(value)
-    })
+    ]
 
+calendar_event_names = []
+try:
+    from src.integrations.calendar_db import load_calendar_events
+    df_cal = load_calendar_events()
+    if not df_cal.empty:
+        cal_col = find_event_name_column(df_cal)
+        if cal_col:
+            calendar_event_names = [
+                safe_text(value)
+                for value in df_cal[cal_col].dropna().tolist()
+                if safe_text(value)
+            ]
+except Exception:
+    pass
+
+history_event_names = []
+try:
+    history_df = load_history_data()
+    if not history_df.empty:
+        hist_col = find_event_name_column(history_df)
+        if hist_col:
+            history_event_names = [
+                safe_text(value)
+                for value in history_df[hist_col].dropna().tolist()
+                if safe_text(value)
+            ]
+except Exception:
+    pass
 
 recommended_event_names = [
-    safe_text(
-        event.get(
-            "event_name"
-        )
-    )
-    for event
-    in recommended_events
-    if safe_text(
-        event.get(
-            "event_name"
-        )
-    )
+    safe_text(event.get("event_name"))
+    for event in recommended_events
+    if safe_text(event.get("event_name"))
 ]
 
+# Consolidate all database events preserving unique names
+all_db_event_list = list(dict.fromkeys(
+    recommended_event_names + calendar_event_names + catalogue_event_names + history_event_names
+))
 
-event_names = list(
-    dict.fromkeys(
-        recommended_event_names
-        + catalogue_event_names
-    )
-)
+event_names = sorted(all_db_event_list, key=lambda s: s.lower())
 
 
 if not event_names:
