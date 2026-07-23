@@ -81,6 +81,7 @@ if "auto_synced_on_startup" not in st.session_state:
         try:
             from src.integrations.sync import WardenSyncEngine
         except ImportError:
+            # pyrefly: ignore [missing-import]
             from integrations.sync import WardenSyncEngine
         engine = WardenSyncEngine()
         status = engine.load_sync_status()
@@ -97,6 +98,7 @@ try:
     try:
         from src.integrations.master_data_db import init_master_data_files, update_capacities_config
     except ImportError:
+        # pyrefly: ignore [missing-import]
         from integrations.master_data_db import init_master_data_files, update_capacities_config
     init_master_data_files()
     update_capacities_config()

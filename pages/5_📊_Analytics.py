@@ -507,7 +507,143 @@ date_column = find_column(
 
 
 # ===========================================================
-# Core Metrics
+# EXECUTIVE ANALYTICS & OPERATIONAL INTELLIGENCE LAYER (SECTIONS 1-12)
+# ===========================================================
+try:
+    from src.analytics.executive_analytics import executive_analytics_service
+    
+    kpis = executive_analytics_service.get_executive_kpis()
+    budget_analytics = executive_analytics_service.get_budget_analytics()
+    rec_perf = executive_analytics_service.get_recommendation_engine_performance()
+    health_score = executive_analytics_service.get_operational_health_score()
+    insights_alerts = executive_analytics_service.get_executive_insights_and_alerts()
+    event_perf = executive_analytics_service.get_event_performance_analytics()
+    prop_ranking = executive_analytics_service.get_property_performance_matrix()
+    dept_perf = executive_analytics_service.get_department_performance()
+    user_summary = executive_analytics_service.get_user_performance_summary()
+    
+    # SECTION 1: EXECUTIVE OVERVIEW DASHBOARD KPIS
+    st.write("---")
+    st.markdown("### 🏢 Executive Overview & Operational KPIs")
+    
+    k1, k2, k3, k4 = st.columns(4)
+    with k1:
+        st.metric("📅 Events This Month", f"{kpis['events_this_month']}", delta=f"{kpis['events_delta']:+} vs last month" if kpis['events_delta'] != 0 else None)
+    with k2:
+        st.metric("📈 Completion Rate", f"{kpis['completion_rate']}%")
+    with k3:
+        st.metric("🎯 Rec Acceptance", f"{kpis['acceptance_rate']}%")
+    with k4:
+        st.metric("👥 Avg Attendance", f"{kpis['avg_attendance']}")
+        
+    k5, k6, k7, k8 = st.columns(4)
+    with k5:
+        st.metric("⭐ Avg Rating", f"{kpis['avg_rating']}/5.0")
+    with k6:
+        st.metric("💰 Budget Utilization", f"{kpis['budget_utilization']}%")
+    with k7:
+        st.metric("🚨 Overdue Tasks", f"{kpis['overdue_tasks']}", delta=f"-{kpis['overdue_tasks']}" if kpis['overdue_tasks'] else None, delta_color="inverse")
+    with k8:
+        st.metric("🏆 Top Property", f"{kpis['best_property']}")
+
+    # SECTION 9: OPERATIONAL HEALTH SCORE
+    st.write("---")
+    st.markdown("### 🏥 Operational Health Score")
+    col_h1, col_h2 = st.columns([1, 2])
+    with col_h1:
+        st.metric("Composite Health Index", f"{health_score['composite_score']} / 100", delta=f"Confidence: {health_score['confidence']}")
+        st.progress(float(health_score['composite_score']) / 100.0)
+    with col_h2:
+        st.info(f"💡 **Explanation:** {health_score['explanation']}")
+        for rec in health_score['recommendations']:
+            st.write(f"- {rec}")
+
+    # SECTION 10 & 12: AI EXECUTIVE INSIGHTS & INTELLIGENT ALERTS
+    st.write("---")
+    c_ins, c_alt = st.columns(2)
+    with c_ins:
+        st.markdown("### 🧠 AI Executive Insights")
+        for ins in insights_alerts["insights"]:
+            st.success(f"**{ins['statement']}**\n\n*Why:* {ins['why']}")
+    with c_alt:
+        st.markdown("### ⚠️ Operational Intelligent Alerts")
+        for alt in insights_alerts["alerts"]:
+            if alt["severity"] in ["CRITICAL", "ALERT"]:
+                st.error(f"{alt['message']}\n\n👉 *Action:* {alt['action']}")
+            elif alt["severity"] == "WARNING":
+                st.warning(f"{alt['message']}\n\n👉 *Action:* {alt['action']}")
+            else:
+                st.info(f"{alt['message']}\n\n👉 *Action:* {alt['action']}")
+
+    # SECTION 2, 3, 4, 5, 7, 8: DETAILED VISUAL PERFORMANCE METRICS
+    st.write("---")
+    st.markdown("### 📊 Performance Analytics Breakdown")
+    
+    an_tab1, an_tab2, an_tab3, an_tab4, an_tab5 = st.tabs([
+        "🎭 Event & Category", "🏢 Property Ranking", "💼 Department Execution", "👥 User Contributions", "💸 Budget & Recs"
+    ])
+    
+    with an_tab1:
+        st.markdown("#### Event Category Performance")
+        if not event_perf["by_category"].empty:
+            st.dataframe(event_perf["by_category"], use_container_width=True, hide_index=True)
+            st.bar_chart(event_perf["by_category"].set_index("Category")[["avg_attendance", "avg_rating"]])
+        else:
+            st.caption("No category performance data log available.")
+
+    with an_tab2:
+        st.markdown("#### Property Execution & Satisfaction Rankings")
+        if not prop_ranking.empty:
+            st.dataframe(prop_ranking, use_container_width=True, hide_index=True)
+            st.bar_chart(prop_ranking.set_index("Property")[["overall_score", "resident_satisfaction"]])
+        else:
+            st.caption("No property ranking data available.")
+
+    with an_tab3:
+        st.markdown("#### Department Execution & Bottlenecks")
+        if not dept_perf.empty:
+            st.dataframe(dept_perf, use_container_width=True, hide_index=True)
+            st.bar_chart(dept_perf.set_index("Department")[["Productivity Score", "Completion %"]])
+        else:
+            st.caption("No department execution logs found.")
+
+    with an_tab4:
+        st.markdown("#### User Task Contribution Summary (Manager Overview)")
+        if not user_summary.empty:
+            st.dataframe(user_summary, use_container_width=True, hide_index=True)
+        else:
+            st.caption("No user task activity recorded.")
+
+    with an_tab5:
+        st.markdown("#### Budget Variance & Recommendation Engine Feedback")
+        b_c1, b_c2, b_c3, b_c4 = st.columns(4)
+        with b_c1:
+            st.metric("Planned Budget", f"₹{budget_analytics['planned']:,.0f}")
+        with b_c2:
+            st.metric("Actual Spend", f"₹{budget_analytics['actual']:,.0f}")
+        with b_c3:
+            st.metric("Budget Variance", f"₹{budget_analytics['variance']:,.0f}", delta=f"₹{budget_analytics['variance']:,.0f}")
+        with b_c4:
+            st.metric("Cost per Attendee", f"₹{budget_analytics['cost_per_attendee']:,.1f}")
+
+        st.markdown("##### Recommendation Engine Feedback Loop")
+        r_c1, r_c2, r_c3, r_c4 = st.columns(4)
+        with r_c1:
+            st.metric("Recs Generated", f"{rec_perf['generated']}")
+        with r_c2:
+            st.metric("Approved", f"{rec_perf['approved']}")
+        with r_c3:
+            st.metric("Rejected", f"{rec_perf['rejected']}")
+        with r_c4:
+            st.metric("Success Rate", f"{rec_perf['success_rate']}%")
+
+except Exception as ex_exec:
+    st.warning("⚠ Executive Analytics Layer notice: Loading standard historical view.")
+    with st.expander("Details"):
+        st.write(str(ex_exec))
+
+# ===========================================================
+# Core Metrics (Existing Standard Analytics)
 # ===========================================================
 
 attendance_values = numeric_series(

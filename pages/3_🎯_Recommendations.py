@@ -226,12 +226,11 @@ if rec_result and isinstance(rec_result, dict):
                         "Recommended Date": ai_date_str,
                         "Approved Date": datetime.date.today().strftime("%Y-%m-%d")
                     }
-                    save_calendar_event(event_dict)
+                    event_id = save_calendar_event(event_dict)
                     
                     # Log history
                     save_recommendation_history({
                         "Generated Time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "Approved Time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "Approver": "Community Manager",
                         "Property": selected_property,
                         "Event Name": major_event.get("event_name"),
@@ -242,7 +241,14 @@ if rec_result and isinstance(rec_result, dict):
                         "Recommendation Score": safe_float(major_event.get("final_score"), 90.0),
                         "Status": "Approved"
                     })
-                    st.success("Major event approved and scheduled!")
+                    # Auto Create Event Workspace & Tasks
+                    try:
+                        from src.services.master_planner_service import master_planner_service
+                        event_dict["Event ID"] = event_id
+                        master_planner_service.get_or_create_workspace(str(event_id), event_dict)
+                    except Exception as ex_ws:
+                        print(f"Workspace creation notice: {ex_ws}")
+                    st.success("Major event approved, scheduled, and Workspace created!")
                     st.rerun()
     except Exception as e:
         st.warning("⚠ Unable to load this widget.")
@@ -304,7 +310,7 @@ if rec_result and isinstance(rec_result, dict):
                             "Recommended Date": m_ai_date_str,
                             "Approved Date": datetime.date.today().strftime("%Y-%m-%d")
                         }
-                        save_calendar_event(event_dict)
+                        m_event_id = save_calendar_event(event_dict)
                         
                         # Log history
                         save_recommendation_history({
@@ -320,7 +326,13 @@ if rec_result and isinstance(rec_result, dict):
                             "Recommendation Score": safe_float(m_ev.get("final_score"), 80.0),
                             "Status": "Approved"
                         })
-                        st.success(f"Minor Event '{m_ev.get('event_name')}' approved!")
+                        try:
+                            from src.services.master_planner_service import master_planner_service
+                            event_dict["Event ID"] = m_event_id
+                            master_planner_service.get_or_create_workspace(str(m_event_id), event_dict)
+                        except Exception as ex_ws:
+                            print(f"Workspace creation notice: {ex_ws}")
+                        st.success(f"Minor Event '{m_ev.get('event_name')}' approved, scheduled, and Workspace created!")
                         st.rerun()
     except Exception as e:
         st.warning("⚠ Unable to load this widget.")

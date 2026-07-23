@@ -110,14 +110,90 @@ col_qa1, col_qa2, col_qa3, col_qa4 = st.columns(4)
 with col_qa1:
     st.page_link("pages/3_🎯_Recommendations.py", label="Generate Recommendations", icon="🎯", use_container_width=True)
 with col_qa2:
-    st.page_link("pages/8_📅_Community_Calendar.py", label="Open Planning Calendar", icon="📅", use_container_width=True)
+    st.page_link("pages/12_📋_Master_Event_Planner.py", label="Master Event Planner", icon="📋", use_container_width=True)
 with col_qa3:
     st.page_link("pages/4_📝_Log_Event.py", label="Log Actual Event", icon="📝", use_container_width=True)
 with col_qa4:
     st.page_link("pages/6_⚙️_Settings.py", label="Warden Settings & Sync", icon="⚙️", use_container_width=True)
 
 # ===========================================================
+# SECTION 1.5: Personal Dashboard & Task Summary (Actionable Work Only)
+# ===========================================================
+st.write("---")
+st.write("### 👤 Personal Dashboard")
+
+try:
+    from src.services.master_planner_service import master_planner_service
+    from src.auth.session_manager import get_current_user
+    
+    user_info = get_current_user() or {}
+    current_username = user_info.get("username", "Manager")
+    user_role = user_info.get("role", "Community Manager")
+    
+    all_user_tasks = master_planner_service.get_all_tasks()
+    
+    # Filter tasks for logged-in user or unassigned
+    my_tasks = [t for t in all_user_tasks if str(t.get("assigned_user")).strip().lower() in [current_username.lower(), "unassigned"]]
+    
+    # Task 6: Filter only Actionable Work (Pending, In Progress), hide Completed by default
+    actionable_tasks = [t for t in my_tasks if str(t.get("status")).strip().lower() in ["pending", "in progress"]]
+    
+    today_str = today.strftime("%Y-%m-%d")
+    due_today_tasks = [t for t in actionable_tasks if str(t.get("due_date")) == today_str]
+    overdue_tasks = [t for t in actionable_tasks if str(t.get("due_date")) < today_str]
+    
+    # Unique assigned events
+    assigned_event_ids = list(set([t.get("event_id") for t in actionable_tasks if t.get("event_id")]))
+    
+    p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+    with p_col1:
+        st.metric("📋 Actionable Tasks", f"{len(actionable_tasks)}")
+    with p_col2:
+        st.metric("⏰ Due Today", f"{len(due_today_tasks)}")
+    with p_col3:
+        st.metric("🚨 Overdue Tasks", f"{len(overdue_tasks)}", delta=f"-{len(overdue_tasks)}" if overdue_tasks else None, delta_color="inverse")
+    with p_col4:
+        st.metric("🎯 Assigned Events", f"{len(assigned_event_ids)}")
+        
+    # Task List Preview (Actionable Work)
+    if actionable_tasks:
+        with st.expander("📝 View My Actionable Tasks (Pending & In Progress)", expanded=False):
+            df_my_tasks = pd.DataFrame(actionable_tasks)[["title", "department", "due_date", "priority", "status", "assigned_user"]]
+            st.dataframe(df_my_tasks, use_container_width=True, hide_index=True)
+
+    # Community Managers additionally see Overall Event Progress & Overdue Tasks Summary
+    if user_role in ["SuperAdmin", "Community Manager", "Property Manager", "Warden"]:
+        st.write("#### 📊 Community Manager Progress Summary")
+        if not df_calendar.empty:
+            date_col_cal = safe_get_column(df_calendar, ["Date", "Event Date"]) or "Date"
+            upcoming_approved = df_calendar[df_calendar.get("Status", "").isin(["Approved", "Confirmed", "In Progress"])]
+            if not upcoming_approved.empty:
+                prog_rows = []
+                for _, ev_row in upcoming_approved.head(5).iterrows():
+                    ev_id = ev_row.get("Event ID", ev_row.get("Event Name"))
+                    # Task 5: Use calculate_event_progress service method directly
+                    prog_info = master_planner_service.calculate_event_progress(str(ev_id))
+                    prog_rows.append({
+                        "Event": ev_row.get("Event Name", "N/A"),
+                        "Property": ev_row.get("Property", "N/A"),
+                        "Date": ev_row.get("Date", "N/A"),
+                        "Status Summary": prog_info["status_summary"],
+                        "Progress": f"{prog_info['percentage']}%"
+                    })
+                if prog_rows:
+                    st.dataframe(pd.DataFrame(prog_rows), use_container_width=True, hide_index=True)
+            else:
+                st.caption("No upcoming approved events scheduled.")
+
+except Exception as e:
+    st.warning("⚠ Unable to load Personal Dashboard widget.")
+    with st.expander("Details"):
+        st.write(str(e))
+
+
+# ===========================================================
 # SECTION 2: Executive Overview (Error Boundary)
+
 # ===========================================================
 st.write("---")
 st.write("### 📊 Executive Overview")

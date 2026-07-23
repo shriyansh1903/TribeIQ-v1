@@ -1,0 +1,6 @@
+task_id,workspace_id,event_id,title,description,department,assigned_user,due_date,priority,status,created_at,_id
+TSK-673A295C,WS-56C389F5,EVT-TEST-999,Venue Setup & Stage Decoration,"Arrange stage, seating, traditional decor, and lighting.",Operations,Unassigned,2026-08-15,High,Pending,2026-07-23T14:02:39.964532,6a61d1a7d3050e2967bd1eed
+TSK-7A18CEE3,WS-56C389F5,EVT-TEST-999,Artist & Performer Logistics,"Confirm green room, hospitality, and performance sequence.",Logistics,Unassigned,2026-08-15,High,Pending,2026-07-23T14:02:40.096140,6a61d1a8d3050e2967bd1ef0
+TSK-2936774C,WS-56C389F5,EVT-TEST-999,AV Sound & Lighting Test,"Sound check mics, speakers, and stage lights with vendor.",Technical,Unassigned,2026-08-15,Medium,Pending,2026-07-23T14:02:40.196008,6a61d1a8d3050e2967bd1ef3
+TSK-629F8C25,WS-56C389F5,EVT-TEST-999,Refreshments & Catering Ordering,Finalize menu and confirm delivery time with food vendor.,Procurement,Unassigned,2026-08-15,Medium,Pending,2026-07-23T14:02:40.298028,6a61d1a8d3050e2967bd1ef6
+TSK-154C27DC,WS-56C389F5,EVT-TEST-999,Post-Event Cleanup & Return Inventory,Clear venue space and return borrowed equipment.,Operations,Unassigned,2026-08-15,Low,Pending,2026-07-23T14:02:40.404335,6a61d1a8d3050e2967bd1ef9

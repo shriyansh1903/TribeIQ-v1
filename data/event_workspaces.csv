@@ -1,0 +1,2 @@
+workspace_id,event_id,event_name,category,property_name,date,created_by,created_at,last_updated,status,completion_percentage,event_type,community_manager,_id
+WS-56C389F5,EVT-TEST-999,UnitTest Cultural Night,Cultural,Tribe Vara,2026-08-15,TestAdmin,2026-07-23T14:02:39.921739,2026-07-23T14:02:40.431012,Approved,0.0,Minor,TestAdmin,6a61d1a7d3050e2967bd1eeb

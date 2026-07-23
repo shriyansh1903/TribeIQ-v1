@@ -1,0 +1,146 @@
+{
+  "Cultural": [
+    {
+      "title": "Venue Setup & Stage Decoration",
+      "description": "Arrange stage, seating, traditional decor, and lighting.",
+      "department": "Operations",
+      "priority": "High"
+    },
+    {
+      "title": "Artist & Performer Logistics",
+      "description": "Confirm green room, hospitality, and performance sequence.",
+      "department": "Logistics",
+      "priority": "High"
+    },
+    {
+      "title": "AV Sound & Lighting Test",
+      "description": "Sound check mics, speakers, and stage lights with vendor.",
+      "department": "Technical",
+      "priority": "Medium"
+    },
+    {
+      "title": "Refreshments & Catering Ordering",
+      "description": "Finalize menu and confirm delivery time with food vendor.",
+      "department": "Procurement",
+      "priority": "Medium"
+    },
+    {
+      "title": "Post-Event Cleanup & Return Inventory",
+      "description": "Clear venue space and return borrowed equipment.",
+      "department": "Operations",
+      "priority": "Low"
+    }
+  ],
+  "Sports": [
+    {
+      "title": "Ground & Equipment Readiness",
+      "description": "Inspect sports ground, court markings, and equipment inventory.",
+      "department": "Operations",
+      "priority": "High"
+    },
+    {
+      "title": "Tournament Fixtures & Rules Sheet",
+      "description": "Draft bracket schedule, rules document, and referee briefing.",
+      "department": "Sports",
+      "priority": "High"
+    },
+    {
+      "title": "First Aid & Hydration Station",
+      "description": "Stock medical kits, ice packs, water dispensers, and energy drinks.",
+      "department": "Health & Safety",
+      "priority": "High"
+    },
+    {
+      "title": "Trophies, Medals & Certificates",
+      "description": "Procure awards and print winner certificates.",
+      "department": "Procurement",
+      "priority": "Medium"
+    }
+  ],
+  "Social": [
+    {
+      "title": "Icebreaker Activities & Host Briefing",
+      "description": "Prepare icebreaker games, trivia questions, and MC script.",
+      "department": "Engagement",
+      "priority": "Medium"
+    },
+    {
+      "title": "Snacks & Beverage Counter Setup",
+      "description": "Setup food stalls, self-serve drinks, and seating pods.",
+      "department": "Operations",
+      "priority": "Medium"
+    },
+    {
+      "title": "Playlist & Ambient Music Setup",
+      "description": "Setup speakers and curate background music playlist.",
+      "department": "Technical",
+      "priority": "Low"
+    }
+  ],
+  "Gaming & Tech": [
+    {
+      "title": "LAN / High-Speed Wi-Fi Provisioning",
+      "description": "Ensure dedicated high-bandwidth network and ethernet switches.",
+      "department": "IT & Infra",
+      "priority": "High"
+    },
+    {
+      "title": "Console / PC & Monitor Station Setup",
+      "description": "Install gaming consoles, monitors, extension cords, and controllers.",
+      "department": "Technical",
+      "priority": "High"
+    },
+    {
+      "title": "Leaderboard & Tournament Bracket Management",
+      "description": "Display live scores on projector and manage match progression.",
+      "department": "Engagement",
+      "priority": "Medium"
+    }
+  ],
+  "Workshops & Seminars": [
+    {
+      "title": "Speaker Hospitality & Presentation Check",
+      "description": "Test projector, clicker, slide deck, and welcome guest speaker.",
+      "department": "Logistics",
+      "priority": "High"
+    },
+    {
+      "title": "Attendee Registration Desk Setup",
+      "description": "Set up check-in desk, name tags, and welcome kits.",
+      "department": "Operations",
+      "priority": "Medium"
+    },
+    {
+      "title": "Participant Feedback Forms",
+      "description": "Prepare QR code / feedback sheets for post-session rating.",
+      "department": "Analytics",
+      "priority": "Low"
+    }
+  ],
+  "Default": [
+    {
+      "title": "Event Space Reservation & Layout Setup",
+      "description": "Reserve common area and set up seating layout.",
+      "department": "Operations",
+      "priority": "High"
+    },
+    {
+      "title": "Procurement & Vendor Confirmation",
+      "description": "Confirm required materials and vendor delivery dates.",
+      "department": "Procurement",
+      "priority": "Medium"
+    },
+    {
+      "title": "Resident Announcement & Reminder",
+      "description": "Send event invitation and schedule reminder broadcast.",
+      "department": "Marketing",
+      "priority": "Medium"
+    },
+    {
+      "title": "Post-Event Wrap-up & Feedback Collection",
+      "description": "Clean up venue and log event metrics.",
+      "department": "Operations",
+      "priority": "Low"
+    }
+  ]
+}
