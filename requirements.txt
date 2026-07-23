@@ -1,5 +1,8 @@
 plotly
 pandas
+numpy
+pytz
+certifi
 requests
 python-dotenv
 openpyxl
