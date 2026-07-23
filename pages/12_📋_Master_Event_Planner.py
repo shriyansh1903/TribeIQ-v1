@@ -207,6 +207,18 @@ if st.session_state["selected_planner_event_id"]:
     
     tasks = master_planner_service.get_tasks_for_workspace(workspace_id)
     
+    # Fetch registered system users for dropdown assignment
+    registered_users = ["Unassigned"]
+    try:
+        from src.repositories import UsersRepository
+        u_repo = UsersRepository()
+        for u in u_repo.find_all():
+            uname = u.get("username") or u.get("display_name")
+            if uname and uname not in registered_users:
+                registered_users.append(uname)
+    except Exception:
+        pass
+
     # Action Row: Add Custom Task
     col_ta1, col_ta2 = st.columns([3, 1])
     with col_ta2:
@@ -224,7 +236,11 @@ if st.session_state["selected_planner_event_id"]:
             with c_prio:
                 n_prio = st.selectbox("Priority", ["High", "Medium", "Low"])
             with c_user:
-                n_user = st.text_input("Assigned User", value=current_username)
+                add_user_options = list(registered_users)
+                if current_username and current_username not in add_user_options:
+                    add_user_options.append(current_username)
+                def_idx = add_user_options.index(current_username) if current_username in add_user_options else 0
+                n_user = st.selectbox("Assigned To", add_user_options, index=def_idx)
             n_due = st.date_input("Due Date", value=datetime.date.today())
             
             submit_task = st.form_submit_button("Save Task")
@@ -260,7 +276,12 @@ if st.session_state["selected_planner_event_id"]:
                 with c_t2:
                     st.write(f"🏢 `{task.get('department', 'Operations')}`")
                 with c_t3:
-                    new_user = st.text_input("Assigned To", value=task.get("assigned_user", "Unassigned"), key=f"t_user_{t_id}_{idx}")
+                    curr_assigned = task.get("assigned_user", "Unassigned") or "Unassigned"
+                    item_user_options = list(registered_users)
+                    if curr_assigned not in item_user_options:
+                        item_user_options.append(curr_assigned)
+                    curr_idx = item_user_options.index(curr_assigned)
+                    new_user = st.selectbox("Assigned To", item_user_options, index=curr_idx, key=f"t_user_{t_id}_{idx}")
                     if new_user != task.get("assigned_user"):
                         master_planner_service.update_task(t_id, {"assigned_user": new_user})
                         st.rerun()
