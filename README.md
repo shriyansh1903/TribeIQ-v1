@@ -1,72 +1,139 @@
-# TribeIQ: Co-Living Community Optimization & Recommendation Engine
+# TribeIQ (EngageIQ) — Co-Living Community Optimization & Operational Intelligence Platform
 
-TribeIQ is an intelligent, data-driven co-living community management and event recommendation platform built with Python and Streamlit. It leverages real-time demographical analytics, occupancy forecasting, and hybrid machine learning models (combining heuristics and Large Language Model reranking via NVIDIA NIM) to help property managers optimize resident engagement and maximize event attendance.
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-FF4B4B?style=flat&logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Supported-47A248?style=flat&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![NVIDIA NIM](https://img.shields.io/badge/NVIDIA_NIM-LLM_Reranking-76B900?style=flat&logo=nvidia&logoColor=white)](https://build.nvidia.com/)
+
+TribeIQ (EngageIQ) is an enterprise-grade co-living community management, executive intelligence, and event optimization platform built with Python, Streamlit, and MongoDB. It bridges real-time demographic analytics, occupancy forecasting, Master Event Planning, vendor procurement, and hybrid machine learning (heuristics combined with Large Language Model reranking via NVIDIA NIM `meta/llama-3.1-8b-instruct`) to maximize resident engagement and operational efficiency.
 
 ---
 
-## 🚀 Key Features
+## 🌟 Key Features & Modules
 
-### 1. Unified Dashboard
-* **Dynamic Property Metrics**: Instantly review total active residents, bed capacity, current occupancy rate, average resident tenure (in days), and average event feedback rating.
-* **Database Management**: Integrated drag-and-drop file uploader in the sidebar to upload a new `Residents.csv` spreadsheet, validate columns, and automatically run cleaning and profiling pipelines.
-* **Timezone Consistency**: Powered by robust Indian Standard Time (IST, UTC+5:30) date handling to prevent ±1% to 2% date offsets due to server UTC time differences.
+### 1. 🏠 Personal & Executive Dashboard (`pages/1_🏠_Dashboard.py`)
+* **Personalized Header**: Dynamic greeting (`👋 Hi, <username>`) for logged-in managers.
+* **Actionable Task Manager**: Role-based task management filtering strictly manual Admin-created tasks (excluding template noise), with inline `➕ Add Task (Admin)` form, task assignment dropdowns, and `🗑️` single-click task deletion.
+* **Operational Metrics**: Overview of active residents across monitored properties, event completion rates, pending procurement, active vendors, and occupancy timelines.
 
-### 2. Property Profiles & Demographics
-* **Resident Analytics**: Deep-dive charts showing age distributions, gender ratios, dominant age bands, and occupation breakdowns.
-* **Tenure Metrics**: Track how long residents are staying with precise day-level tenure tracking.
+### 2. 👥 Property Profile & Demographics (`pages/2_👥_Property_Profile.py`)
+* **Resident Analytics**: Visual distributions of age bands, gender ratios, tenure (day-level tracking), and professional occupation breakdowns.
+* **Property Performance**: Comprehensive metrics per property to tailor engagement strategies to specific resident personas.
 
-### 3. Smart Event Recommendations
-* **Hybrid Reranking Engine**: Utilizes local rules combined with the high-performance **`meta/llama-3.1-8b-instruct`** model over NVIDIA NIM to rank event candidates.
-* **Execution Forecasting**: Predicts active residents, turnout rates, attendance counts, and confidence scores for suggested events.
-* **What-If Date Simulation**: Test event predictions on any target date or forecast the best execution dates for a specific calendar month.
+### 3. 🎯 Smart Event Recommendation Engine (`pages/3_🎯_Recommendations.py`)
+* **Hybrid Reranking Pipeline**: Multi-phase recommendation pipeline matching heuristic candidate generation with LLM reasoning via NVIDIA NIM (`meta/llama-3.1-8b-instruct`).
+* **Turnout & Attendance Forecasting**: Predictive modeling for turnout rate, confidence score, estimated budget, and optimal calendar execution dates.
 
-### 4. Persistent Predictions & Outcome Logging
-* **Prediction History (`data/predictions_history.csv`)**: Every recommendation or forecast generated is saved persistently to disk.
-* **Dropdown Selection**: Pick a previously generated forecast from a dropdown list to log outcomes, auto-filling all forecast parameters in the form.
-* **Automated Turnout Calculation**: Turnout rate percentage is automatically calculated as `(Actual Attendee Count / Total Active Residents) * 100` on form submission.
-* **Feedback Stars Selectbox**: Visually select satisfaction scores from 0 to 5 stars (supporting quarter, half, and full stars).
-* **Hyperlink Detection**: Automatically parses Google Drive or web hyperlinks inside the **Notes** box and saves them to a dedicated **`Image Data`** column.
+### 4. 📝 Actual Event Logging & Outcome Tracking (`pages/4_📝_Log_Event.py`)
+* **Persistent Predictions Sync**: Pick past forecasts from a dropdown to log actual turnout, feedback stars (0–5 rating), and actual budget spent.
+* **Hyperlink Extraction**: Parses image/web links in event notes and stores them under dedicated `Image Data` columns.
 
-### 5. Analytics & History Management
-* **Interactive Reporting**: Visualize historical event performance, turnout rates, and satisfaction metrics over time.
-* **Excel Export**: Download the entire event history database as an Excel spreadsheet (`.xlsx`) at any time.
-* **Danger Zone Operations**: Selectively delete a single event log or completely clear all event history with built-in safety checkboxes.
+### 5. 📊 Executive Intelligence & Analytics (`pages/5_📊_Analytics.py`)
+* **Dual Dashboard Modes**: Toggle between **👔 Executive Dashboard** (surfacing top KPIs, Operational Health Index, AI Executive Insights, Intelligent Alerts, Budget Variance) and **🎯 Operational Analytics**.
+
+### 6. ⚙️ Warden Settings & Integration (`pages/6_⚙️_Settings.py`)
+* **API & System Controls**: Warden REST API sync status, database health checks, synchronization frequencies, and system preferences.
+
+### 7. 🏪 Vendor Management & Procurement (`pages/7_🏪_Vendor_Management.py`)
+* **Vendor Database**: Categorized vendor registry with contact management, status tracking, GST tax classification (12% / 18%), and material pricing.
+
+### 8. 📅 Community Calendar (`pages/8_📅_Community_Calendar.py`)
+* **Interactive Timeline**: Month-by-month event timeline, date adjustment capabilities, status tagging, and calendar preview exports.
+
+### 9. 🗃️ Master Data Catalogs (`pages/9_🗃️_Master_Data.py`)
+* **System Registries**: CRUD management for properties, event categories, material inventory, vendor categories, and external city-wide events.
+
+### 10. 🤖 AI Community Copilot (`pages/10_🤖_AI_Community_Copilot.py`)
+* **Conversational AI Assistant**: LLM-powered copilot answering community management queries, budget strategies, and resident engagement tips.
+
+### 11. 👤 User Management & Role Permissions (`pages/11_👤_User_Management.py`)
+* **Role-Based Access Control (RBAC)**: Manage platform users with role tiers (`Admin`, `SuperAdmin`, `Community Manager`, `Property Manager`, `Warden`).
+
+### 12. 📋 Master Event Planner (`pages/12_📋_Master_Event_Planner.py`)
+* **Workspace Workspace Execution**: Event workspace initialization, AI Risk Checklists, suggested vendor/material resources, Run-of-Show scheduling, and procurement task workflows.
 
 ---
 
 ## 🛠️ Tech Stack & Architecture
 
-* **Frontend Framework**: Streamlit (with customized CSS templates to preserve sidebar responsiveness)
+* **Frontend**: Streamlit with custom CSS themes (`ui/styles.py`)
+* **Core Language**: Python 3.10+
 * **Data Processing**: Pandas, NumPy
-* **LLM Engine**: LangChain, NVIDIA NIM HTTP API (`meta/llama-3.1-8b-instruct` - optimized for sub-20 second response times)
-* **Excel Engine**: OpenPyXL
+* **Data Storage & Persistence**: MongoDB (with automatic local CSV fallbacks: `data/tasks.csv`, `data/event_workspaces.csv`, etc.)
+* **AI & LLM Engine**: LangChain, NVIDIA NIM HTTP API (`meta/llama-3.1-8b-instruct`)
+* **Export Engines**: OpenPyXL (Excel), CSV
 
 ---
 
 ## 📂 Project Directory Structure
 
 ```
-TribeIQ/
-├── app.py                      # Main landing page & database uploader shell
-├── data/                       # Principal datasets
-│   ├── Residents.csv           # Resident database
-│   ├── event_history.csv       # Outcome logs database
-│   └── predictions_history.csv # Persistent prediction history database
-├── outputs/                    # Processed pipeline exports
-├── pages/                      # Streamlit application subpages
-│   ├── 1_🏠_Dashboard.py
-│   ├── 2_👥_Property_Profile.py
-│   ├── 3_🎯_Recommendations.py
-│   ├── 4_📝_Log_Event.py
-│   └── 5_📊_Analytics.py
-├── src/                        # Core backend intelligence
-│   ├── feature_engineering.py  # Resident profiling calculations
-│   ├── profile_generator.py    # Demographical profile builds
-│   ├── intelligence/           # LLM, recommendations, & forecasters
-│   └── learning/               # Continuous-learning feedback loop
-├── ui/                         # Global styling and reusable components
-└── test_*.py                   # Validation and integration test suite
+EngageIQ/
+├── app.py                          # Streamlit application entry point & sidebar nav
+├── HANDOVER.md                     # Comprehensive system handover document
+├── README.md                       # Project overview & documentation
+├── requirements.txt                # Python dependencies
+├── data/                           # Fallback CSV datasets & system registries
+│   ├── event_workspaces.csv        # Active event workspace records
+│   ├── tasks.csv                   # Task management database
+│   ├── run_of_show.csv             # Activity timeline logs
+│   ├── planned_calendar.csv        # Scheduled calendar events
+│   ├── event_history.csv           # Historical outcome logs
+│   └── recommendation_history.csv  # Generated recommendation history
+├── pages/                          # Streamlit application modules (1 to 12)
+├── src/                            # Core backend logic & services
+│   ├── analytics/                  # Executive Analytics aggregation engine
+│   ├── auth/                       # Session manager & RBAC permission controls
+│   ├── database/                   # MongoDB client & manager
+│   ├── intelligence/               # Recommendation generator, forecaster, & AI copilot
+│   ├── integrations/               # Eventbrite, Vendor, Stall, & Material DBs
+│   ├── models/                     # Pydantic data schemas
+│   ├── repositories/               # Data Access Objects (DAOs)
+│   └── services/                   # Master Planner & business orchestration services
+└── ui/                             # Global styling CSS and custom UI components
 ```
 
 ---
 
+## 🚦 Quick Start & Setup
+
+### 1. Prerequisites
+* Python 3.10 or higher installed
+* (Optional) MongoDB instance running on `localhost:27017`
+
+### 2. Installation
+```bash
+# Clone the repository
+git clone https://github.com/shriyansh1903/TribeIQ-v1.git
+cd TribeIQ-v1
+
+# Create and activate virtual environment
+python -m venv .venv
+# On Windows:
+.venv\Scripts\activate
+# On Linux/macOS:
+source .venv/bin/activate
+
+# Install requirements
+pip install -r requirements.txt
+```
+
+### 3. Environment Configuration (`.env`)
+Create a `.env` file in the root directory:
+```ini
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB_NAME=engageiq_db
+NVIDIA_API_KEY=your_nvidia_nim_api_key
+```
+
+### 4. Running the Platform
+```bash
+streamlit run app.py
+```
+Open your browser to `http://localhost:8501`.
+
+---
+
+## 🤝 Handover & Further Documentation
+
+For complete technical specifications, database schemas, and service method reference, please refer to [HANDOVER.md](HANDOVER.md).
