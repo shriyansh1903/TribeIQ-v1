@@ -90,11 +90,17 @@ except Exception:
 # ===========================================================
 # SECTION 1: Executive Welcome Header
 # ===========================================================
-today = datetime.date.today()
-hour = datetime.datetime.now().hour
-greeting = "Good Morning" if hour < 12 else "Good Afternoon" if hour < 17 else "Good Evening"
+try:
+    from src.auth.session_manager import get_current_user
+    user_info = get_current_user() or {}
+except Exception:
+    user_info = {}
 
-st.write(f"## 🏢 {greeting}, Manager")
+current_username = user_info.get("display_name") or user_info.get("username") or "Manager"
+
+today = datetime.date.today()
+
+st.write(f"## 👋 Hi, {current_username}")
 st.write(f"📅 **{today.strftime('%A, %d %B %Y')}**")
 
 # Property Summary line
