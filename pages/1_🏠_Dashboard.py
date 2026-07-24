@@ -155,24 +155,53 @@ try:
     with p_col4:
         st.metric("🎯 Assigned Events", f"{len(assigned_event_ids)}")
         
+    is_admin = user_role in ["Admin", "SuperAdmin", "Community Manager", "Property Manager", "Warden"]
+
     # Interactive Actionable Tasks Manager with Role & Assignment Permissions
-    if actionable_tasks:
-        with st.expander("📝 View & Manage Actionable Tasks", expanded=False):
-            registered_users = ["Unassigned"]
-            try:
-                from src.repositories import UsersRepository
-                u_repo = UsersRepository()
-                for u in u_repo.find_all():
-                    uname = u.get("username") or u.get("display_name")
-                    if uname and uname not in registered_users:
-                        registered_users.append(uname)
-            except Exception:
-                pass
+    with st.expander("📝 View & Manage Actionable Tasks", expanded=False if not actionable_tasks else True):
+        registered_users = ["Unassigned"]
+        try:
+            from src.repositories import UsersRepository
+            u_repo = UsersRepository()
+            for u in u_repo.find_all():
+                uname = u.get("username") or u.get("display_name")
+                if uname and uname not in registered_users:
+                    registered_users.append(uname)
+        except Exception:
+            pass
 
-            from src.services.master_planner_service import master_planner_service
+        from src.services.master_planner_service import master_planner_service
 
-            is_admin = user_role in ["Admin", "SuperAdmin"]
+        # Admin Task Creation (Manual Addition by Admin, Not Autofilled)
+        if is_admin:
+            st.markdown("##### ➕ Add Task (Admin)")
+            with st.form("dash_add_task_form", clear_on_submit=True):
+                at_col1, at_col2, at_col3, at_col4 = st.columns([3, 2, 2, 2])
+                with at_col1:
+                    new_task_title = st.text_input("Task Title", placeholder="Enter task title...")
+                with at_col2:
+                    depts = master_planner_service.get_available_departments()
+                    new_task_dept = st.selectbox("Department", depts if depts else ["Operations"], key="dash_new_task_dept")
+                with at_col3:
+                    new_task_assignee = st.selectbox("Assign To", registered_users, index=0, key="dash_new_task_user")
+                with at_col4:
+                    new_task_due = st.date_input("Due Date", value=today, key="dash_new_task_due")
 
+                submit_new_task = st.form_submit_button("➕ Add Task")
+                if submit_new_task and new_task_title:
+                    master_planner_service.create_task({
+                        "title": new_task_title.strip(),
+                        "department": new_task_dept,
+                        "assigned_user": new_task_assignee,
+                        "due_date": new_task_due.strftime("%Y-%m-%d"),
+                        "priority": "Medium",
+                        "status": "Pending"
+                    })
+                    st.success(f"Task '{new_task_title}' added by admin!")
+                    st.rerun()
+            st.divider()
+
+        if actionable_tasks:
             for idx, task in enumerate(actionable_tasks):
                 t_id = task.get("task_id")
                 curr_u = task.get("assigned_user", "Unassigned") or "Unassigned"
@@ -180,7 +209,7 @@ try:
                 is_assigned_to_me = (curr_u.strip().lower() == current_username.strip().lower()) or (curr_u.strip().lower() == "unassigned") or is_admin
                 
                 with st.container():
-                    c_dt1, c_dt2, c_dt3, c_dt4 = st.columns([3, 2, 2, 2])
+                    c_dt1, c_dt2, c_dt3, c_dt4, c_dt5 = st.columns([3, 2, 2, 2, 1])
                     with c_dt1:
                         st.markdown(f"**{task.get('title')}**")
                         st.caption(f"Dept: `{task.get('department', 'Operations')}` | Priority: `{task.get('priority', 'Medium')}`")
@@ -191,7 +220,7 @@ try:
                             u_opts = list(registered_users)
                             if curr_u not in u_opts:
                                 u_opts.append(curr_u)
-                            u_idx = u_opts.index(curr_u)
+                            u_idx = u_opts.index(curr_u) if curr_u in u_opts else 0
                             new_u = st.selectbox("Assign To", u_opts, index=u_idx, key=f"dash_task_u_{t_id}_{idx}")
                             if new_u != curr_u:
                                 master_planner_service.update_task(t_id, {"assigned_user": new_u})
@@ -210,7 +239,17 @@ try:
                         else:
                             st.write("📌 **Status**")
                             st.caption(f"`{curr_s}`")
+                    with c_dt5:
+                        if is_admin:
+                            st.write("")
+                            st.write("")
+                            if st.button("🗑️", key=f"dash_del_t_{t_id}_{idx}", help="Delete Task"):
+                                master_planner_service.delete_task(t_id)
+                                st.success("Task deleted!")
+                                st.rerun()
                 st.divider()
+        else:
+            st.info("No actionable tasks currently assigned. Admin can add tasks above.")
 
     # Community Managers additionally see Overall Event Progress & Overdue Tasks Summary
     if user_role in ["Admin", "SuperAdmin", "Community Manager", "Property Manager", "Warden"]:

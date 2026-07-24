@@ -1,2 +1,4 @@
-workspace_id,event_id,event_name,category,property_name,date,created_by,created_at,last_updated,status,completion_percentage,event_type,community_manager,_id
-WS-56C389F5,EVT-TEST-999,UnitTest Cultural Night,Cultural,Tribe Vara,2026-08-15,TestAdmin,2026-07-23T14:02:39.921739,2026-07-23T14:02:40.431012,Approved,0.0,Minor,TestAdmin,6a61d1a7d3050e2967bd1eeb
+workspace_id,event_id,event_name,category,property_name,date,created_by,created_at,last_updated,status,completion_percentage,event_type,community_manager,_id,vendors_to_contact,chosen_vendors
+WS-56C389F5,EVT-TEST-999,UnitTest Cultural Night,Cultural,Tribe Vara,2026-08-15,TestAdmin,2026-07-23T14:02:39.921739,2026-07-23T17:09:25.435896,Approved,60.0,Minor,TestAdmin,6a61d1a7d3050e2967bd1eeb,,
+WS-F3C22808,EVT-C86DC3,Wellness Camp,Community,Tribe Vara,2026-08-01,admin,2026-07-23T15:15:17.615268,2026-07-23T15:21:14.684068,Approved,0.0,Major,admin,6a61e2ad728899dcbf2d608f,,
+WS-7ACEF870,EVT-9F328B,Wellness Camp,Community,Tribe Vara,2026-07-31,System,2026-07-23T16:28:49.323564,2026-07-23T17:38:25.132693,Approved,80.0,Major,Community Manager,6a61f3e9728899dcbf2d60a0,[],[]

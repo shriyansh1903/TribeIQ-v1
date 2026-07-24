@@ -267,7 +267,7 @@ class ExecutiveAnalyticsService:
         dept_summary = []
         for dept_name, group in df_tasks.groupby("department"):
             total_assigned = len(group)
-            completed = len(group[group["status"].astype(str).str.strip().lower() == "completed"])
+            completed = len(group[group["status"].astype(str).str.strip().str.lower() == "completed"])
             completion_pct = round((completed / total_assigned) * 100.0, 1)
 
             overdue = sum(1 for _, r in group.iterrows() if str(r.get("due_date", "")) < today_str and str(r.get("status", "")).strip().lower() != "completed")
@@ -300,8 +300,8 @@ class ExecutiveAnalyticsService:
         user_summary = []
         for user_name, group in df_tasks.groupby("assigned_user"):
             total = len(group)
-            completed = len(group[group["status"].astype(str).str.strip().lower() == "completed"])
-            pending = len(group[group["status"].astype(str).str.strip().lower() == "pending"])
+            completed = len(group[group["status"].astype(str).str.strip().str.lower() == "completed"])
+            pending = len(group[group["status"].astype(str).str.strip().str.lower() == "pending"])
             overdue = sum(1 for _, r in group.iterrows() if str(r.get("due_date", "")) < today_str and str(r.get("status", "")).strip().lower() != "completed")
             comp_rate = round((completed / total) * 100.0, 1)
 
