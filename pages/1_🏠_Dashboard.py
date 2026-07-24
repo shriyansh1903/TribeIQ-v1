@@ -132,8 +132,16 @@ try:
     
     all_user_tasks = master_planner_service.get_all_tasks()
     
+    # Filter ONLY manual tasks created by admin (exclude auto-filled template tasks)
+    manual_tasks = [
+        t for t in all_user_tasks 
+        if t.get("is_manual") is True 
+        or str(t.get("workspace_id", "")).upper() in ["GENERAL_OPERATIONS", "MANUAL"]
+        or str(t.get("created_by", "")).lower() in [current_username.lower(), "admin", "superadmin", "community manager", "manager"]
+    ]
+    
     # Filter tasks for logged-in user or unassigned
-    my_tasks = [t for t in all_user_tasks if str(t.get("assigned_user")).strip().lower() in [current_username.lower(), "unassigned"]]
+    my_tasks = [t for t in manual_tasks if str(t.get("assigned_user")).strip().lower() in [current_username.lower(), "unassigned"]]
     
     # Task 6: Filter only Actionable Work (Pending, In Progress), hide Completed by default
     actionable_tasks = [t for t in my_tasks if str(t.get("status")).strip().lower() in ["pending", "in progress"]]
@@ -197,7 +205,9 @@ try:
                         "assigned_user": new_task_assignee,
                         "due_date": new_task_due.strftime("%Y-%m-%d"),
                         "priority": "Medium",
-                        "status": "Pending"
+                        "status": "Pending",
+                        "is_manual": True,
+                        "created_by": current_username
                     })
                     st.success(f"Task '{new_task_title}' added by admin!")
                     st.rerun()
