@@ -296,6 +296,10 @@ class MasterPlannerService:
             task_dict["task_id"] = f"TSK-{uuid.uuid4().hex[:8].upper()}"
         if "created_at" not in task_dict:
             task_dict["created_at"] = datetime.datetime.now().isoformat()
+        if "workspace_id" not in task_dict or not task_dict["workspace_id"]:
+            task_dict["workspace_id"] = "GENERAL_OPERATIONS"
+        if "event_id" not in task_dict or task_dict["event_id"] is None:
+            task_dict["event_id"] = "GENERAL"
 
         # Validate with Task Pydantic Model
         try:
@@ -335,7 +339,9 @@ class MasterPlannerService:
             logger.error(f"Error saving task CSV: {e}")
 
         # Update metadata
-        self.update_workspace_metadata(validated_task["workspace_id"])
+        ws_id = validated_task.get("workspace_id")
+        if ws_id and ws_id != "GENERAL_OPERATIONS":
+            self.update_workspace_metadata(ws_id)
 
         # Automatic Business Graph Relationship Builder
         try:
@@ -376,7 +382,7 @@ class MasterPlannerService:
             except Exception as e:
                 logger.error(f"Error updating task CSV: {e}")
 
-        if workspace_id:
+        if workspace_id and workspace_id != "GENERAL_OPERATIONS":
             self.update_workspace_metadata(workspace_id)
         return True
 
@@ -403,7 +409,7 @@ class MasterPlannerService:
             except Exception as e:
                 logger.error(f"Error deleting task CSV: {e}")
 
-        if workspace_id:
+        if workspace_id and workspace_id != "GENERAL_OPERATIONS":
             self.update_workspace_metadata(workspace_id)
         return True
 

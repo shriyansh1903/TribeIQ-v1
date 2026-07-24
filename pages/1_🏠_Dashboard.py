@@ -191,6 +191,8 @@ try:
                 if submit_new_task and new_task_title:
                     master_planner_service.create_task({
                         "title": new_task_title.strip(),
+                        "workspace_id": "GENERAL_OPERATIONS",
+                        "event_id": "GENERAL",
                         "department": new_task_dept,
                         "assigned_user": new_task_assignee,
                         "due_date": new_task_due.strftime("%Y-%m-%d"),
